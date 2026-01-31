@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Violencia y Acoso en el Trabajo (Colombia)</title>
+    <style>
+        /* --- VARIABLES & RESET --- */
+        :root {
+            --primary: #003366; /* Azul Oscuro Colombia */
+            --primary-light: #004d99;
+            --accent: #D4AF37; /* Dorado Institucional */
+            --bg-body: #f4f6f9;
+            --white: #ffffff;
+            --text-dark: #2c3e50;
+            --text-light: #596275;
+            --success: #28a745;
+            --danger: #dc3545;
+            --radius: 12px;
+            --shadow: 0 8px 20px rgba(0,0,0,0.08);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-dark);
+            height: 100vh;
+            overflow: hidden; /* App feel */
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- LAYOUT PRINCIPAL --- */
+        #app-container {
+            flex: 1;
+            position: relative;
+            max-width: 1000px;
+            width: 100%;
+            margin: 0 auto;
+            background: var(--white);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @media (min-width: 1024px) {
+            #app-container { margin: 20px auto; border-radius: var(--radius); height: calc(100vh - 40px); }
+        }
+
+        /* --- HEADER --- */
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 4px solid var(--accent);
+            z-index: 100;
+        }
+
+        .brand h1 { font-size: 1.1rem; font-weight: 600; margin: 0; }
+        .brand span { font-size: 0.8rem; opacity: 0.8; display: block; }
+        
+        .progress-pill {
+            background: rgba(255,255,255,0.1);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        /* --- ÁREA DE CONTENIDO (SCREENS) --- */
+        #content-area {
+            flex: 1;
+            position: relative;
+            overflow-y: auto; /* Scroll interno si es necesario */
+            overflow-x: hidden;
+            background: #fff;
+        }
+
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateX(20px);
+            transition: all 0.5s ease;
+            overflow-y: auto;
+        }
+
+        .screen.active {
+            opacity: 1;
+            pointer-events: all;
+            transform: translateX(0);
+            z-index: 10;
+        }
+
+        /* --- FASE 1: TEORÍA (ESTILOS) --- */
+        .intro-hero { text-align: center; max-width: 600px; margin-top: 5vh; }
+        .hero-icon { font-size: 4rem; margin-bottom: 1rem; display: block; animation: float 3s infinite; }
+        
+        /* Comparador */
+        .comparator-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            width: 100%;
+            max-width: 800px;
+            margin-top: 1rem;
+        }
+        .comp-col {
+            background: #f8f9fa;
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            border-top: 5px solid #ccc;
+            transition: 0.3s;
+        }
+        .comp-col:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+        .comp-1010 { border-color: var(--danger); }
+        .comp-c190 { border-color: var(--success); background: #f0fff4; }
+        
+        .comp-title { font-weight: bold; font-size: 1.1rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
+        .comp-list li { margin-bottom: 8px; font-size: 0.9rem; list-style: none; position: relative; padding-left: 20px; }
+        .comp-list li::before { content: "•"; position: absolute; left: 0; font-weight: bold; }
+
+        /* Acordeón para Alcance */
+        .accordion { width: 100%; max-width: 700px; margin-top: 1rem; }
+        .acc-item { border: 1px solid #eee; border-radius: 8px; margin-bottom: 10px; overflow: hidden; }
+        .acc-header {
+            background: #f8f9fa;
+            padding: 15px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .acc-header:hover { background: #e9ecef; }
+        .acc-body { display: none; padding: 15px; background: white; font-size: 0.95rem; color: var(--text-light); }
+        .acc-item.open .acc-body { display: block; border-top: 1px solid #eee; }
+
+        /* --- FASE 2: JUEGO (ESTILOS REUTILIZADOS) --- */
+        .game-zone { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; }
+        
+        /* Clasificador */
+        .sorter-stage { display: flex; gap: 15px; width: 100%; justify-content: center; align-items: stretch; height: 300px; }
+        .drop-zone {
+            flex: 1;
+            border: 2px dashed #ccc;
+            border-radius: var(--radius);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            transition: 0.3s;
+            text-align: center;
+            cursor: pointer;
+        }
+        .drop-zone:hover { background: rgba(0,0,0,0.02); border-color: var(--primary); }
+        .card-stack { width: 220px; position: relative; display: flex; align-items: center; justify-content: center; }
+        .play-card {
+            width: 100%;
+            height: 160px;
+            background: white;
+            border: 1px solid #ddd;
+            border-left: 5px solid var(--accent);
+            border-radius: 12px;
+            padding: 1rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        /* Mapa */
+        .map-container {
+            width: 100%;
+            max-width: 600px;
+            height: 300px;
+            background: #eef2f5;
+            border-radius: var(--radius);
+            position: relative;
+            background-image: radial-gradient(#cbd5e0 1px, transparent 1px);
+            background-size: 20px 20px;
+            margin: 20px 0;
+        }
+        .hotspot {
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 0 0 rgba(0, 51, 102, 0.4);
+            animation: pulse 2s infinite;
+            font-size: 1.2rem;
+        }
+        .hotspot.found { background: var(--success); animation: none; }
+
+        /* --- UI ELEMENTS --- */
+        h2 { color: var(--primary); margin-bottom: 1rem; text-align: center; font-size: 1.5rem; }
+        p { text-align: center; line-height: 1.6; color: var(--text-light); max-width: 700px; margin-bottom: 1.5rem; }
+        
+        .btn-action {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .btn-action:hover { background: var(--primary-light); transform: translateY(-2px); }
+        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); margin-top: 10px;}
+
+        /* --- BOTÓN FLOTANTE (CONSULTA) --- */
+        .fab-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--accent);
+            color: var(--primary);
+            font-weight: bold;
+            padding: 12px 20px;
+            border-radius: 50px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            cursor: pointer;
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.2s;
+            border: none;
+        }
+        .fab-btn:hover { transform: scale(1.05); }
+
+        /* --- MODAL DE CONSULTA --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 300;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal-content {
+            background: white;
+            width: 100%;
+            max-width: 600px;
+            max-height: 80vh;
+            border-radius: var(--radius);
+            padding: 2rem;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .close-modal { position: absolute; top: 15px; right: 20px; font-size: 1.5rem; cursor: pointer; color: #999; }
+        
+        .modal-section { margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
+        .modal-section h4 { color: var(--primary); margin-bottom: 5px; }
+        .modal-section p { text-align: left; font-size: 0.9rem; margin-bottom: 5px; }
+
+        /* --- ANIMACIONES --- */
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(0, 51, 102, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(0, 51, 102, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 51, 102, 0); } }
+
+        /* --- RESPONSIVE MEDIA QUERIES --- */
+        @media (max-width: 768px) {
+            .brand h1 { font-size: 1rem; }
+            .brand span { display: none; }
+            .comparator-grid { grid-template-columns: 1fr; gap: 10px; }
+            .sorter-stage { flex-direction: column; height: auto; gap: 10px; }
+            .drop-zone { min-height: 80px; flex-direction: row; justify-content: flex-start; gap: 10px; text-align: left; }
+            .card-stack { width: 100%; margin: 10px 0; }
+            .play-card { height: auto; min-height: 100px; }
+            .map-container { height: 250px; }
+            h2 { font-size: 1.2rem; }
+            p { font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- MODAL DE CONSULTA (PERSISTENTE) -->
+    <button class="fab-btn" onclick="toggleModal()">
+        <span>📚</span> Guía Normativa
+    </button>
+
+    <div class="modal-overlay" id="help-modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="toggleModal()">&times;</span>
+            <h2 style="text-align: left; border-bottom: 2px solid var(--accent); padding-bottom: 10px;">Guía de Conceptos</h2>
+            
+            <div class="modal-section">
+                <h4>Ley 1010 de 2006</h4>
+                <p>⚠️ <strong>Enfoque:</strong> Punitivo y Sancionatorio.</p>
+                <p>Busca castigar conductas individuales. Es reactiva (actúa después del daño).</p>
+            </div>
+            
+            <div class="modal-section">
+                <h4>Convenio 190 OIT</h4>
+                <p>🛡️ <strong>Enfoque:</strong> Preventivo y de Salud.</p>
+                <p>Considera el acoso un riesgo laboral (SG-SST) y un tema de DDHH. Protege el "mundo del trabajo".</p>
+            </div>
+            
+            <div class="modal-section">
+                <h4>Áreas Protegidas (C190)</h4>
+                <p>✅ Lugar físico de trabajo.</p>
+                <p>✅ Trayectos (casa-trabajo).</p>
+                <p>✅ Comunicaciones digitales (WhatsApp, email).</p>
+                <p>✅ Eventos sociales y formaciones.</p>
+            </div>
+
+            <button class="btn-action" style="width: 100%;" onclick="toggleModal()">Entendido, volver a la actividad</button>
+        </div>
+    </div>
+
+    <div id="app-container">
+        <header>
+            <div class="brand">
+                <h1>Prevención del Acoso Laboral</h1>
+                <span>Curso Institucional - Colombia</span>
+            </div>
+            <div class="progress-pill" id="stage-indicator">Introducción</div>
+        </header>
+
+        <div id="content-area">
+            
+            <!-- ================= FASE 1: TEORÍA ================= -->
+
+            <!-- SCREEN 1: INTRO -->
+            <div class="screen active" id="sc-intro">
+                <div class="intro-hero">
+                    <span class="hero-icon">⚖️</span>
+                    <h2>Del Castigo a la Prevención</h2>
+                    <p>“La forma como definimos el acoso determina cómo lo prevenimos y atendemos.”</p>
+                    <p>Bienvenido. En este módulo interactivo comprenderás cómo Colombia transita de un enfoque sancionatorio a uno preventivo y de salud pública.</p>
+                    <button class="btn-action" onclick="navTo('sc-compare')">Explorar Marco Normativo</button>
+                </div>
+            </div>
+
+            <!-- SCREEN 2: COMPARADOR -->
+            <div class="screen" id="sc-compare">
+                <h2>1. Dos Enfoques Complementarios</h2>
+                <p>Analiza las diferencias clave entre la norma vigente y el nuevo estándar internacional.</p>
+                
+                <div class="comparator-grid">
+                    <div class="comp-col comp-1010">
+                        <div class="comp-title"><span>📜</span> Ley 1010 de 2006</div>
+                        <ul class="comp-list">
+                            <li><strong>Enfoque:</strong> Punitivo / Disciplinario.</li>
+                            <li><strong>Objetivo:</strong> Corregir conductas.</li>
+                            <li><strong>Acción:</strong> Reactiva (post-daño).</li>
+                            <li><strong>Visión:</strong> Conflicto entre personas.</li>
+                        </ul>
+                    </div>
+                    <div class="comp-col comp-c190">
+                        <div class="comp-title"><span>🌍</span> Convenio 190 OIT</div>
+                        <ul class="comp-list">
+                            <li><strong>Enfoque:</strong> Preventivo / Salud Laboral.</li>
+                            <li><strong>Objetivo:</strong> Entornos seguros.</li>
+                            <li><strong>Acción:</strong> Gestión del Riesgo (SG-SST).</li>
+                            <li><strong>Visión:</strong> Problema estructural y de DDHH.</li>
+                        </ul>
+                    </div>
+                </div>
+                <button class="btn-action" style="margin-top: 2rem;" onclick="navTo('sc-risks')">Siguiente: Enfoque de Riesgo</button>
+            </div>
+
+            <!-- SCREEN 3: RIESGOS -->
+            <div class="screen" id="sc-risks">
+                <h2>2. Violencia como Riesgo Laboral</h2>
+                <p>El acoso no es solo "mala conducta", es un riesgo para la salud pública que las entidades deben gestionar.</p>
+                
+                <div style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin-bottom: 20px;">
+                    <div style="background:#fff; border:1px solid #ddd; padding:15px; border-radius:8px; width: 250px; text-align:center;">
+                        <div style="font-size:2rem;">🧠</div>
+                        <strong>Salud Mental</strong>
+                        <p style="font-size:0.85rem;">Estrés, ansiedad, depresión.</p>
+                    </div>
+                    <div style="background:#fff; border:1px solid #ddd; padding:15px; border-radius:8px; width: 250px; text-align:center;">
+                        <div style="font-size:2rem;">❤️</div>
+                        <strong>Salud Física</strong>
+                        <p style="font-size:0.85rem;">Hipertensión, trastornos del sueño.</p>
+                    </div>
+                    <div style="background:#fff; border:1px solid #ddd; padding:15px; border-radius:8px; width: 250px; text-align:center;">
+                        <div style="font-size:2rem;">🏛️</div>
+                        <strong>Institucional</strong>
+                        <p style="font-size:0.85rem;">Baja productividad, ausentismo.</p>
+                    </div>
+                </div>
+                <button class="btn-action" onclick="navTo('sc-scope')">Siguiente: Alcance</button>
+            </div>
+
+            <!-- SCREEN 4: ALCANCE -->
+            <div class="screen" id="sc-scope">
+                <h2>3. ¿Qué amplía el Convenio 190?</h2>
+                <p>El "lugar de trabajo" ya no son solo cuatro paredes. Haz clic para ver.</p>
+                
+                <div class="accordion">
+                    <div class="acc-item" onclick="toggleAcc(this)">
+                        <div class="acc-header">🚍 El Trayecto (In Itinere) <span>+</span></div>
+                        <div class="acc-body">La violencia ocurrida durante el desplazamiento casa-trabajo se reconoce, protegiendo especialmente a las mujeres en el transporte público.</div>
+                    </div>
+                    <div class="acc-item" onclick="toggleAcc(this)">
+                        <div class="acc-header">📲 Comunicaciones Digitales <span>+</span></div>
+                        <div class="acc-body">El ciberacoso a través de WhatsApp, correos o llamadas fuera de horario laboral está cubierto.</div>
+                    </div>
+                    <div class="acc-item" onclick="toggleAcc(this)">
+                        <div class="acc-header">🚽 Espacios Auxiliares <span>+</span></div>
+                        <div class="acc-body">Comedores, vestuarios, zonas de descanso y aseo.</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 2rem; padding: 15px; background: #e3f2fd; border-radius: 8px; border-left: 4px solid var(--primary);">
+                    <strong>¡Preparado!</strong> Ahora que conoces la teoría, asumirás el rol de Auditor Preventivo.
+                </div>
+                <button class="btn-action" style="margin-top: 15px;" onclick="startGame()">🎓 Iniciar Misión Práctica</button>
+            </div>
+
+            <!-- ================= FASE 2: JUEGO / PRÁCTICA ================= -->
+
+            <!-- SCREEN 5: MISION CLASIFICADOR -->
+            <div class="screen" id="gm-sort">
+                <h2>Misión: Auditoría de Enfoques</h2>
+                <p>Clasifica las situaciones. ¿Pertenecen al enfoque sancionatorio (Ley 1010) o al preventivo (C190)?</p>
+                
+                <div class="sorter-stage">
+                    <!-- Zona 1010 -->
+                    <div class="drop-zone" onclick="checkSort('1010')" style="border-color: var(--danger); background: #fff5f5;">
+                        <span style="font-size: 2rem;">⚖️</span>
+                        <small><strong>Ley 1010</strong><br>Sanción / Culpa</small>
+                    </div>
+
+                    <!-- Cartas -->
+                    <div class="card-stack">
+                        <div class="play-card" id="current-card">Cargando...</div>
+                    </div>
+
+                    <!-- Zona C190 -->
+                    <div class="drop-zone" onclick="checkSort('c190')" style="border-color: var(--success); background: #f0fff4;">
+                        <span style="font-size: 2rem;">🛡️</span>
+                        <small><strong>C190 OIT</strong><br>Prevención / Riesgo</small>
+                    </div>
+                </div>
+                <div id="sort-msg" style="height: 30px; margin-top: 10px; font-weight: bold; color: var(--primary);"></div>
+            </div>
+
+            <!-- SCREEN 6: MAPA -->
+            <div class="screen" id="gm-map">
+                <h2>Misión: Identificar Zonas Protegidas</h2>
+                <p>Según el C190, encuentra 3 zonas de riesgo fuera de la oficina tradicional.</p>
+                
+                <div class="map-container">
+                    <!-- Oficina (Centro) - Decorativo -->
+                    <div style="position: absolute; top: 40%; left: 45%; font-size: 3rem; opacity: 0.5;">🏢</div>
+
+                    <!-- Hotspots Interactivos -->
+                    <div class="hotspot" style="top: 10%; left: 10%;" onclick="foundSpot(this, 'Teletrabajo')">🏠</div>
+                    <div class="hotspot" style="bottom: 15%; right: 15%;" onclick="foundSpot(this, 'Transporte')">🚌</div>
+                    <div class="hotspot" style="top: 15%; right: 10%;" onclick="foundSpot(this, 'Digital')">📱</div>
+                    
+                    <div id="map-feedback" style="position: absolute; bottom: 10px; left: 0; width: 100%; text-align: center; font-weight: bold; color: var(--primary);"></div>
+                </div>
+                <button class="btn-action" id="btn-finish-map" style="display: none;" onclick="navTo('sc-final')">Finalizar Auditoría</button>
+            </div>
+
+            <!-- SCREEN 7: FINAL -->
+            <div class="screen" id="sc-final">
+                <div style="font-size: 4rem; margin-bottom: 1rem;">🏆</div>
+                <h2>¡Objetivo Cumplido!</h2>
+                <p>Has comprendido la complementariedad de las normas.</p>
+                <div style="background: #fff; padding: 20px; border-radius: 8px; border: 1px solid #eee; text-align: left; max-width: 500px;">
+                    <p><strong>Recuerda:</strong><br>
+                    1. La Ley 1010 sigue vigente para procesos disciplinarios.<br>
+                    2. El C190 nos obliga a gestionar el riesgo antes de que ocurra el daño.<br>
+                    3. La prevención es responsabilidad institucional.</p>
+                </div>
+                <button class="btn-action" style="margin-top: 20px;" onclick="location.reload()">Repasar Módulo</button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // --- NAVEGACIÓN GLOBAL ---
+        function navTo(screenId) {
+            // Ocultar todas
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            // Mostrar target
+            document.getElementById(screenId).classList.add('active');
+            
+            // Actualizar indicador header
+            const indicator = document.getElementById('stage-indicator');
+            if(screenId.includes('intro')) indicator.innerText = 'Introducción';
+            else if(screenId.includes('sc-')) indicator.innerText = 'Aprendizaje';
+            else if(screenId.includes('gm-')) indicator.innerText = 'Práctica Interactiva';
+            else indicator.innerText = 'Cierre';
+        }
+
+        function toggleAcc(element) {
+            element.classList.toggle('open');
+        }
+
+        // --- LÓGICA DEL MODAL DE CONSULTA ---
+        function toggleModal() {
+            const modal = document.getElementById('help-modal');
+            if(modal.style.display === 'flex') modal.style.display = 'none';
+            else modal.style.display = 'flex';
+        }
+
+        // --- LÓGICA DEL JUEGO: CARTAS ---
+        const cards = [
+            { txt: "Gestionar el acoso como un riesgo de salud laboral (SG-SST)", type: "c190" },
+            { txt: "Iniciar un proceso disciplinario contra un individuo específico", type: "1010" },
+            { txt: "Proteger el trayecto al trabajo y comunicaciones digitales", type: "c190" },
+            { txt: "Sancionar una conducta probada de maltrato", type: "1010" }
+        ];
+        let cardIndex = 0;
+
+        function startGame() {
+            cardIndex = 0;
+            loadCard();
+            navTo('gm-sort');
+        }
+
+        function loadCard() {
+            if(cardIndex < cards.length) {
+                document.getElementById('current-card').innerText = cards[cardIndex].txt;
+                document.getElementById('sort-msg').innerText = "";
+            } else {
+                // Fin cartas
+                navTo('gm-map');
+            }
+        }
+
+        function checkSort(selected) {
+            if(cardIndex >= cards.length) return;
+            
+            const correct = cards[cardIndex].type;
+            const msg = document.getElementById('sort-msg');
+
+            if(selected === correct) {
+                msg.innerText = "¡Correcto!";
+                msg.style.color = "var(--success)";
+                cardIndex++;
+                setTimeout(loadCard, 800);
+            } else {
+                msg.innerText = "Revisa el concepto. Intenta de nuevo.";
+                msg.style.color = "var(--danger)";
+            }
+        }
+
+        // --- LÓGICA DEL JUEGO: MAPA ---
+        let spotsFound = 0;
+        function foundSpot(el, name) {
+            if(el.classList.contains('found')) return;
+            
+            el.classList.add('found');
+            el.innerHTML = "✓";
+            spotsFound++;
+            
+            const feedback = document.getElementById('map-feedback');
+            feedback.innerText = `Identificado: ${name}.`;
+
+            if(spotsFound >= 3) {
+                document.getElementById('btn-finish-map').style.display = 'inline-block';
+                feedback.innerText = "¡Zonas identificadas! Avanza al cierre.";
+                feedback.style.color = "var(--success)";
+            }
+        }
+
+    </script>
+</body>
+</html>
