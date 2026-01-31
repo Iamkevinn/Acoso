@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: El Lenguaje del Silencio</title>
+    <style>
+        /* --- 1. VARIABLES & RESET (Estética Institucional Oscura) --- */
+        :root {
+            --bg-base: #eef2f5;
+            --bg-dark: #1a1f24;
+            --text-main: #2c3e50;
+            --text-inverse: #f8f9fa;
+            --accent-danger: #d63031; /* Rojo Alerta */
+            --accent-warn: #fdcb6e;
+            --accent-inst: #0984e3; /* Azul Institucional */
+            --overlay-dark: rgba(0,0,0,0.85);
+            --font-main: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            --transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 2s ease;
+        }
+
+        /* --- 2. CONTENEDOR PRINCIPAL (APP SHELL) --- */
+        #app-shell {
+            width: 100%;
+            max-width: 900px;
+            height: 90vh;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Estado de "Crisis Institucional" (se activa vía JS) */
+        body.crisis-mode { background-color: #2d3436; }
+        body.crisis-mode #app-shell { border: 2px solid var(--accent-danger); }
+
+        /* --- 3. PANTALLAS (VIEWS) --- */
+        .view {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.95);
+            transition: var(--transition);
+            z-index: 1;
+        }
+
+        .view.active {
+            opacity: 1; pointer-events: all; transform: scale(1); z-index: 10;
+        }
+
+        /* --- VISTA 1: INTRO (RUPTURA) --- */
+        #view-intro {
+            background: var(--bg-dark);
+            color: var(--text-inverse);
+            text-align: center;
+        }
+        
+        .glitch-text {
+            font-size: 2.5rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            position: relative;
+            margin-bottom: 2rem;
+            color: var(--accent-danger);
+            animation: pulseText 2s infinite;
+        }
+
+        .intro-sub {
+            font-size: 1.2rem;
+            max-width: 600px;
+            line-height: 1.6;
+            margin-bottom: 3rem;
+            border-left: 4px solid var(--accent-danger);
+            padding-left: 20px;
+            text-align: left;
+        }
+
+        .btn-start {
+            padding: 15px 40px;
+            font-size: 1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: transparent;
+            color: var(--text-inverse);
+            border: 2px solid var(--accent-danger);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .btn-start:hover { background: var(--accent-danger); color: white; box-shadow: 0 0 20px var(--accent-danger); }
+
+        /* --- VISTA 2: GAMEPLAY (ANÁLISIS) --- */
+        #view-game {
+            background: #fdfdfd;
+            justify-content: flex-start;
+            padding-top: 4rem;
+        }
+
+        /* Indicador de Riesgo (Meter) */
+        .risk-hud {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 8px;
+            background: #e0e0e0;
+        }
+        .risk-bar {
+            height: 100%; width: 0%;
+            background: linear-gradient(90deg, #2ecc71, #f1c40f, #e74c3c);
+            transition: width 0.5s ease;
+        }
+        .risk-label {
+            position: absolute; top: 15px; right: 20px;
+            font-size: 0.8rem; font-weight: bold; text-transform: uppercase;
+            color: var(--text-main);
+        }
+
+        /* Tarjeta de Frase */
+        .card-container {
+            width: 100%; max-width: 600px;
+            height: 250px;
+            perspective: 1000px;
+            margin-bottom: 2rem;
+        }
+        
+        .phrase-card {
+            width: 100%; height: 100%;
+            background: white;
+            border: 1px solid #ccc;
+            border-left: 6px solid var(--text-main);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            padding: 2rem;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-main);
+            transition: transform 0.5s;
+            position: relative;
+        }
+
+        .phrase-card::before { content: '"'; font-size: 4rem; position: absolute; top: -10px; left: 10px; color: #eee; }
+        .phrase-card::after { content: '"'; font-size: 4rem; position: absolute; bottom: -30px; right: 10px; color: #eee; }
+
+        /* Botones de Clasificación */
+        .actions-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 100%; max-width: 700px;
+        }
+
+        .btn-action {
+            padding: 20px;
+            border: 1px solid #ddd;
+            background: white;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #555;
+            cursor: pointer;
+            transition: 0.2s;
+            border-radius: 6px;
+        }
+        .btn-action:hover { transform: translateY(-3px); border-color: var(--text-main); color: var(--text-main); }
+        
+        /* Efecto al seleccionar */
+        .btn-action.selected-wrong { background: var(--accent-danger); color: white; border-color: var(--accent-danger); }
+        .btn-action.selected-correct { background: var(--text-main); color: white; border-color: var(--text-main); }
+
+        /* Feedback Overlay */
+        .feedback-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.95);
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            z-index: 20;
+            opacity: 0; pointer-events: none;
+            transition: 0.3s;
+            padding: 2rem; text-align: center;
+        }
+        .feedback-overlay.show { opacity: 1; pointer-events: all; }
+
+        .impact-icon { font-size: 4rem; margin-bottom: 1rem; color: var(--accent-danger); animation: shake 0.5s; }
+        .impact-title { font-size: 1.5rem; color: var(--accent-danger); margin-bottom: 1rem; text-transform: uppercase; }
+        .impact-desc { font-size: 1.1rem; color: #333; max-width: 500px; line-height: 1.5; }
+        .btn-next { margin-top: 2rem; padding: 10px 30px; background: var(--text-main); color: white; border: none; cursor: pointer; }
+
+        /* --- VISTA 3: REVELACIÓN (CIERRE) --- */
+        #view-outro {
+            background: var(--bg-dark);
+            color: white;
+            text-align: left;
+            align-items: flex-start;
+        }
+        
+        .final-title { font-size: 2rem; margin-bottom: 1rem; color: var(--accent-danger); }
+        .final-list { margin-left: 20px; margin-bottom: 2rem; font-size: 1.1rem; line-height: 1.8; color: #ccc; }
+        .final-list li strong { color: white; }
+        .highlight-box {
+            background: rgba(255,255,255,0.05);
+            border-left: 4px solid var(--accent-inst);
+            padding: 1.5rem;
+            margin-top: 1rem;
+            width: 100%;
+        }
+
+        /* --- ANIMACIONES --- */
+        @keyframes pulseText { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+        @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 10% { transform: translate(-1px, -2px) rotate(-1deg); } 20% { transform: translate(-3px, 0px) rotate(1deg); } 30% { transform: translate(3px, 2px) rotate(0deg); } 40% { transform: translate(1px, -1px) rotate(1deg); } 50% { transform: translate(-1px, 2px) rotate(-1deg); } 60% { transform: translate(-3px, 1px) rotate(0deg); } 70% { transform: translate(3px, 1px) rotate(-1deg); } 80% { transform: translate(-1px, -1px) rotate(1deg); } 90% { transform: translate(1px, 2px) rotate(0deg); } 100% { transform: translate(1px, -2px) rotate(-1deg); } }
+        .screen-shake { animation: shake 0.5s; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .glitch-text { font-size: 1.8rem; }
+            .phrase-card { font-size: 1.2rem; height: 200px; }
+            .actions-grid { grid-template-columns: 1fr; }
+            .btn-action { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app-shell">
+        
+        <!-- VISTA 1: ADVERTENCIA -->
+        <div id="view-intro" class="view active">
+            <div class="glitch-text">⚠️ ALERTA CULTURAL</div>
+            <div class="intro-sub">
+                <p>El acoso laboral y sexual no se sostiene solo con acciones.</p>
+                <br>
+                <p><strong>Se sostiene con lo que decimos en los pasillos, en el almuerzo y en las oficinas.</strong></p>
+                <br>
+                <p>A continuación, enfrentará frases reales del entorno. Su misión es identificar qué mecanismo de silencio activan.</p>
+            </div>
+            <button class="btn-start" onclick="startGame()">Entrar al Análisis</button>
+        </div>
+
+        <!-- VISTA 2: JUEGO -->
+        <div id="view-game" class="view">
+            <!-- HUD -->
+            <div class="risk-hud"><div class="risk-bar" id="risk-bar"></div></div>
+            <div class="risk-label" id="risk-status">Nivel de Riesgo Institucional: BAJO</div>
+
+            <!-- TARJETA -->
+            <div class="card-container">
+                <div class="phrase-card" id="card-text">
+                    "Cargando..."
+                </div>
+            </div>
+
+            <p style="margin-bottom: 1rem; color:#666; font-size: 0.9rem;">CLASIFIQUE EL IMPACTO DE ESTA FRASE:</p>
+
+            <!-- OPCIONES -->
+            <div class="actions-grid">
+                <button class="btn-action" onclick="checkAnswer('normalize')">Normaliza el acoso / Minimiza</button>
+                <button class="btn-action" onclick="checkAnswer('victim')">Culpabiliza a la Víctima</button>
+                <button class="btn-action" onclick="checkAnswer('silence')">Impone la Ley del Silencio</button>
+                <button class="btn-action" onclick="checkAnswer('hierarchy')">Abuso de Poder / Jerarquía</button>
+            </div>
+
+            <!-- FEEDBACK OVERLAY -->
+            <div class="feedback-overlay" id="feedback-modal">
+                <div class="impact-icon" id="fb-icon">💥</div>
+                <h3 class="impact-title" id="fb-title">IMPACTO CRÍTICO DETECTADO</h3>
+                <p class="impact-desc" id="fb-desc">Descripción del impacto...</p>
+                <button class="btn-next" onclick="nextPhrase()">Ver Siguiente Frase</button>
+            </div>
+        </div>
+
+        <!-- VISTA 3: REVELACIÓN -->
+        <div id="view-outro" class="view">
+            <h2 class="final-title">ANÁLISIS COMPLETADO</h2>
+            <p style="margin-bottom: 20px; font-size: 1.1rem;">Ha detectado un patrón de <strong>RIESGO INSTITUCIONAL ALTO</strong>.</p>
+            
+            <ul class="final-list">
+                <li>Las frases que analizó no son "opiniones inofensivas".</li>
+                <li>Son <strong>mecanismos de defensa</strong> del sistema para proteger al agresor.</li>
+                <li>Al repetirlas, usted se convierte en parte de la estructura que impide la denuncia.</li>
+            </ul>
+
+            <div class="highlight-box">
+                <strong style="color: var(--accent-warn);">MANDATO: DIRECTIVA PRESIDENCIAL 01 DE 2023</strong>
+                <p style="font-size: 0.9rem; margin-top: 10px; opacity: 0.9;">
+                    Las entidades de protección deben romper la cultura del silencio. 
+                    No basta con tener un protocolo escrito; es necesario erradicar el lenguaje que legitima la violencia.
+                    <br><br>
+                    <strong>La neutralidad ante estas frases es complicidad.</strong>
+                    <br><br><br>
+                    <h3><strong>¿Ha usado o escuchado alguna de estas frases en su entorno laboral?</strong>
+                    </h3>
+                </p>
+            </div>
+            
+            <button class="btn-start" style="margin-top: 2rem; border-color: white;" onclick="location.reload()">Reiniciar Simulación</button>
+        </div>
+
+    </div>
+
+    <script>
+        // --- DATA: BANCO DE FRASES ---
+        /* 
+           Categories: 
+           - normalize (Minimiza, "es un chiste")
+           - victim (Culpa a la victima, "ella se lo buscó")
+           - silence (Amenaza velada, "mejor no diga nada")
+           - hierarchy (Autoridad mal entendida, "él es el jefe")
+        */
+        const phrases = [
+            {
+                text: "“Él es así, tiene un carácter fuerte, hay que saberlo llevar.”",
+                category: "normalize",
+                impact: "NATURALIZACIÓN DE LA VIOLENCIA",
+                explain: "Convierte el maltrato en un rasgo de personalidad aceptable. Obliga a la víctima a adaptarse al agresor en lugar de exigir respeto."
+            },
+            {
+                text: "“Mire, mejor no se meta en problemas. Usted tiene contrato hasta diciembre.”",
+                category: "silence",
+                impact: "COACCIÓN LABORAL",
+                explain: "Vincula directamente la estabilidad económica con el silencio. Es una de las barreras más efectivas para impedir denuncias en el sector público."
+            },
+            {
+                text: "“Eso le pasa por vestirse así y ser tan amable con todos.”",
+                category: "victim",
+                impact: "DESPLAZAMIENTO DE LA CULPA",
+                explain: "Quita la responsabilidad al agresor y la pone sobre la conducta o apariencia de la víctima. Es revictimización pura."
+            },
+            {
+                text: "“No exagere, solo fue un chiste. Ahora ya no se puede decir nada.”",
+                category: "normalize",
+                impact: "GASLIGHTING INSTITUCIONAL",
+                explain: "Invalida la percepción de la víctima, haciéndola sentir que su malestar es irracional o exagerado."
+            },
+            {
+                text: "“Los trapos sucios se lavan en casa. No vaya a poner la queja afuera.”",
+                category: "silence",
+                impact: "PACTO DE IMPUNIDAD",
+                explain: "Apela a una falsa lealtad institucional para ocultar delitos. Protege la imagen de la entidad por encima de los derechos humanos."
+            },
+            {
+                text: "“Él es el jefe y aquí se hace lo que él diga, punto.”",
+                category: "hierarchy",
+                impact: "AUTORITARISMO TÓXICO",
+                explain: "Confunde jerarquía con impunidad. Crea zonas de poder donde el acoso se disfraza de 'instrucciones de mando'."
+            }
+        ];
+
+        // --- ESTADO DEL APP ---
+        let currentIndex = 0;
+        let riskLevel = 0; // 0 to 100
+
+        // --- FUNCIONES DE NAVEGACIÓN ---
+        function switchView(viewId) {
+            document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+        }
+
+        function startGame() {
+            currentIndex = 0;
+            riskLevel = 10;
+            updateRiskMeter();
+            loadPhrase();
+            switchView('view-game');
+        }
+
+        function loadPhrase() {
+            if (currentIndex >= phrases.length) {
+                endGame();
+                return;
+            }
+            const phraseData = phrases[currentIndex];
+            
+            // Animación de entrada
+            const card = document.getElementById('card-text');
+            card.style.opacity = 0;
+            card.style.transform = "translateY(20px)";
+            
+            setTimeout(() => {
+                card.innerText = phraseData.text;
+                card.style.opacity = 1;
+                card.style.transform = "translateY(0)";
+            }, 300);
+        }
+
+        // --- LÓGICA DE JUEGO ---
+        function checkAnswer(selectedCategory) {
+            const currentPhrase = phrases[currentIndex];
+            
+            // NOTA PEDAGÓGICA: En este diseño crítico, el estudiante debe identificar
+            // el mecanismo PREDOMINANTE. Sin embargo, para efectos de flujo,
+            // cualquier categorización negativa es un "acierto" en el sentido de que
+            // reconoce el daño. El sistema refina la respuesta.
+            
+            // Simular análisis del sistema
+            document.getElementById('app-shell').classList.add('screen-shake');
+            setTimeout(() => document.getElementById('app-shell').classList.remove('screen-shake'), 500);
+
+            showFeedback(currentPhrase);
+        }
+
+        function showFeedback(phrase) {
+            const modal = document.getElementById('feedback-modal');
+            const icon = document.getElementById('fb-icon');
+            const title = document.getElementById('fb-title');
+            const desc = document.getElementById('fb-desc');
+
+            // Actualizar contenido
+            title.innerText = phrase.impact;
+            desc.innerText = phrase.explain;
+            
+            // Efecto visual según acumulación
+            increaseRisk();
+
+            modal.classList.add('show');
+        }
+
+        function nextPhrase() {
+            document.getElementById('feedback-modal').classList.remove('show');
+            currentIndex++;
+            loadPhrase();
+        }
+
+        function increaseRisk() {
+            riskLevel += (90 / phrases.length); // Llenar barra progresivamente
+            updateRiskMeter();
+
+            // Efectos ambientales (Phase 4: Acumulación)
+            if (currentIndex > 1) {
+                document.getElementById('risk-status').innerText = "Nivel de Riesgo: MODERADO";
+                document.getElementById('risk-status').style.color = "#f1c40f";
+            }
+            if (currentIndex > 3) {
+                document.getElementById('risk-status').innerText = "Nivel de Riesgo: CRÍTICO";
+                document.getElementById('risk-status').style.color = "#e74c3c";
+                document.body.classList.add('crisis-mode'); // Cambia el fondo del body
+            }
+        }
+
+        function updateRiskMeter() {
+            document.getElementById('risk-bar').style.width = riskLevel + "%";
+        }
+
+        function endGame() {
+            switchView('view-outro');
+        }
+
+    </script>
+</body>
+</html>
