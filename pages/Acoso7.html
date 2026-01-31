@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulación Institucional: Decisiones y Consecuencias</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@300;400;600&display=swap');
+        
+        :root {
+            --color-primary: #1a1a1a;
+            --color-secondary: #2d2d2d;
+            --color-accent: #d32f2f;
+            --color-warning: #ff6b35;
+            --color-text: #e8e8e8;
+            --color-text-dim: #9e9e9e;
+            --color-bg: #0a0a0a;
+            --color-overlay: rgba(0, 0, 0, 0.85);
+            --font-display: 'IBM Plex Mono', monospace;
+            --font-body: 'IBM Plex Sans', sans-serif;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: var(--font-body);
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        /* PANTALLA INICIAL */
+        .screen {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            position: relative;
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        
+        .screen.hidden {
+            opacity: 0;
+            transform: scale(0.95);
+            pointer-events: none;
+            position: absolute;
+        }
+        
+        .screen-intro {
+            text-align: center;
+            max-width: 700px;
+        }
+        
+        .screen-intro::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(180deg, transparent 0%, rgba(211, 47, 47, 0.03) 100%),
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255, 255, 255, 0.02) 2px, rgba(255, 255, 255, 0.02) 4px);
+            z-index: -1;
+            animation: scanline 8s linear infinite;
+        }
+        
+        @keyframes scanline {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(100%); }
+        }
+        
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 2rem;
+            border: 2px solid var(--color-accent);
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--color-accent);
+            animation: pulse-border 3s ease-in-out infinite;
+        }
+        
+        @keyframes pulse-border {
+            0%, 100% { border-color: var(--color-accent); box-shadow: 0 0 0 rgba(211, 47, 47, 0); }
+            50% { border-color: var(--color-warning); box-shadow: 0 0 20px rgba(211, 47, 47, 0.3); }
+        }
+        
+        .screen-intro h1 {
+            font-family: var(--font-display);
+            font-size: clamp(1.2rem, 4vw, 1.8rem);
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+            line-height: 1.4;
+        }
+        
+        .screen-intro p {
+            font-size: clamp(1rem, 2.5vw, 1.15rem);
+            font-weight: 300;
+            margin-bottom: 1.5rem;
+            color: var(--color-text-dim);
+            line-height: 1.8;
+        }
+        
+        .screen-intro p strong {
+            color: var(--color-text);
+            font-weight: 600;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 1rem 2.5rem;
+            margin-top: 2rem;
+            background: transparent;
+            border: 2px solid var(--color-accent);
+            color: var(--color-text);
+            font-family: var(--font-display);
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--color-accent);
+            transition: left 0.3s ease;
+            z-index: -1;
+        }
+        
+        .btn:hover {
+            color: var(--color-bg);
+        }
+        
+        .btn:hover::before {
+            left: 0;
+        }
+        
+        /* SIMULACIÓN */
+        .screen-simulation {
+            flex-direction: column;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .context-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: var(--color-secondary);
+            border-bottom: 1px solid var(--color-accent);
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: var(--font-display);
+            font-size: 0.75rem;
+            z-index: 100;
+            transition: background 0.5s ease;
+        }
+        
+        .context-bar.tense {
+            background: #1a0f0f;
+            border-bottom-color: var(--color-warning);
+        }
+        
+        .scene-counter {
+            color: var(--color-text-dim);
+            letter-spacing: 1px;
+        }
+        
+        .metrics {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .metric {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.25rem;
+        }
+        
+        .metric-label {
+            font-size: 0.65rem;
+            color: var(--color-text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .metric-bar {
+            width: 120px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .metric-fill {
+            height: 100%;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1), background 0.5s ease;
+            position: relative;
+        }
+        
+        .metric-fill.trust { background: linear-gradient(90deg, #4a9eff, #1976d2); }
+        .metric-fill.support { background: linear-gradient(90deg, #66bb6a, #388e3c); }
+        .metric-fill.risk { background: linear-gradient(90deg, #ff6b35, #d32f2f); }
+        
+        .metric-fill.low { background: linear-gradient(90deg, #666, #444); }
+        
+        .scene-content {
+            margin-top: 100px;
+            padding: 2rem;
+            animation: fadeInUp 0.6s ease;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .scene-title {
+            font-family: var(--font-display);
+            font-size: clamp(0.85rem, 2vw, 1rem);
+            font-weight: 600;
+            color: var(--color-accent);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .scene-description {
+            font-size: clamp(1.1rem, 2.5vw, 1.3rem);
+            font-weight: 300;
+            line-height: 1.7;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-left: 3px solid var(--color-accent);
+        }
+        
+        .choices {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .choice {
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .choice::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 3px;
+            height: 100%;
+            background: var(--color-accent);
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .choice:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateX(5px);
+        }
+        
+        .choice:hover::before {
+            transform: scaleY(1);
+        }
+        
+        .choice-text {
+            font-size: 1.05rem;
+            font-weight: 400;
+            color: var(--color-text);
+        }
+        
+        .consequence {
+            margin-top: 3rem;
+            padding: 2rem;
+            background: rgba(211, 47, 47, 0.1);
+            border: 1px solid var(--color-accent);
+            animation: fadeIn 0.6s ease;
+            display: none;
+        }
+        
+        .consequence.visible {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .consequence-title {
+            font-family: var(--font-display);
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--color-warning);
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+            letter-spacing: 1px;
+        }
+        
+        .consequence-text {
+            font-size: 1rem;
+            line-height: 1.7;
+            color: var(--color-text-dim);
+        }
+        
+        .btn-continue {
+            margin-top: 2rem;
+            width: 100%;
+        }
+        
+        /* REVELACIÓN */
+        .screen-revelation {
+            text-align: center;
+            max-width: 800px;
+        }
+        
+        .revelation-content {
+            animation: fadeInScale 1s ease;
+        }
+        
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        .revelation-icon {
+            font-size: 4rem;
+            margin-bottom: 2rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.05); }
+        }
+        
+        .revelation-title {
+            font-family: var(--font-display);
+            font-size: clamp(1.5rem, 4vw, 2.2rem);
+            font-weight: 700;
+            margin-bottom: 2rem;
+            line-height: 1.3;
+            color: var(--color-accent);
+        }
+        
+        .revelation-text {
+            font-size: clamp(1.1rem, 2.5vw, 1.3rem);
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+            font-weight: 300;
+        }
+        
+        .revelation-text strong {
+            color: var(--color-warning);
+            font-weight: 600;
+        }
+        
+        .revelation-list {
+            text-align: left;
+            margin: 2rem 0;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-left: 3px solid var(--color-accent);
+        }
+        
+        .revelation-list li {
+            font-size: 1.05rem;
+            line-height: 1.8;
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+        
+        .revelation-list li::before {
+            content: '▸';
+            position: absolute;
+            left: 0;
+            color: var(--color-accent);
+        }
+        
+        /* CIERRE INSTITUCIONAL */
+        .screen-institutional {
+            max-width: 900px;
+        }
+        
+        .institutional-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .institutional-header h2 {
+            font-family: var(--font-display);
+            font-size: clamp(1.3rem, 3vw, 1.8rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .institutional-content {
+            display: grid;
+            gap: 2rem;
+        }
+        
+        .info-card {
+            padding: 2rem;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-left: 4px solid var(--color-accent);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .info-card:hover {
+            transform: translateX(5px);
+            box-shadow: -5px 5px 20px rgba(211, 47, 47, 0.2);
+        }
+        
+        .info-card h3 {
+            font-family: var(--font-display);
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--color-accent);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .info-card p {
+            font-size: 1rem;
+            line-height: 1.7;
+            color: var(--color-text-dim);
+        }
+        
+        .final-statement {
+            margin-top: 3rem;
+            padding: 2.5rem;
+            background: rgba(211, 47, 47, 0.15);
+            border: 2px solid var(--color-accent);
+            text-align: center;
+        }
+        
+        .final-statement p {
+            font-size: clamp(1.15rem, 2.5vw, 1.35rem);
+            font-weight: 600;
+            line-height: 1.6;
+            color: var(--color-text);
+        }
+        
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .metrics {
+                gap: 1rem;
+            }
+            
+            .metric-bar {
+                width: 80px;
+            }
+            
+            .scene-content {
+                padding: 1rem;
+            }
+            
+            .context-bar {
+                flex-direction: column;
+                gap: 0.75rem;
+                padding: 1rem;
+            }
+            
+            .revelation-list {
+                padding: 1.5rem;
+            }
+        }
+        
+        /* EFECTOS DE TENSIÓN ACUMULATIVA */
+        body.tense-1 {
+            background-color: #0d0d0d;
+        }
+        
+        body.tense-2 {
+            background-color: #121212;
+        }
+        
+        body.tense-3 {
+            background-color: #0f0808;
+        }
+        
+        body.tense-4 {
+            background-color: #0a0505;
+        }
+        
+        body.tense-5 {
+            background-color: #050202;
+        }
+    </style>
+</head>
+<body>
+    <!-- PANTALLA 1: INTRODUCCIÓN -->
+    <div class="screen screen-intro" id="screen-intro">
+        <div>
+            <div class="logo">EP</div>
+            <h1>Simulación Institucional:<br>Decisiones y Consecuencias</h1>
+            <p>Usted trabaja en una entidad de protección y seguridad.</p>
+            <p><strong>Lo que decida no será público.</strong></p>
+            <p>Pero tendrá consecuencias.</p>
+            <button class="btn" onclick="startSimulation()">Iniciar Simulación</button>
+        </div>
+    </div>
+
+    <!-- PANTALLA 2: SIMULACIÓN -->
+    <div class="screen screen-simulation hidden" id="screen-simulation">
+        <div class="context-bar" id="context-bar">
+            <div class="scene-counter" id="scene-counter">ESCENA 1 / 5</div>
+            <div class="metrics">
+                <div class="metric">
+                    <span class="metric-label">Confianza</span>
+                    <div class="metric-bar">
+                        <div class="metric-fill trust" id="metric-trust" style="width: 70%"></div>
+                    </div>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Apoyo Institucional</span>
+                    <div class="metric-bar">
+                        <div class="metric-fill support" id="metric-support" style="width: 60%"></div>
+                    </div>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Exposición al Riesgo</span>
+                    <div class="metric-bar">
+                        <div class="metric-fill risk" id="metric-risk" style="width: 30%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="scene-content" id="scene-content">
+            <!-- El contenido se cargará dinámicamente -->
+        </div>
+    </div>
+
+    <!-- PANTALLA 3: REVELACIÓN -->
+    <div class="screen screen-revelation hidden" id="screen-revelation">
+        <div class="revelation-content">
+            <div class="revelation-icon">⚠</div>
+            <h2 class="revelation-title">Ninguna de sus decisiones fue incorrecta</h2>
+            <p class="revelation-text">
+                Todas fueron <strong>racionales</strong>.<br>
+                Todas fueron respuestas <strong>adaptativas</strong> a un sistema diseñado para el silencio.
+            </p>
+            <p class="revelation-text">
+                Y todas contribuyeron al silencio.
+            </p>
+            
+            <div class="revelation-list">
+                <ul>
+                    <li>El sistema empuja sistemáticamente hacia la autocensura.</li>
+                    <li>La jerarquía transforma el hablar en un acto de riesgo personal.</li>
+                    <li>El silencio no es cobardía: es supervivencia institucional.</li>
+                    <li>Las víctimas calculan costos que el sistema ha diseñado para ser insostenibles.</li>
+                    <li>La pregunta nunca debió ser "¿por qué no denunció?"</li>
+                </ul>
+            </div>
+            
+            <p class="revelation-text" style="font-size: 1.4rem; color: var(--color-accent); margin-top: 2rem;">
+                La pregunta correcta es:<br>
+                <strong>¿Por qué el sistema hace tan costoso hablar?</strong>
+            </p>
+            
+            <button class="btn" onclick="showInstitutional()">Continuar</button>
+        </div>
+    </div>
+
+    <!-- PANTALLA 4: CIERRE INSTITUCIONAL -->
+    <div class="screen screen-institutional hidden" id="screen-institutional">
+        <div class="institutional-header">
+            <h2>Cuando el riesgo es estructural</h2>
+            <p style="font-size: 1.15rem; color: var(--color-text-dim);">
+                La prevención no puede depender de la valentía individual
+            </p>
+        </div>
+        
+        <div class="institutional-content">
+            <div class="info-card">
+                <h3>Directiva Presidencial 01 de 2023</h3>
+                <p>
+                    Establece lineamientos para la prevención, atención y erradicación de las violencias 
+                    por razón de sexo y género en el sector público. El silencio se rompe con protocolos 
+                    efectivos, no con exhortaciones morales.
+                </p>
+            </div>
+            
+            <div class="info-card">
+                <h3>Enfoque de Género y No Revictimización</h3>
+                <p>
+                    Reconocer que el acoso laboral y sexual operan en estructuras de poder. 
+                    La revictimización comienza cuando se responsabiliza a quien calla, 
+                    ignorando que callar es la respuesta racional a un sistema hostil.
+                </p>
+            </div>
+            
+            <div class="info-card">
+                <h3>Protocolos Institucionales Efectivos</h3>
+                <p>
+                    Canales confidenciales, investigaciones imparciales, protección real contra represalias, 
+                    consecuencias para agresores. No basta con "puertas abiertas" cuando abrir la puerta 
+                    significa exponerse al despido, el aislamiento o la desacreditación.
+                </p>
+            </div>
+            
+            <div class="info-card">
+                <h3>Responsabilidad Institucional</h3>
+                <p>
+                    Si el silencio es sistémico, la solución no puede ser individual. 
+                    Las entidades deben transformar las condiciones que hacen del silencio 
+                    una estrategia de autoprotección. El cambio es estructural o es retórica.
+                </p>
+            </div>
+        </div>
+        
+        <div class="final-statement">
+            <p>
+                El silencio frente al acoso no es una falla de quienes lo viven.<br>
+                Es el funcionamiento esperado de un sistema que no ha sido transformado.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // ESTADO DEL JUEGO
+        const gameState = {
+            currentScene: 0,
+            metrics: {
+                trust: 70,
+                support: 60,
+                risk: 30
+            },
+            decisions: []
+        };
+
+        // ESCENAS DE LA SIMULACIÓN
+        const scenes = [
+            {
+                title: "Escena 1: Comentario Inapropiado",
+                description: "Durante una reunión, su superior directo hace un comentario sobre la apariencia física de una compañera. Otros ríen incómodamente. Usted siente que algo no está bien, pero nadie dice nada.",
+                choices: [
+                    {
+                        text: "Ignorar el comentario y continuar con la reunión",
+                        consequence: "Nadie nota su incomodidad. La reunión continúa. Usted aprende que estos comentarios son 'normales'.",
+                        impact: { trust: -5, support: 0, risk: 0 }
+                    },
+                    {
+                        text: "Cambiar de tema diplomáticamente",
+                        consequence: "Su superior lo mira con extrañeza. Alguien susurra que usted 'no tiene sentido del humor'. El comentario queda registrado en su memoria como una línea que no se debe cruzar.",
+                        impact: { trust: -8, support: -5, risk: +10 }
+                    },
+                    {
+                        text: "Expresar incomodidad en privado después de la reunión",
+                        consequence: "Un compañero le advierte: 'Es mejor no meterse en eso'. Usted se siente aislado. Su superior se entera y su relación se enfría.",
+                        impact: { trust: -15, support: -10, risk: +15 }
+                    }
+                ]
+            },
+            {
+                title: "Escena 2: Broma Normalizada",
+                description: "En el chat grupal de trabajo, un colega comparte un meme sexista. Varios reaccionan con risas. Usted sabe que esto viola el código de ética, pero es solo 'una broma'.",
+                choices: [
+                    {
+                        text: "No reaccionar y seguir adelante",
+                        consequence: "El chat continúa. Más memes se comparten. Usted entiende que este es el 'ambiente laboral' y que quejarse sería 'exagerado'.",
+                        impact: { trust: -5, support: -5, risk: +5 }
+                    },
+                    {
+                        text: "Escribir en privado a quien publicó el meme",
+                        consequence: "Recibe una respuesta defensiva: '¿No puedes tomar una broma?' Otros se enteran. Su nombre circula como 'alguien problemático'.",
+                        impact: { trust: -12, support: -8, risk: +18 }
+                    },
+                    {
+                        text: "Salir silenciosamente del grupo",
+                        consequence: "Su supervisor pregunta por qué salió. No tiene una respuesta que no lo ponga en riesgo. Vuelve a entrar. El mensaje es claro: participar es obligatorio.",
+                        impact: { trust: -10, support: -12, risk: +12 }
+                    }
+                ]
+            },
+            {
+                title: "Escena 3: Advertencia Informal",
+                description: "Un compañero de confianza se acerca discretamente: 'Vi que miraste raro cuando el jefe hizo ese comentario. Te recomiendo que no te metas en problemas. Aquí las cosas son así y quien habla... ya sabes.'",
+                choices: [
+                    {
+                        text: "Agradecer el consejo y mantenerse en silencio",
+                        consequence: "Ha aprendido la regla no escrita. El silencio se vuelve su estrategia. Es funcional. Es racional. Es sobrevivir.",
+                        impact: { trust: -8, support: -8, risk: +8 }
+                    },
+                    {
+                        text: "Preguntar qué pasó con quienes hablaron antes",
+                        consequence: "Su compañero baja la voz: 'Traslados, evaluaciones bajas, aislamiento. No vale la pena'. Usted entiende el costo real de hablar.",
+                        impact: { trust: -15, support: -15, risk: +20 }
+                    }
+                ]
+            },
+            {
+                title: "Escena 4: Silencio de la Jerarquía",
+                description: "Una compañera es transferida abruptamente a otra área tras quejarse de un superior. Oficialmente, es una 'reorganización'. Nadie pregunta. El director de recursos humanos mira hacia otro lado.",
+                choices: [
+                    {
+                        text: "Asumir que la transferencia es legítima",
+                        consequence: "Es más fácil creer que hay razones que no conoce. Cuestionar sería implicarse. El sistema recompensa no ver.",
+                        impact: { trust: -10, support: -12, risk: +10 }
+                    },
+                    {
+                        text: "Hablar en privado con la compañera transferida",
+                        consequence: "Ella le dice: 'No valió la pena. Perdí mi puesto, mi reputación. Ahora todos me evitan'. Usted ha visto el precio. El mensaje es cristalino.",
+                        impact: { trust: -18, support: -18, risk: +25 }
+                    },
+                    {
+                        text: "Guardar silencio y evitar contacto con ella",
+                        consequence: "Otros hacen lo mismo. La compañera queda aislada. Usted es parte del sistema que la castigó. No por crueldad, sino por supervivencia.",
+                        impact: { trust: -12, support: -15, risk: +15 }
+                    }
+                ]
+            },
+            {
+                title: "Escena 5: Decisión Final",
+                description: "Usted presencia directamente una situación grave de acoso sexual hacia una persona joven recién llegada. Esta vez no hay ambigüedad. Es evidente. Pero también sabe todo lo que ha aprendido: el costo de hablar es real, medible, inevitable.",
+                choices: [
+                    {
+                        text: "Reportar formalmente lo ocurrido",
+                        consequence: "El proceso es largo, desgastante. Se le pregunta por qué no habló antes. Su credibilidad es cuestionada. Se filtra su nombre. El acosador continúa en su puesto mientras 'se investiga'. Usted enfrenta el aislamiento que había visto en otros.",
+                        impact: { trust: -25, support: -30, risk: +40 }
+                    },
+                    {
+                        text: "Ofrecer apoyo privado a la víctima sin reportar",
+                        consequence: "Ella agradece pero está aterrada. No quiere denunciar. Ha visto lo que pasó con otros. Usted comprende: el sistema ya ganó antes de que algo ocurra.",
+                        impact: { trust: -15, support: -20, risk: +25 }
+                    },
+                    {
+                        text: "No hacer nada y seguir con su trabajo",
+                        consequence: "Es la decisión más racional dado todo lo que ha aprendido. Protege su empleo, su estabilidad. El silencio es, en este sistema, la opción menos costosa. Y usted lo sabe. Y por eso duele.",
+                        impact: { trust: -20, support: -25, risk: +20 }
+                    }
+                ]
+            }
+        ];
+
+        // FUNCIONES
+        function startSimulation() {
+            document.getElementById('screen-intro').classList.add('hidden');
+            document.getElementById('screen-simulation').classList.remove('hidden');
+            loadScene(0);
+        }
+
+        function loadScene(sceneIndex) {
+            const scene = scenes[sceneIndex];
+            gameState.currentScene = sceneIndex;
+            
+            // Actualizar contador
+            document.getElementById('scene-counter').textContent = `ESCENA ${sceneIndex + 1} / ${scenes.length}`;
+            
+            // Aplicar tensión visual progresiva
+            document.body.className = `tense-${sceneIndex + 1}`;
+            if (sceneIndex >= 2) {
+                document.getElementById('context-bar').classList.add('tense');
+            }
+            
+            // Construir contenido
+            const content = `
+                <div class="scene-title">${scene.title}</div>
+                <div class="scene-description">${scene.description}</div>
+                <div class="choices" id="choices">
+                    ${scene.choices.map((choice, index) => `
+                        <div class="choice" onclick="makeChoice(${sceneIndex}, ${index})">
+                            <div class="choice-text">${choice.text}</div>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="consequence" id="consequence"></div>
+            `;
+            
+            document.getElementById('scene-content').innerHTML = content;
+        }
+
+        function makeChoice(sceneIndex, choiceIndex) {
+            const scene = scenes[sceneIndex];
+            const choice = scene.choices[choiceIndex];
+            
+            // Guardar decisión
+            gameState.decisions.push({
+                scene: sceneIndex,
+                choice: choiceIndex,
+                text: choice.text
+            });
+            
+            // Actualizar métricas
+            updateMetrics(choice.impact);
+            
+            // Deshabilitar opciones
+            document.getElementById('choices').style.opacity = '0.3';
+            document.getElementById('choices').style.pointerEvents = 'none';
+            
+            // Mostrar consecuencia
+            const consequenceDiv = document.getElementById('consequence');
+            consequenceDiv.innerHTML = `
+                <div class="consequence-title">Consecuencia</div>
+                <div class="consequence-text">${choice.consequence}</div>
+                ${sceneIndex < scenes.length - 1 
+                    ? '<button class="btn btn-continue" onclick="nextScene()">Continuar</button>'
+                    : '<button class="btn btn-continue" onclick="showRevelation()">Finalizar Simulación</button>'
+                }
+            `;
+            consequenceDiv.classList.add('visible');
+        }
+
+        function updateMetrics(impact) {
+            // Actualizar valores
+            gameState.metrics.trust = Math.max(0, Math.min(100, gameState.metrics.trust + impact.trust));
+            gameState.metrics.support = Math.max(0, Math.min(100, gameState.metrics.support + impact.support));
+            gameState.metrics.risk = Math.max(0, Math.min(100, gameState.metrics.risk + impact.risk));
+            
+            // Animar barras
+            document.getElementById('metric-trust').style.width = gameState.metrics.trust + '%';
+            document.getElementById('metric-support').style.width = gameState.metrics.support + '%';
+            document.getElementById('metric-risk').style.width = gameState.metrics.risk + '%';
+            
+            // Cambiar colores si están muy bajos
+            if (gameState.metrics.trust < 30) {
+                document.getElementById('metric-trust').classList.add('low');
+            }
+            if (gameState.metrics.support < 30) {
+                document.getElementById('metric-support').classList.add('low');
+            }
+        }
+
+        function nextScene() {
+            const nextIndex = gameState.currentScene + 1;
+            if (nextIndex < scenes.length) {
+                loadScene(nextIndex);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function showRevelation() {
+            document.getElementById('screen-simulation').classList.add('hidden');
+            document.getElementById('screen-revelation').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function showInstitutional() {
+            document.getElementById('screen-revelation').classList.add('hidden');
+            document.getElementById('screen-institutional').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
