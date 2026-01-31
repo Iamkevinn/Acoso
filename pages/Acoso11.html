@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA - Activación de Rutas de Atención | Acoso Laboral y Sexual</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-institucional: #1a3a52;
+            --color-institucional-dark: #0f2438;
+            --color-alerta: #c41e3a;
+            --color-advertencia: #d97706;
+            --color-exito: #059669;
+            --color-neutro: #475569;
+            --color-fondo: #f8fafc;
+            --color-papel: #ffffff;
+            --color-texto: #1e293b;
+            --color-texto-suave: #64748b;
+            --sombra-sutil: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+            --sombra-media: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+            --sombra-elevada: 0 10px 15px rgba(0,0,0,0.1), 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+            background: linear-gradient(135deg, #e2e8f0 0%, #f1f5f9 100%);
+            color: var(--color-texto);
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Header Institucional */
+        .header {
+            background: linear-gradient(135deg, var(--color-institucional-dark) 0%, var(--color-institucional) 100%);
+            color: white;
+            padding: 2.5rem 0;
+            box-shadow: var(--sombra-elevada);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            opacity: 0.5;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header-title {
+            font-family: 'IBM Plex Serif', serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .header-subtitle {
+            font-size: 1.125rem;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+
+        .header-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.15);
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            margin-top: 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        /* Screens */
+        .screen {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Intro Screen */
+        .intro-card {
+            background: var(--color-papel);
+            border-radius: 12px;
+            padding: 3rem;
+            margin: 3rem auto;
+            max-width: 900px;
+            box-shadow: var(--sombra-elevada);
+            border-left: 6px solid var(--color-institucional);
+        }
+
+        .intro-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--color-institucional) 0%, var(--color-institucional-dark) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 2rem;
+            box-shadow: var(--sombra-media);
+        }
+
+        .intro-icon svg {
+            width: 40px;
+            height: 40px;
+            fill: white;
+        }
+
+        h2 {
+            font-family: 'IBM Plex Serif', serif;
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            color: var(--color-institucional);
+            font-weight: 700;
+        }
+
+        .context-text {
+            font-size: 1.125rem;
+            line-height: 1.8;
+            margin-bottom: 2rem;
+            color: var(--color-texto);
+        }
+
+        .alert-box {
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            border-left: 4px solid var(--color-alerta);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 2rem 0;
+        }
+
+        .alert-box strong {
+            color: var(--color-alerta);
+            font-weight: 600;
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 1.05rem;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--color-institucional) 0%, var(--color-institucional-dark) 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2.5rem;
+            font-size: 1.125rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--sombra-media);
+            font-family: 'IBM Plex Sans', sans-serif;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--sombra-elevada);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-center {
+            display: block;
+            margin: 2rem auto;
+            text-align: center;
+        }
+
+        /* Mapa de Ruta */
+        .route-map {
+            background: var(--color-papel);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: var(--sombra-elevada);
+        }
+
+        .route-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .route-stages {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            position: relative;
+            margin: 3rem 0;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+
+        .route-stages::before {
+            content: '';
+            position: absolute;
+            top: 50px;
+            left: 10%;
+            right: 10%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--color-institucional) 0%, var(--color-exito) 100%);
+            z-index: 0;
+        }
+
+        .stage {
+            flex: 1;
+            min-width: 180px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .stage:hover .stage-circle {
+            transform: scale(1.1);
+        }
+
+        .stage-circle {
+            width: 100px;
+            height: 100px;
+            background: white;
+            border: 4px solid var(--color-institucional);
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--color-institucional);
+            box-shadow: var(--sombra-media);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .stage.completed .stage-circle {
+            background: var(--color-exito);
+            border-color: var(--color-exito);
+            color: white;
+        }
+
+        .stage.active .stage-circle {
+            background: var(--color-institucional);
+            color: white;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(26, 58, 82, 0.4); }
+            50% { box-shadow: 0 0 0 15px rgba(26, 58, 82, 0); }
+        }
+
+        .stage-title {
+            font-weight: 600;
+            color: var(--color-institucional);
+            margin-bottom: 0.5rem;
+            font-size: 1.05rem;
+        }
+
+        .stage-desc {
+            font-size: 0.875rem;
+            color: var(--color-texto-suave);
+            line-height: 1.4;
+        }
+
+        /* Dilema Cards */
+        .dilema-container {
+            background: var(--color-papel);
+            border-radius: 12px;
+            padding: 3rem;
+            margin: 2rem 0;
+            box-shadow: var(--sombra-elevada);
+        }
+
+        .dilema-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .dilema-tag {
+            display: inline-block;
+            background: var(--color-institucional);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .dilema-scenario {
+            background: #f8fafc;
+            border-left: 4px solid var(--color-advertencia);
+            padding: 2rem;
+            border-radius: 8px;
+            margin: 2rem 0;
+            font-size: 1.05rem;
+            line-height: 1.8;
+        }
+
+        .dilema-question {
+            font-family: 'IBM Plex Serif', serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--color-institucional);
+            margin: 2rem 0 1.5rem;
+        }
+
+        .options-grid {
+            display: grid;
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .option-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .option-card:hover {
+            border-color: var(--color-institucional);
+            box-shadow: var(--sombra-media);
+            transform: translateY(-2px);
+        }
+
+        .option-card.selected {
+            border-color: var(--color-institucional);
+            background: #f0f9ff;
+        }
+
+        .option-label {
+            font-weight: 600;
+            color: var(--color-institucional);
+            margin-bottom: 0.5rem;
+            font-size: 1.05rem;
+        }
+
+        .option-text {
+            color: var(--color-texto);
+            line-height: 1.6;
+        }
+
+        /* Feedback */
+        .feedback-card {
+            background: var(--color-papel);
+            border-radius: 12px;
+            padding: 3rem;
+            margin: 2rem 0;
+            box-shadow: var(--sombra-elevada);
+            border-left: 6px solid var(--color-alerta);
+        }
+
+        .feedback-card.positive {
+            border-left-color: var(--color-exito);
+        }
+
+        .feedback-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2rem;
+        }
+
+        .feedback-icon.negative {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+        }
+
+        .feedback-icon.positive {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+        }
+
+        .feedback-title {
+            font-family: 'IBM Plex Serif', serif;
+            font-size: 1.75rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+        }
+
+        .feedback-title.negative {
+            color: var(--color-alerta);
+        }
+
+        .feedback-title.positive {
+            color: var(--color-exito);
+        }
+
+        .feedback-explanation {
+            font-size: 1.05rem;
+            line-height: 1.8;
+            margin-bottom: 2rem;
+            color: var(--color-texto);
+        }
+
+        .normative-box {
+            background: #f8fafc;
+            border-left: 4px solid var(--color-institucional);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+
+        .normative-box strong {
+            color: var(--color-institucional);
+            font-weight: 600;
+            display: block;
+            margin-bottom: 0.75rem;
+        }
+
+        .normative-box ul {
+            margin-left: 1.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .normative-box li {
+            margin-bottom: 0.5rem;
+            color: var(--color-texto);
+        }
+
+        /* Conclusión */
+        .conclusion-card {
+            background: linear-gradient(135deg, var(--color-institucional-dark) 0%, var(--color-institucional) 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 4rem;
+            margin: 3rem 0;
+            box-shadow: var(--sombra-elevada);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .conclusion-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            opacity: 0.3;
+        }
+
+        .conclusion-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .conclusion-title {
+            font-family: 'IBM Plex Serif', serif;
+            font-size: 2.25rem;
+            margin-bottom: 2rem;
+            font-weight: 700;
+        }
+
+        .conclusion-text {
+            font-size: 1.2rem;
+            line-height: 1.9;
+            margin-bottom: 1.5rem;
+            opacity: 0.95;
+        }
+
+        .key-message {
+            background: rgba(255, 255, 255, 0.1);
+            border-left: 4px solid white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 2rem 0;
+            font-weight: 500;
+            font-size: 1.125rem;
+        }
+
+        .btn-white {
+            background: white;
+            color: var(--color-institucional);
+            font-weight: 600;
+        }
+
+        .btn-white:hover {
+            background: #f8fafc;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            background: white;
+            padding: 1rem 2rem;
+            box-shadow: var(--sombra-sutil);
+            margin-bottom: 2rem;
+            border-radius: 8px;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--color-institucional) 0%, var(--color-exito) 100%);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .progress-text {
+            font-size: 0.875rem;
+            color: var(--color-texto-suave);
+            text-align: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-title {
+                font-size: 1.75rem;
+            }
+
+            .intro-card,
+            .dilema-container,
+            .feedback-card {
+                padding: 2rem;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+
+            .route-stages {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .route-stages::before {
+                display: none;
+            }
+
+            .stage {
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .conclusion-card {
+                padding: 2rem;
+            }
+
+            .conclusion-title {
+                font-size: 1.75rem;
+            }
+        }
+
+        /* Animaciones de entrada */
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-in {
+            animation: slideUp 0.6s ease-out forwards;
+        }
+
+        .delay-1 { animation-delay: 0.1s; opacity: 0; }
+        .delay-2 { animation-delay: 0.2s; opacity: 0; }
+        .delay-3 { animation-delay: 0.3s; opacity: 0; }
+        .delay-4 { animation-delay: 0.4s; opacity: 0; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1 class="header-title">Activación de Rutas de Atención</h1>
+            <p class="header-subtitle">Acoso Laboral y Sexual en el Sector Público Colombiano</p>
+            <div class="header-badge">Directiva Presidencial 01 de 2023 | Ley 1257 de 2008 | Ley 1761 de 2016</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Pantalla 1: Introducción -->
+        <div id="screen-intro" class="screen active">
+            <div class="intro-card animate-in">
+                <div class="intro-icon">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+                    </svg>
+                </div>
+
+                <h2 class="animate-in delay-1">Contexto Institucional</h2>
+                
+                <p class="context-text animate-in delay-2">
+                    Es lunes, 8:30 a.m. Usted es funcionario de la Oficina de Talento Humano de una entidad pública. Acaba de recibir una comunicación confidencial: una servidora pública reporta presunto acoso laboral y sexual por parte de su superior jerárquico.
+                </p>
+
+                <p class="context-text animate-in delay-2">
+                    El caso involucra comentarios de naturaleza sexual reiterados, solicitudes de encuentros fuera del horario laboral, y presión para acceder a dichas solicitudes mediante amenazas veladas sobre su estabilidad laboral.
+                </p>
+
+                <div class="alert-box animate-in delay-3">
+                    <strong>⚠ Advertencia Crítica</strong>
+                    Las decisiones que tome en los próximos minutos determinarán si esta persona recibe protección efectiva o si, por el contrario, es revictimizada por el sistema institucional que debería ampararla.
+                </div>
+
+                <p class="context-text animate-in delay-4">
+                    La Directiva Presidencial 01 de 2023 establece la obligación de activar protocolos de prevención, atención y sanción frente a violencias basadas en género. La Ley 1257 de 2008 exige medidas inmediatas de protección y confidencialidad. La Ley 1761 de 2016 (Ley Rosa Elvira Cely) impone al Estado una debida diligencia reforzada.
+                </p>
+
+                <button class="btn btn-center animate-in delay-4" onclick="goToScreen('screen-route-map')">
+                    Iniciar Simulación de Ruta
+                </button>
+            </div>
+        </div>
+
+        <!-- Pantalla 2: Mapa de Ruta -->
+        <div id="screen-route-map" class="screen">
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress" style="width: 20%"></div>
+                </div>
+                <p class="progress-text">Progreso del Caso: <span id="progress-label">Recepción Inicial</span></p>
+            </div>
+
+            <div class="route-map">
+                <div class="route-header">
+                    <h2>Ruta Institucional de Atención</h2>
+                    <p class="context-text">Cada etapa representa una decisión crítica que impacta directamente la protección de la persona denunciante.</p>
+                </div>
+
+                <div class="route-stages">
+                    <div class="stage active" id="stage-1">
+                        <div class="stage-circle">1</div>
+                        <div class="stage-title">Recepción</div>
+                        <div class="stage-desc">Escucha inicial confidencial</div>
+                    </div>
+
+                    <div class="stage" id="stage-2">
+                        <div class="stage-circle">2</div>
+                        <div class="stage-title">Protección</div>
+                        <div class="stage-desc">Medidas inmediatas</div>
+                    </div>
+
+                    <div class="stage" id="stage-3">
+                        <div class="stage-circle">3</div>
+                        <div class="stage-title">Enfoque</div>
+                        <div class="stage-desc">Diferencial y género</div>
+                    </div>
+
+                    <div class="stage" id="stage-4">
+                        <div class="stage-circle">4</div>
+                        <div class="stage-title">Activación</div>
+                        <div class="stage-desc">Ruta disciplinaria</div>
+                    </div>
+
+                    <div class="stage" id="stage-5">
+                        <div class="stage-circle">5</div>
+                        <div class="stage-title">Seguimiento</div>
+                        <div class="stage-desc">Protección continua</div>
+                    </div>
+                </div>
+
+                <button class="btn btn-center" onclick="goToScreen('screen-dilema-1')">
+                    Comenzar con el Primer Dilema
+                </button>
+            </div>
+        </div>
+
+        <!-- Pantalla 3: Dilema 1 - Escucha Inicial -->
+        <div id="screen-dilema-1" class="screen">
+            <div class="dilema-container">
+                <div class="dilema-header">
+                    <span class="dilema-tag">DILEMA 1: ESCUCHA INICIAL</span>
+                    <h2>Primera Respuesta Institucional</h2>
+                </div>
+
+                <div class="dilema-scenario">
+                    La servidora llega a su oficina visiblemente afectada. Le menciona que su jefe le ha enviado mensajes por WhatsApp de contenido sexual y que la citó el viernes pasado a una reunión fuera de la oficina, donde le dijo: <em>"Si quieres seguir aquí, tienes que ser más colaboradora conmigo"</em>.
+                    <br><br>
+                    Ella está preocupada porque su contrato es de provisionalidad y teme represalias.
+                </div>
+
+                <p class="dilema-question">¿Cuál debe ser su primera acción?</p>
+
+                <div class="options-grid">
+                    <div class="option-card" onclick="selectOption('dilema-1', 'a')">
+                        <div class="option-label">Opción A</div>
+                        <div class="option-text">
+                            Solicitar a la servidora que presente la denuncia por escrito detallando todos los hechos, y que adjunte las pruebas (capturas de pantalla). Mientras tanto, le indica que debe seguir asistiendo normalmente a su lugar de trabajo.
+                        </div>
+                    </div>
+
+                    <div class="option-card" onclick="selectOption('dilema-1', 'b')">
+                        <div class="option-label">Opción B</div>
+                        <div class="option-text">
+                            Agendar una reunión con el jefe mencionado para escuchar "ambas versiones" antes de tomar cualquier medida, informándole que ha llegado una queja sobre su conducta.
+                        </div>
+                    </div>
+
+                    <div class="option-card" onclick="selectOption('dilema-1', 'c')">
+                        <div class="option-label">Opción C</div>
+                        <div class="option-text">
+                            Escuchar activamente sin juzgar, garantizar confidencialidad, informarle sobre sus derechos, activar inmediatamente medidas provisionales de protección (como reubicación temporal o trabajo remoto), y documentar la queja respetando su relato sin exigir "pruebas" en este momento inicial.
+                        </div>
+                    </div>
+
+                    <div class="option-card" onclick="selectOption('dilema-1', 'd')">
+                        <div class="option-label">Opción D</div>
+                        <div class="option-text">
+                            Sugerirle que primero intente resolver el problema de manera informal, hablando directamente con su jefe para "aclarar el malentendido", antes de formalizar la denuncia.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pantalla 4: Feedback Dilema 1 -->
+        <div id="screen-feedback-1" class="screen">
+            <!-- El contenido se generará dinámicamente -->
+        </div>
+
+        <!-- Pantalla 5: Dilema 2 - Protección vs Exposición -->
+        <div id="screen-dilema-2" class="screen">
+            <div class="dilema-container">
+                <div class="dilema-header">
+                    <span class="dilema-tag">DILEMA 2: CONFIDENCIALIDAD Y PROTECCIÓN</span>
+                    <h2>Tensión entre Investigación y Reserva</h2>
+                </div>
+
+                <div class="dilema-scenario">
+                    Para continuar con el proceso, la Oficina Jurídica le solicita que informe al superior jerárquico del presunto agresor sobre la existencia de la queja, argumentando que es necesario para garantizar el debido proceso y el derecho de defensa.
+                    <br><br>
+                    Usted sabe que el superior jerárquico tiene una relación cercana con el presunto agresor y que la servidora denunciante trabaja en un equipo pequeño donde su identidad podría ser fácilmente deducida.
+                </div>
+
+                <p class="dilema-question">¿Cómo procede?</p>
+
+                <div class="options-grid">
+                    <div class="option-card" onclick="selectOption('dilema-2', 'a')">
+                        <div class="option-label">Opción A</div>
+                        <div class="option-text">
+                            Informa al superior jerárquico del presunto agresor sobre la queja, mencionando que proviene de una servidora de su equipo, para que "esté al tanto de la situación".
+                        </div>
+                    </div>
+
+                    <div class="option-card" onclick="selectOption('dilema-2', 'b')">
+                        <div class="option-label">Opción B</div>
+                        <div class="option-text">
+                            Rechaza la solicitud de la Oficina Jurídica explicando que la Ley 1257 exige confidencialidad y que informar al superior jerárquico del presunto agresor pone en riesgo a la denunciante. Propone activar directamente la ruta disciplinaria manteniendo reserva sobre la identidad hasta que sea estrictamente necesario revelarla.
+                        </div>
+                    </div>
+
+                    <div class="option-card" onclick="selectOption('dilema-2', 'c')">
+                        <div class="option-label">Opción C</div>
+                        <div class="option-text">
+                            Envía un correo electrónico general a todo el equipo donde trabaja la denunciante, informando que se está investigando un caso de presunto acoso y solicitando colaboración, sin mencionar nombres.
+                        </div>
+                    </div>
+
+                    <div class="option-card" onclick="selectOption('dilema-2', 'd')">
+                        <div class="option-label">Opción D</div>
+                        <div class="option-text">
+                            Consulta con la denunciante antes de tomar cualquier decisión que pueda afectar su confidencialidad, le explica los riesgos de cada opción, y diseña con ella un plan de protección que minimice su exposición mientras se adelanta la investigación.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pantalla 6: Feedback Dilema 2 -->
+        <div id="screen-feedback-2" class="screen">
+            <!-- El contenido se generará dinámicamente -->
+        </div>
+
+        <!-- Pantalla 7: Dilema 3 - Enfoque Diferencial -->
+        <div id="screen-dilema-3" class="screen">
+            <div class="dilema-container">
+                <div class="dilema-header">
+                    <span class="dilema-tag">DILEMA 3: ENFOQUE DIFERENCIAL</span>
+                    <h2>Interseccionalidad y Protección Reforzada</h2>
+                </div>
+
+                <div class="dilema-scenario">
+                    Durante el proceso, usted se entera de que la servidora denunciante es una mujer indígena, madre cabeza de familia, con un contrato de provisionalidad que vence en tres meses. 
+                    <br><br>
+                    Ella menciona que teme que la despidan al finalizar su contrato y que en su comunidad ya hubo otro caso similar que no fue atendido. Expresa desconfianza hacia las autoridades institucionales.
+                    <br><br>
+                    El presunto agresor, por su parte, es un funcionario de carrera con 15 años de antigüedad, conocido en la entidad y con influencia política.
+                </div>
+
+                <p class="dilema-question">¿Cómo aplica el enfoque diferencial en este caso?</p>
+
+                <div class="options-grid">
+                    <div class="option-card" onclick="selectOption('dilema-3', 'a')">
+                        <div class="option-label">Opción A</div>
+                        <div class="option-text">
+                            Trata el caso como cualquier otro, aplicando el procedimiento estándar sin hacer distinciones, bajo el principio de igualdad ante la ley.
+                        </div>
+                    </div>
+
+                    <div class="option-card" onclick="selectOption('dilema-3', 'b')">
+                        <div class="option-label">Opción B</div>
+                        <div class="option-text">
+                            Reconoce las condiciones de vulnerabilidad agravada (mujer indígena, contrato temporal, madre cabeza de familia, asimetría de poder), garantiza acompañamiento culturalmente pertinente, asegura que su contrato no será afectado por la denuncia, y fortalece las medidas de protección considerando su contexto específico.
+                        </div>
+                    </div>
+
+                    <div class="option-card" onclick="selectOption('dilema-3', 'c')">
+                        <div class="option-label">Opción C</div>
+                        <div class="option-text">
+                            Le sugiere que, dada su situación de provisionalidad, sería más conveniente para ella no continuar con la denuncia formal para evitar complicaciones con su contrato.
+                        </div>
+                    </div>
+
+                    <div class="option-card" onclick="selectOption('dilema-3', 'd')">
+                        <div class="option-label">Opción D</div>
+                        <div class="option-text">
+                            Informa al área de contratación sobre la denuncia para que "tengan en cuenta" su situación contractual, sin especificar qué tipo de consideración deberían tener.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pantalla 8: Feedback Dilema 3 -->
+        <div id="screen-feedback-3" class="screen">
+            <!-- El contenido se generará dinámicamente -->
+        </div>
+
+        <!-- Pantalla 9: Conclusión -->
+        <div id="screen-conclusion" class="screen">
+            <div class="conclusion-card">
+                <div class="conclusion-content">
+                    <h2 class="conclusion-title">Reflexión Final: La Responsabilidad Institucional</h2>
+                    
+                    <p class="conclusion-text">
+                        Ha completado el simulador de activación de rutas de atención frente al acoso laboral y sexual. Las decisiones que tomó en este ejercicio reflejan dilemas reales que enfrentan diariamente los funcionarios públicos en Colombia.
+                    </p>
+
+                    <div class="key-message">
+                        <strong>Mensaje central:</strong> La Directiva Presidencial 01 de 2023 no existe para generar burocracia. Existe porque la cultura institucional, por sí sola, no protege a las víctimas de violencias basadas en género.
+                    </div>
+
+                    <p class="conclusion-text">
+                        Sin decisiones responsables, informadas y valientes por parte de funcionarios como usted, los protocolos no se activan. Las rutas quedan en el papel. Y las personas quedan desprotegidas.
+                    </p>
+
+                    <p class="conclusion-text">
+                        <strong>La debida diligencia del Estado</strong> no es un concepto abstracto. Es la obligación concreta de cada servidor público de actuar con prontitud, eficacia y enfoque de derechos cuando recibe una queja.
+                    </p>
+
+                    <div class="key-message">
+                        <strong>Marco normativo aplicable:</strong><br>
+                        • Directiva Presidencial 01 de 2023: Prevención, atención y sanción de violencias basadas en género<br>
+                        • Ley 1257 de 2008: Protección, confidencialidad y no revictimización<br>
+                        • Ley 1761 de 2016 (Ley Rosa Elvira Cely): Debida diligencia reforzada del Estado<br>
+                        • Plan Nacional de Desarrollo: Enfoque de género en la gestión pública
+                    </div>
+
+                    <p class="conclusion-text" style="font-size: 1.3rem; margin-top: 2rem;">
+                        <strong>Su rol no es neutral. Su decisión impacta vidas.</strong>
+                    </p>
+
+                    <button class="btn btn-white btn-center" onclick="goToScreen('screen-intro'); resetSimulation()">
+                        Reiniciar Simulador
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Estado del simulador
+        let currentStage = 1;
+        let selectedOptions = {
+            'dilema-1': null,
+            'dilema-2': null,
+            'dilema-3': null
+        };
+
+        // Navegación entre pantallas
+        function goToScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Selección de opciones
+        function selectOption(dilema, option) {
+            selectedOptions[dilema] = option;
+            
+            // Resaltar opción seleccionada
+            const container = event.target.closest('.dilema-container');
+            container.querySelectorAll('.option-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            event.target.closest('.option-card').classList.add('selected');
+
+            // Mostrar feedback después de un breve delay
+            setTimeout(() => {
+                showFeedback(dilema, option);
+            }, 800);
+        }
+
+        // Mostrar retroalimentación
+        function showFeedback(dilema, option) {
+            const feedbacks = {
+                'dilema-1': {
+                    'a': {
+                        type: 'negative',
+                        title: 'Decisión que Revictimiza',
+                        explanation: 'Exigir pruebas documentales en la primera atención y solicitar que continúe expuesta al presunto agresor constituye revictimización. La persona denunciante no tiene la carga de "probar" su relato en esta etapa inicial, y exponerla a seguir en contacto con quien denuncia es una falta grave a su deber de protección.',
+                        normative: 'Principio de No Revictimización - Ley 1257 de 2008: El Estado debe evitar que la persona afectada vuelva a experimentar el daño causado. Exigir pruebas inmediatas y mantener la exposición vulnera este principio fundamental.',
+                        impact: 'Esta decisión aumenta el riesgo de que la denunciante desista, se agrave su situación de salud mental, o sufra represalias directas.'
+                    },
+                    'b': {
+                        type: 'negative',
+                        title: 'Violación de Confidencialidad y Protección',
+                        explanation: 'Informar al presunto agresor en esta etapa inicial constituye una violación grave del principio de confidencialidad. Esto expone a la denunciante a represalias inmediatas, destruye la confianza en el sistema institucional y puede generar obstrucción de la investigación.',
+                        normative: 'Deber de Confidencialidad - Ley 1257 de 2008: La identidad de la víctima y los hechos denunciados deben mantenerse en reserva. Buscar "ambas versiones" en esta etapa confunde la escucha inicial con la investigación disciplinaria, poniendo en riesgo a la denunciante.',
+                        impact: 'Esta decisión puede generar: retaliación laboral, presión para retirar la denuncia, afectación psicológica grave y desconfianza institucional permanente.'
+                    },
+                    'c': {
+                        type: 'positive',
+                        title: 'Decisión Acertada: Protección Inmediata',
+                        explanation: 'Esta opción cumple con los estándares de debida diligencia del Estado. La escucha activa, la garantía de confidencialidad, la activación inmediata de medidas de protección y el respeto por el relato de la denunciante son componentes esenciales de una atención adecuada.',
+                        normative: 'Debida Diligencia - Ley 1761 de 2016 (Ley Rosa Elvira Cely) y Directiva Presidencial 01 de 2023: El Estado debe actuar con prontitud, adoptar medidas provisionales inmediatas y garantizar que la investigación no genere mayor daño a la víctima.',
+                        impact: 'Esta decisión genera confianza institucional, protege efectivamente a la denunciante y permite que la investigación se desarrolle sin presiones ni represalias.'
+                    },
+                    'd': {
+                        type: 'negative',
+                        title: 'Minimización del Acoso y Exposición a Riesgo',
+                        explanation: 'Sugerir que la denunciante "resuelva" directamente con su presunto agresor constituye una forma de minimización del acoso y la expone a un riesgo grave. Esta práctica es incompatible con el enfoque de derechos y desconoce las asimetrías de poder inherentes al acoso laboral y sexual.',
+                        normative: 'Prohibición de Conciliación - Ley 1257 de 2008: En casos de violencia basada en género no procede la conciliación directa entre agresor y víctima. El Estado debe proteger, no mediar informalmente en situaciones de violencia.',
+                        impact: 'Esta decisión traslada la carga a la víctima, la expone a mayor riesgo y puede interpretarse como complicidad institucional con el presunto agresor.'
+                    }
+                },
+                'dilema-2': {
+                    'a': {
+                        type: 'negative',
+                        title: 'Violación Grave de Confidencialidad',
+                        explanation: 'Revelar la identidad de la denunciante al superior del presunto agresor, especialmente cuando existe cercanía entre ambos, constituye una violación flagrante del principio de confidencialidad y pone en riesgo directo la seguridad e integridad de la persona afectada.',
+                        normative: 'Reserva de Identidad - Ley 1257 de 2008: La identidad de la víctima debe protegerse en todas las etapas del proceso. Informar a terceros sin necesidad estricta es una falta grave.',
+                        impact: 'Esta decisión facilita represalias coordinadas, presión institucional para el retiro de la denuncia y deterioro de las condiciones laborales de la denunciante.'
+                    },
+                    'b': {
+                        type: 'positive',
+                        title: 'Decisión Correcta: Prioridad a la Protección',
+                        explanation: 'Rechazar solicitudes que comprometan la confidencialidad, incluso cuando provienen de otras áreas institucionales, es parte de su deber de protección. El debido proceso del investigado no puede activarse a costa de la seguridad de la denunciante.',
+                        normative: 'Principio de No Revictimización y Confidencialidad - Ley 1257 de 2008: Cuando existe tensión entre procedimientos institucionales y protección de la víctima, debe priorizarse la protección. La ruta disciplinaria puede activarse sin revelar prematuramente la identidad.',
+                        impact: 'Esta decisión protege a la denunciante mientras permite que la investigación avance de manera técnica y reservada, respetando tanto los derechos de la víctima como las garantías procesales.'
+                    },
+                    'c': {
+                        type: 'negative',
+                        title: 'Exposición Innecesaria y Contraproducente',
+                        explanation: 'Enviar comunicaciones generales sobre la investigación en un equipo pequeño permite deducir fácilmente la identidad de la denunciante y genera un ambiente de presión y señalamiento que puede ser contraproducente para la investigación.',
+                        normative: 'Deber de Reserva - Directiva Presidencial 01 de 2023: Las comunicaciones institucionales sobre casos de acoso deben ser estrictamente necesarias y cuidadosamente diseñadas para no comprometer la identidad ni generar revictimización.',
+                        impact: 'Esta decisión puede generar estigmatización de la denunciante, rumores institucionales y presión social para el retiro de la queja.'
+                    },
+                    'd': {
+                        type: 'positive',
+                        title: 'Decisión Ejemplar: Enfoque Participativo',
+                        explanation: 'Consultar con la denunciante, explicarle los riesgos de cada opción y diseñar conjuntamente el plan de protección respeta su autonomía, fortalece su agencia y permite tomar decisiones informadas. Este es el estándar más alto de atención.',
+                        normative: 'Enfoque de Derechos y Autonomía - Ley 1257 de 2008 y Directiva Presidencial 01 de 2023: Las víctimas tienen derecho a participar activamente en las decisiones que afectan su proceso, y el Estado debe garantizar que cuenten con información completa y acompañamiento.',
+                        impact: 'Esta decisión empodera a la denunciante, genera confianza profunda en el proceso institucional y permite diseñar medidas de protección verdaderamente efectivas y contextualizadas.'
+                    }
+                },
+                'dilema-3': {
+                    'a': {
+                        type: 'negative',
+                        title: 'Omisión del Enfoque Diferencial',
+                        explanation: 'Ignorar las condiciones específicas de vulnerabilidad de la denunciante (mujer indígena, madre cabeza de familia, contrato temporal, asimetría de poder) constituye una omisión del enfoque diferencial obligatorio. La igualdad formal no es suficiente cuando existen desigualdades estructurales.',
+                        normative: 'Enfoque Diferencial - Directiva Presidencial 01 de 2023 y Ley 1257 de 2008: El Estado debe reconocer las condiciones particulares de vulnerabilidad y adoptar medidas específicas de protección reforzada para personas en situaciones de especial riesgo.',
+                        impact: 'Esta decisión perpetúa desigualdades estructurales, desconoce vulnerabilidades específicas y puede resultar en desprotección efectiva de la denunciante.'
+                    },
+                    'b': {
+                        type: 'positive',
+                        title: 'Decisión Ejemplar: Enfoque Diferencial Integral',
+                        explanation: 'Reconocer las múltiples condiciones de vulnerabilidad (interseccionalidad), garantizar acompañamiento culturalmente pertinente, proteger su estabilidad laboral y fortalecer las medidas de protección según su contexto específico es la aplicación correcta del enfoque diferencial.',
+                        normative: 'Enfoque Diferencial e Interseccional - Directiva Presidencial 01 de 2023: Las mujeres indígenas, madres cabeza de familia y personas en condiciones de provisionalidad laboral requieren protección reforzada. La Ley 1257 de 2008 establece que las medidas de atención deben ser culturalmente pertinentes.',
+                        impact: 'Esta decisión protege efectivamente a la denunciante considerando sus condiciones específicas, genera confianza intercultural en las instituciones y cumple con estándares internacionales de debida diligencia reforzada.'
+                    },
+                    'c': {
+                        type: 'negative',
+                        title: 'Disuasión Institucional y Abuso de Poder',
+                        explanation: 'Sugerir a la denunciante que desista de su queja para "proteger" su contrato es una forma grave de disuasión institucional. Además de ser ilegal, constituye un abuso de poder que perpetúa la impunidad y envía el mensaje de que denunciar tiene consecuencias laborales negativas.',
+                        normative: 'Prohibición de Represalias - Ley 1257 de 2008 y Código Sustantivo del Trabajo: Ninguna persona puede ser sancionada o ver afectada su situación laboral por ejercer su derecho a denunciar. Sugerir lo contrario es una falta disciplinaria grave.',
+                        impact: 'Esta decisión genera terror institucional, perpetúa la impunidad, desalienta futuras denuncias y constituye responsabilidad estatal por omisión de protección.'
+                    },
+                    'd': {
+                        type: 'negative',
+                        title: 'Exposición Indebida de Información',
+                        explanation: 'Informar al área de contratación sobre la existencia de la denuncia sin un propósito claro y sin medidas de protección específicas puede generar discriminación, estigmatización o decisiones contractuales adversas basadas en la denuncia.',
+                        normative: 'Principio de Confidencialidad y No Discriminación - Ley 1257 de 2008: La información sobre la denuncia debe compartirse únicamente cuando sea estrictamente necesario y con garantías de no discriminación. La "consideración" ambigua puede traducirse en perjuicio.',
+                        impact: 'Esta decisión puede resultar en no renovación del contrato, trato diferenciado negativo o señalamiento institucional de la denunciante.'
+                    }
+                }
+            };
+
+            const feedback = feedbacks[dilema][option];
+            const screenId = `screen-feedback-${dilema.split('-')[1]}`;
+            
+            const feedbackHTML = `
+                <div class="feedback-card ${feedback.type === 'positive' ? 'positive' : ''}">
+                    <div class="feedback-icon ${feedback.type === 'positive' ? 'positive' : 'negative'}">
+                        ${feedback.type === 'positive' ? '✓' : '✕'}
+                    </div>
+                    <h2 class="feedback-title ${feedback.type === 'positive' ? 'positive' : 'negative'}">
+                        ${feedback.title}
+                    </h2>
+                    <div class="feedback-explanation">
+                        ${feedback.explanation}
+                    </div>
+                    <div class="normative-box">
+                        <strong>Fundamento Normativo:</strong>
+                        <p>${feedback.normative}</p>
+                    </div>
+                    <div class="alert-box">
+                        <strong>Impacto de esta decisión:</strong>
+                        ${feedback.impact}
+                    </div>
+                    <button class="btn btn-center" onclick="nextStep('${dilema}')">
+                        Continuar al Siguiente Paso
+                    </button>
+                </div>
+            `;
+
+            document.getElementById(screenId).innerHTML = feedbackHTML;
+            goToScreen(screenId);
+            updateProgress(dilema);
+        }
+
+        // Actualizar progreso
+        function updateProgress(dilema) {
+            const stages = {
+                'dilema-1': { width: 40, label: 'Protección Inicial', stage: 2 },
+                'dilema-2': { width: 70, label: 'Enfoque Diferencial', stage: 3 },
+                'dilema-3': { width: 100, label: 'Activación Completa', stage: 5 }
+            };
+
+            if (stages[dilema]) {
+                document.getElementById('progress').style.width = stages[dilema].width + '%';
+                document.getElementById('progress-label').textContent = stages[dilema].label;
+                
+                // Actualizar estado visual de las etapas
+                for (let i = 1; i <= stages[dilema].stage; i++) {
+                    const stageEl = document.getElementById(`stage-${i}`);
+                    if (stageEl) {
+                        stageEl.classList.remove('active');
+                        stageEl.classList.add('completed');
+                    }
+                }
+                
+                if (stages[dilema].stage < 5) {
+                    const nextStageEl = document.getElementById(`stage-${stages[dilema].stage + 1}`);
+                    if (nextStageEl) {
+                        nextStageEl.classList.add('active');
+                    }
+                }
+            }
+        }
+
+        // Siguiente paso
+        function nextStep(dilema) {
+            const nextScreens = {
+                'dilema-1': 'screen-dilema-2',
+                'dilema-2': 'screen-dilema-3',
+                'dilema-3': 'screen-conclusion'
+            };
+
+            goToScreen(nextScreens[dilema]);
+        }
+
+        // Reiniciar simulación
+        function resetSimulation() {
+            selectedOptions = {
+                'dilema-1': null,
+                'dilema-2': null,
+                'dilema-3': null
+            };
+            currentStage = 1;
+            document.getElementById('progress').style.width = '20%';
+            document.getElementById('progress-label').textContent = 'Recepción Inicial';
+            
+            // Resetear etapas
+            for (let i = 1; i <= 5; i++) {
+                const stageEl = document.getElementById(`stage-${i}`);
+                if (stageEl) {
+                    stageEl.classList.remove('active', 'completed');
+                }
+            }
+            document.getElementById('stage-1').classList.add('active');
+            
+            // Limpiar selecciones
+            document.querySelectorAll('.option-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+        }
+    </script>
+</body>
+</html>
