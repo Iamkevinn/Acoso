@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador Interseccional Dinámico</title>
+    <style>
+        /* --- ESTILOS GENERALES (Igual que antes pero refinados) --- */
+        :root {
+            --primary: #2c3e50;
+            --accent: #e67e22;
+            --bg: #ecf0f1;
+            --white: #ffffff;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #c0392b;
+            --radius: 16px;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--primary);
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        #app-container {
+            width: 100%;
+            max-width: 900px;
+            height: 95vh;
+            max-height: 720px;
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* --- SLIDES SYSTEM --- */
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            padding: 2rem;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.5s cubic-bezier(0.2, 0, 0.2, 1), opacity 0.5s;
+            opacity: 0;
+            transform: translateX(50px);
+            pointer-events: none;
+            background: white;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
+            pointer-events: all;
+            z-index: 2;
+        }
+
+        .slide.exit {
+            transform: translateX(-50px);
+            opacity: 0;
+        }
+
+        /* --- UI ELEMENTS --- */
+        h1, h2 { color: var(--primary); margin-bottom: 0.5rem; text-align: center; }
+        p { color: #666; max-width: 600px; text-align: center; line-height: 1.5; margin-bottom: 2rem; }
+
+        .btn-action {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(230, 126, 34, 0.3);
+            transition: transform 0.2s;
+        }
+        .btn-action:hover { transform: scale(1.05); }
+
+        /* --- SIMULADOR GRID --- */
+        .sim-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            width: 100%;
+            height: 100%;
+            align-items: center;
+        }
+
+        /* Controles */
+        .control-group { margin-bottom: 15px; width: 100%; }
+        .label { font-size: 0.85rem; font-weight: bold; color: #95a5a6; margin-bottom: 5px; display: block; text-transform: uppercase; letter-spacing: 1px; }
+        .options-row { display: flex; gap: 8px; }
+        .opt-btn {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .opt-btn:hover { background: #f9f9f9; border-color: #bbb; }
+        .opt-btn.selected {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 4px 10px rgba(44, 62, 80, 0.2);
+        }
+
+        /* Visualizador */
+        .sim-visual {
+            background: #fdfdfd;
+            border: 2px dashed #dcdcdc;
+            border-radius: var(--radius);
+            height: 100%;
+            max-height: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .avatar { font-size: 5rem; margin-bottom: 20px; transition: transform 0.3s; }
+        
+        .badge-container { display: flex; flex-direction: column; gap: 8px; width: 80%; }
+        .badge {
+            padding: 8px;
+            border-radius: 6px;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            font-size: 0.8rem;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.4s ease;
+        }
+        .badge.visible { opacity: 1; transform: translateY(0); }
+        .badge-gender { background: #8e44ad; }
+        .badge-contract { background: #c0392b; }
+        .badge-ethnic { background: #d35400; }
+
+        /* --- RESULTADO DINÁMICO (NUEVO) --- */
+        .result-card {
+            background: #f8f9fa;
+            border-left: 6px solid var(--primary); /* Se cambia con JS */
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            max-width: 700px;
+            width: 100%;
+            text-align: left;
+            animation: slideUp 0.5s ease;
+        }
+        
+        .result-header { display: flex; align-items: center; gap: 15px; margin-bottom: 1rem; }
+        .result-icon { font-size: 2.5rem; }
+        .result-title { font-size: 1.4rem; color: #333; font-weight: bold; margin: 0; }
+        .result-body { font-size: 1rem; color: #555; line-height: 1.6; }
+        
+        .tags { margin-top: 15px; display: flex; gap: 10px; }
+        .tag { font-size: 0.75rem; padding: 4px 10px; background: #e0e0e0; border-radius: 4px; color: #555; font-weight: bold; }
+
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- MEDIA QUERY --- */
+        @media (max-width: 768px) {
+            .sim-layout { grid-template-columns: 1fr; }
+            .sim-visual { height: 200px; margin-top: 20px; }
+            .result-header { flex-direction: column; text-align: center; }
+            .result-card { text-align: center; }
+            .tags { justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="app-container">
+    
+    <!-- SLIDE 1: PORTADA -->
+    <div class="slide active" id="slide-1">
+        <div style="font-size: 4rem; margin-bottom: 1rem;">⚖️</div>
+        <h1>El Peso de las Estructuras</h1>
+        <p>El acoso laboral y sexual no ocurre en el vacío. Dependiendo de quién eres y cómo trabajas, las barreras para denunciar cambian drásticamente.</p>
+        <button class="btn-action" onclick="goToSlide(2)">Comenzar Simulación</button>
+    </div>
+
+    <!-- SLIDE 2: SIMULADOR -->
+    <div class="slide" id="slide-2">
+        <h2 style="margin-bottom: 2rem;">Configura el Perfil</h2>
+        <div class="sim-layout">
+            <!-- Controles -->
+            <div style="width: 100%;">
+                <div class="control-group">
+                    <span class="label">Identidad de Género</span>
+                    <div class="options-row">
+                        <button class="opt-btn" onclick="selectOption('gender', 'male', this)">Hombre Cis</button>
+                        <button class="opt-btn" onclick="selectOption('gender', 'female', this)">Mujer Cis</button>
+                        <button class="opt-btn" onclick="selectOption('gender', 'lgbt', this)">LGBTIQ+</button>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <span class="label">Tipo de Contrato</span>
+                    <div class="options-row">
+                        <button class="opt-btn" onclick="selectOption('contract', 'stable', this)">Planta</button>
+                        <button class="opt-btn" onclick="selectOption('contract', 'temp', this)">Temporal</button>
+                        <button class="opt-btn" onclick="selectOption('contract', 'outsourced', this)">Tercerizado</button>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <span class="label">Pertenencia Étnica</span>
+                    <div class="options-row">
+                        <button class="opt-btn" onclick="selectOption('ethnic', 'no', this)">No</button>
+                        <button class="opt-btn" onclick="selectOption('ethnic', 'yes', this)">Sí</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visual Feedback -->
+            <div class="sim-visual">
+                <div class="avatar" id="avatar-display">👤</div>
+                <div class="badge-container">
+                    <div id="badge-gender" class="badge badge-gender">Carga de Género</div>
+                    <div id="badge-contract" class="badge badge-contract">Inestabilidad Laboral</div>
+                    <div id="badge-ethnic" class="badge badge-ethnic">Discriminación Racial</div>
+                </div>
+                <button id="btn-analyze" class="btn-action" style="margin-top: 20px; display: none; background: var(--primary);" onclick="generateAnalysis()">Diagnosticar Riesgo 🔍</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 3: RESULTADO DINÁMICO -->
+    <div class="slide" id="slide-3">
+        <h2>Diagnóstico Estructural</h2>
+        <p style="margin-bottom: 1rem;">Basado en las variables seleccionadas:</p>
+        
+        <!-- Aquí se inyecta el contenido dinámico -->
+        <div id="dynamic-result" class="result-card">
+            <!-- JS llenará esto -->
+        </div>
+
+        <button class="btn-action" style="margin-top: 2rem;" onclick="goToSlide(4)">Continuar al Cierre</button>
+        <button class="btn-action" style="margin-top: 10px; background: transparent; color: #777; border: 1px solid #ccc; font-size: 0.9rem;" onclick="goToSlide(2)">← Probar otra combinación</button>
+    </div>
+
+    <!-- SLIDE 4: CIERRE -->
+    <div class="slide" id="slide-4">
+        <div style="font-size: 4rem; margin-bottom: 1rem;">💡</div>
+        <h1>Conclusión</h1>
+        <p>La interseccionalidad nos enseña que no basta con tener "una política de acoso". Necesitamos protocolos que protejan específicamente a quienes tienen contratos precarios o sufren discriminación múltiple.</p>
+        <p><strong>El objetivo es nivelar el terreno para que todos puedan trabajar seguros.</strong></p>
+        <button class="btn-action" onclick="location.reload()">Reiniciar Curso</button>
+    </div>
+
+</div>
+
+<script>
+    // ESTADO INICIAL
+    let state = {
+        gender: null,
+        contract: null,
+        ethnic: null
+    };
+
+    // BASE DE DATOS DE RESPUESTAS (La magia ocurre aquí)
+    const feedbackDB = {
+        // Escenario: Bajo Riesgo (Privilegio relativo)
+        lowRisk: {
+            title: "Perfil con 'Escudos' Estructurales",
+            icon: "🛡️",
+            color: "#27ae60", // Verde
+            text: "Aunque nadie está exento de sufrir acoso, este perfil cuenta con barreras de protección: la estabilidad laboral reduce el miedo al despido y no sufrir racismo ni sexismo sistémico facilita que su voz sea escuchada si decide denunciar."
+        },
+        // Escenario: Riesgo Económico (Contrato es el problema principal)
+        economicRisk: {
+            title: "Barrera de Silencio Económico",
+            icon: "🤐",
+            color: "#e67e22", // Naranja
+            text: "El factor crítico aquí es el <strong>contrato precario</strong>. El acosador suele aprovecharse de esto: sabe que la víctima necesita el trabajo y temerá no ser renovada si se queja. El acoso se convierte en una forma de extorsión laboral."
+        },
+        // Escenario: Riesgo de Género (Mujer/LGBTIQ + Estabilidad)
+        genderRisk: {
+            title: "Violencia de Poder y Género",
+            icon: "🛑",
+            color: "#9b59b6", // Púrpura
+            text: "A pesar de tener estabilidad laboral, el riesgo proviene de una cultura organizacional machista. El acoso puede manifestarse como 'bromas', menosprecio profesional o bloqueo de ascensos para 'disciplinar' a las mujeres o disidencias."
+        },
+        // Escenario: Interseccionalidad Crítica (Suma de todo)
+        criticalRisk: {
+            title: "Vulnerabilidad Estructural Crítica",
+            icon: "🚨",
+            color: "#c0392b", // Rojo
+            text: "<strong>Aquí se acumulan todas las capas.</strong> La inestabilidad laboral impide denunciar, mientras que el racismo y el sexismo aumentan la probabilidad de ser objeto de violencia. El sistema suele culpar a la víctima o invalidar su testimonio."
+        }
+    };
+
+    // NAVEGACIÓN
+    function goToSlide(num) {
+        document.querySelectorAll('.slide').forEach(s => {
+            s.classList.remove('active');
+            s.classList.add('exit');
+        });
+        const target = document.getElementById('slide-'+num);
+        target.classList.remove('exit');
+        setTimeout(() => target.classList.add('active'), 50);
+    }
+
+    // LÓGICA DE SELECCIÓN
+    function selectOption(category, value, btn) {
+        state[category] = value;
+        
+        // UI Botones
+        const siblings = btn.parentElement.children;
+        for(let s of siblings) s.classList.remove('selected');
+        btn.classList.add('selected');
+
+        // UI Visual Badges
+        updateVisuals();
+
+        // Verificar si todo está completo para mostrar botón
+        if(state.gender && state.contract && state.ethnic) {
+            document.getElementById('btn-analyze').style.display = 'block';
+        }
+    }
+
+    function updateVisuals() {
+        // Avatar cambio sutil
+        const av = document.getElementById('avatar-display');
+        if(state.gender === 'male') av.innerText = '👨‍💼';
+        else if(state.gender === 'female') av.innerText = '👩‍💼';
+        else if(state.gender === 'lgbt') av.innerText = '🏳️‍🌈';
+
+        // Badges
+        toggleBadge('badge-gender', state.gender !== 'male' && state.gender !== null);
+        toggleBadge('badge-contract', state.contract !== 'stable' && state.contract !== null);
+        toggleBadge('badge-ethnic', state.ethnic === 'yes');
+    }
+
+    function toggleBadge(id, show) {
+        const el = document.getElementById(id);
+        if(show) el.classList.add('visible');
+        else el.classList.remove('visible');
+    }
+
+    // GENERADOR DE ANÁLISIS (LÓGICA MEJORADA)
+    function generateAnalysis() {
+        let resultData = {};
+        
+        // 1. Detección de patrones
+        const isPrecarious = (state.contract === 'outsourced' || state.contract === 'temp');
+        const isMinority = (state.gender === 'female' || state.gender === 'lgbt');
+        const isEthnic = (state.ethnic === 'yes');
+
+        // 2. Árbol de decisión para elegir el mensaje
+        if (isPrecarious && isMinority && isEthnic) {
+            // Caso peor escenario: Todo junto
+            resultData = feedbackDB.criticalRisk;
+        } else if (isPrecarious && !isMinority && !isEthnic) {
+            // Hombre blanco pero precarizado
+            resultData = feedbackDB.economicRisk;
+        } else if (!isPrecarious && isMinority && !isEthnic) {
+            // Mujer/LGBT blanca y estable
+            resultData = feedbackDB.genderRisk;
+        } else if (isPrecarious && isMinority) {
+             // Precarizada + Genero (común)
+            resultData = feedbackDB.criticalRisk; // Lo tratamos como crítico
+        } else if (!isPrecarious && !isMinority && !isEthnic) {
+            // Hombre blanco estable
+            resultData = feedbackDB.lowRisk;
+        } else {
+            // Combinaciones intermedias (ej: Hombre negro estable, o Mujer blanca precarizada)
+            // Default logic: Si hay precariedad, gana el riesgo económico. Si no, pero hay etnia/genero, gana género.
+            if(isPrecarious) resultData = feedbackDB.economicRisk;
+            else resultData = feedbackDB.genderRisk;
+        }
+
+        // 3. Renderizar HTML
+        const container = document.getElementById('dynamic-result');
+        container.style.borderLeftColor = resultData.color;
+        
+        container.innerHTML = `
+            <div class="result-header">
+                <div class="result-icon">${resultData.icon}</div>
+                <div>
+                    <h3 class="result-title" style="color:${resultData.color}">${resultData.title}</h3>
+                    <div class="tags">
+                        ${isMinority ? '<span class="tag">Género</span>' : ''}
+                        ${isPrecarious ? '<span class="tag">Contrato</span>' : ''}
+                        ${isEthnic ? '<span class="tag">Etnia</span>' : ''}
+                        ${!isMinority && !isPrecarious && !isEthnic ? '<span class="tag">Privilegio</span>' : ''}
+                    </div>
+                </div>
+            </div>
+            <div class="result-body">
+                ${resultData.text}
+            </div>
+        `;
+
+        goToSlide(3);
+    }
+</script>
+
+</body>
+</html>
