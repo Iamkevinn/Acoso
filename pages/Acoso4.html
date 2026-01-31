@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consentimiento y Poder: Ley 2365</title>
+    <style>
+        /* --- VARIABLES & THEME --- */
+        :root {
+            --primary: #003087; /* Azul Gobierno Colombia */
+            --primary-dark: #001f5c;
+            --accent: #D9BB32; /* Dorado Institucional */
+            --bg: #f8f9fa;
+            --white: #ffffff;
+            --text: #343a40;
+            --text-light: #6c757d;
+            --valid: #28a745;
+            --invalid: #dc3545;
+            --shadow: 0 10px 30px rgba(0,0,0,0.08);
+            --radius: 16px;
+            --transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* --- LAYOUT PRINCIPAL --- */
+        #ova-container {
+            width: 100%;
+            max-width: 1100px;
+            height: 95vh;
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        @media (max-width: 768px) { #ova-container { height: 100vh; border-radius: 0; } }
+
+        /* --- HEADER --- */
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 5px solid var(--accent);
+            z-index: 100;
+        }
+        .logo h1 { font-size: 1.2rem; font-weight: 600; }
+        .logo span { font-size: 0.8rem; opacity: 0.8; letter-spacing: 1px; text-transform: uppercase; }
+        
+        .progress-bar {
+            width: 150px;
+            height: 8px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progress-fill { height: 100%; width: 0%; background: var(--accent); transition: width 0.5s ease; }
+
+        /* --- VIEWS (PANTALLAS) --- */
+        .view-container {
+            flex: 1;
+            position: relative;
+            overflow-y: auto;
+            overflow-x: hidden;
+            background: #fdfdfd;
+        }
+
+        .view {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; min-height: 100%;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(20px);
+            transition: var(--transition);
+        }
+
+        .view.active {
+            opacity: 1;
+            pointer-events: all;
+            transform: translateY(0);
+            z-index: 10;
+        }
+
+        /* --- ELEMENTOS UI --- */
+        h2 { color: var(--primary); margin-bottom: 1rem; text-align: center; font-size: 1.8rem; }
+        p { max-width: 700px; text-align: center; line-height: 1.6; color: var(--text-light); margin-bottom: 2rem; }
+        
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 35px;
+            font-size: 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 4px 15px rgba(0,48,135,0.3);
+            font-weight: 600;
+        }
+        .btn:hover { background: var(--primary-dark); transform: translateY(-2px); }
+        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); margin-top: 10px; box-shadow: none; }
+
+        /* --- PANTALLA 1: INTRO --- */
+        .intro-visual {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            animation: pulse 3s infinite;
+        }
+
+        /* --- PANTALLA 2: LEY 2365 (CARDS) --- */
+        .legal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 900px;
+        }
+        .legal-card {
+            background: white;
+            border: 1px solid #eee;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            transition: var(--transition);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        .legal-card:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: var(--shadow); }
+        .legal-icon { font-size: 2.5rem; margin-bottom: 1rem; color: var(--primary); }
+        .card-detail {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease;
+            color: var(--text-light);
+            font-size: 0.9rem;
+            text-align: left;
+        }
+        .legal-card.open .card-detail { max-height: 200px; margin-top: 1rem; border-top: 1px solid #eee; padding-top: 10px; }
+
+        /* --- PANTALLA 3: REPLANTEAR (FLIP) --- */
+        .reframe-container {
+            width: 100%;
+            max-width: 700px;
+            background: #ffebeb;
+            border-radius: var(--radius);
+            padding: 2rem;
+            text-align: center;
+            border: 2px solid var(--invalid);
+            transition: var(--transition);
+            cursor: pointer;
+            position: relative;
+        }
+        .reframe-container.fixed {
+            background: #e3f9e5;
+            border-color: var(--valid);
+        }
+        .question-text { font-size: 1.5rem; font-weight: bold; margin-bottom: 10px; }
+        .status-icon { font-size: 3rem; display: block; margin-bottom: 10px; }
+
+        /* --- PANTALLA 4: MOTOR DE CONSENTIMIENTO --- */
+        .consent-engine {
+            display: flex;
+            gap: 30px;
+            width: 100%;
+            max-width: 900px;
+            align-items: flex-start;
+        }
+        .controls { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+        .switch-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        .result-display {
+            flex: 1;
+            background: #333;
+            color: white;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .res-circle {
+            width: 80px; height: 80px;
+            border-radius: 50%;
+            background: #555;
+            margin-bottom: 15px;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 2rem;
+            transition: var(--transition);
+        }
+        
+        /* Toggles */
+        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(24px); }
+
+        /* --- PANTALLA 5: PODER (BALANZA) --- */
+        .scale-visual {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            height: 300px;
+            margin-top: 2rem;
+        }
+        .scale-base {
+            width: 4px; height: 200px; background: #333; margin: 0 auto;
+            position: absolute; bottom: 0; left: 50%;
+        }
+        .scale-bar {
+            width: 400px; height: 6px; background: #333;
+            position: absolute; top: 50px; left: 50%;
+            transform: translateX(-50%) rotate(0deg);
+            transition: transform 1s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+        .plate {
+            width: 80px; height: 80px; border-radius: 50%; border: 2px solid #333;
+            position: absolute; top: 20px;
+            display: flex; justify-content: center; align-items: center; font-size: 2rem;
+            background: white;
+        }
+        .plate-left { left: 0; }
+        .plate-right { right: 0; }
+        
+        /* --- PANTALLA 7: ACTIVIDAD --- */
+        .concept-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; max-width: 800px; }
+        .concept-pill {
+            padding: 10px 20px;
+            background: white;
+            border: 2px solid var(--primary);
+            border-radius: 30px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-weight: 500;
+        }
+        .concept-pill:hover { background: #eef; }
+        .concept-pill.correct { background: var(--valid); color: white; border-color: var(--valid); }
+        .concept-pill.wrong { background: var(--invalid); color: white; border-color: var(--invalid); opacity: 0.5; }
+
+        /* --- BOTÓN FLOTANTE AYUDA --- */
+        .help-btn {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: var(--white);
+            color: var(--primary);
+            border: 2px solid var(--accent);
+            width: 50px; height: 50px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            z-index: 200;
+            transition: 0.3s;
+        }
+        .help-btn:hover { transform: scale(1.1); background: var(--accent); color: white; }
+
+        .modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 500;
+            display: none; justify-content: center; align-items: center;
+        }
+        .modal-content {
+            background: white; padding: 2rem; border-radius: var(--radius);
+            max-width: 500px; width: 90%;
+            position: relative;
+        }
+
+        /* --- ANIMACIONES --- */
+        @keyframes pulse { 0% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); opacity: 0.8; } }
+
+        /* MEDIA QUERIES */
+        @media (max-width: 768px) {
+            .consent-engine { flex-direction: column; }
+            .reframe-container { padding: 1rem; }
+            .scale-visual { display: none; } /* En movil usamos texto */
+            .scale-mobile-msg { display: block !important; background: #eef; padding: 1rem; border-radius: 8px; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="ova-container">
+    <header>
+        <div class="logo">
+            <h1>Ley 2365 de 2024</h1>
+            <span>Consentimiento y Poder</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="prog-fill"></div>
+        </div>
+    </header>
+
+    <div class="view-container">
+
+        <!-- VISTA 1: INTRO -->
+        <div class="view active" id="v1">
+            <div class="intro-visual">⚖️</div>
+            <h2>Más allá de la percepción</h2>
+            <p>En el mundo del trabajo, la diferencia entre una interacción válida y el acoso no depende de la intención del agresor, sino del <strong>poder</strong> y el <strong>consentimiento</strong>.</p>
+            <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 2rem; border-left: 5px solid var(--primary);">
+                <strong>Nueva Normativa:</strong> La Ley 2365 de 2024 transforma la prevención y protección en Colombia.
+            </div>
+            <button class="btn" onclick="nextView(2)">Iniciar Aprendizaje</button>
+        </div>
+
+        <!-- VISTA 2: MARCO LEGAL -->
+        <div class="view" id="v2">
+            <h2>Marco Legal: Ley 2365 de 2024</h2>
+            <p>Haz clic en las tarjetas para conocer los pilares de la nueva ley.</p>
+            
+            <div class="legal-grid">
+                <div class="legal-card" onclick="toggleCard(this)">
+                    <div class="legal-icon">🛡️</div>
+                    <h3>Prevención Obligatoria</h3>
+                    <div class="card-detail">Las entidades no pueden esperar a que ocurra el acoso. Deben tener protocolos activos, capacitaciones y mapas de riesgo. La omisión es sancionable.</div>
+                </div>
+                <div class="legal-card" onclick="toggleCard(this)">
+                    <div class="legal-icon">⚡</div>
+                    <h3>Protección Inmediata</h3>
+                    <div class="card-detail">Ante una denuncia, la prioridad es proteger. Se deben tomar medidas cautelares (traslados, separación de espacios) sin esperar el fallo disciplinario final.</div>
+                </div>
+                <div class="legal-card" onclick="toggleCard(this)">
+                    <div class="legal-icon">⚖️</div>
+                    <h3>Carga de la Prueba</h3>
+                    <div class="card-detail">La víctima no está obligada a probar "plenamente" el hecho en la etapa inicial para recibir protección. Se aplica el principio de no revictimización.</div>
+                </div>
+            </div>
+            <button class="btn" style="margin-top: 2rem;" onclick="nextView(3)">Continuar</button>
+        </div>
+
+        <!-- VISTA 3: REPLANTEAR PREGUNTA -->
+        <div class="view" id="v3">
+            <h2>El Error de la Percepción</h2>
+            <p>A menudo nos hacemos la pregunta equivocada. Haz clic en el recuadro para corregir el enfoque.</p>
+            
+            <div class="reframe-container" id="reframe-box" onclick="fixQuestion()">
+                <span class="status-icon">❌</span>
+                <div class="question-text">"¿Fue solo coqueteo o fue acoso?"</div>
+                <p id="reframe-desc">Esta pregunta es subjetiva y peligrosa. Se centra en la intención de quien hace la acción ("yo solo estaba jugando").</p>
+                <div style="margin-top: 10px; font-size: 0.8rem; color: #999;">(Haz clic para corregir)</div>
+            </div>
+
+            <button class="btn" id="btn-v3" style="margin-top: 2rem; display: none;" onclick="nextView(4)">Analizar el Consentimiento</button>
+        </div>
+
+        <!-- VISTA 4: MOTOR DE CONSENTIMIENTO -->
+        <div class="view" id="v4">
+            <h2>Calculadora de Consentimiento</h2>
+            <p>El consentimiento no es solo decir "sí". Activa las variables para ver si el consentimiento es válido jurídicamente.</p>
+            
+            <div class="consent-engine">
+                <div class="controls">
+                    <div class="switch-row">
+                        <span>¿Hay expresión verbal explícita?</span>
+                        <label class="switch"><input type="checkbox" id="chk-verbal" onchange="calcConsent()"><span class="slider"></span></label>
+                    </div>
+                    <div class="switch-row">
+                        <span>¿Existe relación de jerarquía/poder?</span>
+                        <label class="switch"><input type="checkbox" id="chk-power" onchange="calcConsent()"><span class="slider"></span></label>
+                    </div>
+                    <div class="switch-row">
+                        <span>¿Hay miedo a represalias (despido/evaluación)?</span>
+                        <label class="switch"><input type="checkbox" id="chk-fear" onchange="calcConsent()"><span class="slider"></span></label>
+                    </div>
+                    <div class="switch-row">
+                        <span>¿La persona está bajo efectos de alcohol?</span>
+                        <label class="switch"><input type="checkbox" id="chk-alcohol" onchange="calcConsent()"><span class="slider"></span></label>
+                    </div>
+                </div>
+
+                <div class="result-display" id="res-panel">
+                    <div class="res-circle" id="res-icon">?</div>
+                    <h3 id="res-title">Pendiente</h3>
+                    <p id="res-text" style="color: #ccc; font-size: 0.9rem;">Configura las variables.</p>
+                </div>
+            </div>
+            <button class="btn" style="margin-top: 2rem;" onclick="nextView(5)">Entender el Poder</button>
+        </div>
+
+        <!-- VISTA 5: PODER (BALANZA) -->
+        <div class="view" id="v5">
+            <h2>Asimetría de Poder</h2>
+            <p>Cuando hay poder de por medio, la libertad para decir "NO" se reduce o desaparece.</p>
+            
+            <div class="scale-mobile-msg" style="display:none; max-width: 500px;">
+                <p><strong>Visualización Simplificada:</strong><br>El peso de un contrato o una jefatura aplasta la voluntad individual. El consentimiento no puede presumirse libre si el "sí" se da para conservar el empleo.</p>
+            </div>
+
+            <div class="scale-visual">
+                <div class="scale-base"></div>
+                <div class="scale-bar" id="scale-bar">
+                    <div class="plate plate-left">🙋</div> <!-- Victima -->
+                    <div class="plate plate-right">👔</div> <!-- Jefe -->
+                </div>
+            </div>
+
+            <div style="margin-top: 2rem; display: flex; gap: 10px;">
+                <button class="btn-outline" onclick="tiltScale('boss')">Añadir: Jefe Directo</button>
+                <button class="btn-outline" onclick="tiltScale('contract')">Añadir: Renovación Contrato</button>
+            </div>
+            <div id="scale-feedback" style="margin-top: 15px; font-weight: bold; height: 20px; color: var(--primary);"></div>
+
+            <button class="btn" style="margin-top: 2rem;" onclick="nextView(6)">Actividad de Refuerzo</button>
+        </div>
+
+        <!-- VISTA 6: PREVENCIÓN Y PROTECCIÓN -->
+        <!-- (Omitida para brevedad y enfoque en lo interactivo, se fusiona concepto en cierre) -->
+
+        <!-- VISTA 7: ACTIVIDAD -->
+        <div class="view" id="v6"> <!-- ID 6 lógico -->
+            <h2>Actividad: Elementos de Análisis</h2>
+            <p>Según la Ley 2365, selecciona únicamente los criterios <strong>VÁLIDOS</strong> para determinar si hubo acoso.</p>
+            
+            <div class="concept-grid">
+                <div class="concept-pill" onclick="checkConcept(this, false)">Intención del agresor</div>
+                <div class="concept-pill" onclick="checkConcept(this, true)">Relación de Poder</div>
+                <div class="concept-pill" onclick="checkConcept(this, false)">Forma de vestir</div>
+                <div class="concept-pill" onclick="checkConcept(this, true)">Ausencia de Consentimiento</div>
+                <div class="concept-pill" onclick="checkConcept(this, false)">Percepción subjetiva</div>
+                <div class="concept-pill" onclick="checkConcept(this, true)">Impacto en la víctima</div>
+            </div>
+
+            <div id="quiz-msg" style="margin-top: 20px; min-height: 20px; font-weight: bold;"></div>
+
+            <button class="btn" id="btn-finish" style="margin-top: 2rem; display:none;" onclick="nextView(7)">Finalizar Módulo</button>
+        </div>
+
+        <!-- VISTA 8: CIERRE -->
+        <div class="view" id="v7">
+            <div style="font-size: 4rem; color: var(--valid);">✅</div>
+            <h2>Cambio de Paradigma</h2>
+            <p>La Ley 2365 de 2024 nos mueve del juicio subjetivo a la <strong>protección efectiva</strong>.</p>
+            <div style="background: white; border: 1px solid #eee; padding: 20px; border-radius: 12px; text-align: left; max-width: 600px;">
+                <p style="margin-bottom: 0;"><strong>Recuerda:</strong><br>
+                1. El consentimiento viciado por poder NO es consentimiento.<br>
+                2. La carga de la prueba no recae solo en la víctima.<br>
+                3. La institución debe proteger primero e investigar después.</p>
+            </div>
+            <button class="btn" style="margin-top: 2rem;" onclick="location.reload()">Repasar Conceptos</button>
+        </div>
+
+    </div>
+
+    <!-- BOTÓN AYUDA -->
+    <div class="help-btn" onclick="openHelp()">?</div>
+    <div class="modal" id="help-modal" onclick="closeHelp(event)">
+        <div class="modal-content">
+            <h3 style="color: var(--primary); border-bottom: 2px solid var(--accent); padding-bottom: 10px;">Glosario Clave</h3>
+            <p><strong>Consentimiento:</strong> Manifestación libre, voluntaria y explícita. El silencio no es sí.</p>
+            <p><strong>Asimetría de Poder:</strong> Desequilibrio (jefe/subalterno, contratante/contratista) que impide negociar en igualdad.</p>
+            <p><strong>Protección Inmediata:</strong> Medidas que toma la entidad para evitar que el acoso continúe mientras se investiga.</p>
+            <button class="btn" style="width: 100%; margin-top: 10px;" onclick="closeHelp(event, true)">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentView = 1;
+    const totalViews = 7;
+
+    function nextView(num) {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.getElementById('v' + num).classList.add('active');
+        
+        // Progress Bar
+        const pct = ((num - 1) / (totalViews - 1)) * 100;
+        document.getElementById('prog-fill').style.width = pct + '%';
+        
+        currentView = num;
+    }
+
+    // --- LOGICA VISTA 2 (CARDS) ---
+    function toggleCard(card) {
+        card.classList.toggle('open');
+    }
+
+    // --- LOGICA VISTA 3 (REFRAME) ---
+    function fixQuestion() {
+        const box = document.getElementById('reframe-box');
+        const desc = document.getElementById('reframe-desc');
+        const icon = box.querySelector('.status-icon');
+        const title = box.querySelector('.question-text');
+
+        box.classList.add('fixed');
+        icon.innerText = "✔️";
+        title.innerText = "¿Hubo consentimiento libre y sin presión de poder?";
+        desc.innerText = "Correcto. Esta pregunta evalúa los hechos objetivos y el contexto de desigualdad, tal como lo exige la Ley 2365.";
+        
+        document.getElementById('btn-v3').style.display = 'inline-block';
+    }
+
+    // --- LOGICA VISTA 4 (CALCULADORA) ---
+    function calcConsent() {
+        const verbal = document.getElementById('chk-verbal').checked;
+        const power = document.getElementById('chk-power').checked;
+        const fear = document.getElementById('chk-fear').checked;
+        const alcohol = document.getElementById('chk-alcohol').checked;
+
+        const panel = document.getElementById('res-panel');
+        const icon = document.getElementById('res-icon');
+        const title = document.getElementById('res-title');
+        const text = document.getElementById('res-text');
+
+        // Lógica Jurídica Simplificada
+        // Si hay miedo, alcohol o poder sin verbal explicito -> Invalido
+        // Incluso si hay verbal, si hay miedo -> Invalido (Vicio del consentimiento)
+
+        if (fear || alcohol) {
+            panel.style.background = "#dc3545"; // Red
+            icon.innerText = "⛔";
+            title.innerText = "CONSENTIMIENTO NULO";
+            text.innerText = "Existen vicios (miedo o incapacidad). Aunque la persona diga 'sí', jurídicamente no es válido.";
+        } else if (power && !verbal) {
+            panel.style.background = "#fd7e14"; // Orange
+            icon.innerText = "⚠️";
+            title.innerText = "ALTO RIESGO";
+            text.innerText = "Hay asimetría de poder y falta claridad. Se presume no consentido. El superior tiene la responsabilidad.";
+        } else if (verbal && !power && !fear && !alcohol) {
+            panel.style.background = "#28a745"; // Green
+            icon.innerText = "✅";
+            title.innerText = "VÁLIDO";
+            text.innerText = "Acuerdo entre pares, libre, informado y explícito.";
+        } else {
+            panel.style.background = "#6c757d"; // Grey default
+            icon.innerText = "⚖️";
+            title.innerText = "Analizando...";
+            text.innerText = "El poder (jefatura) siempre pone en duda la libertad de elección.";
+        }
+    }
+
+    // --- LOGICA VISTA 5 (BALANZA) ---
+    function tiltScale(type) {
+        const bar = document.getElementById('scale-bar');
+        const feedback = document.getElementById('scale-feedback');
+        
+        // Rotar la barra hacia la derecha (el poder pesa más)
+        bar.style.transform = "translateX(-50%) rotate(20deg)";
+        
+        if(type === 'boss') {
+            feedback.innerText = "La jerarquía impide decir 'No' libremente.";
+        } else {
+            feedback.innerText = "La dependencia económica vicia la voluntad.";
+        }
+    }
+
+    // --- LOGICA VISTA 7 (QUIZ) ---
+    let correctCount = 0;
+    function checkConcept(pill, isCorrect) {
+        if(pill.classList.contains('correct') || pill.classList.contains('wrong')) return;
+
+        if(isCorrect) {
+            pill.classList.add('correct');
+            correctCount++;
+            document.getElementById('quiz-msg').innerText = "Correcto. Este es un criterio objetivo.";
+            document.getElementById('quiz-msg').style.color = "var(--valid)";
+        } else {
+            pill.classList.add('wrong');
+            document.getElementById('quiz-msg').innerText = "Incorrecto. La ley descarta subjetividades.";
+            document.getElementById('quiz-msg').style.color = "var(--invalid)";
+        }
+
+        if(correctCount >= 3) {
+            document.getElementById('btn-finish').style.display = 'inline-block';
+            document.getElementById('quiz-msg').innerText = "¡Excelente! Has identificado los pilares de la Ley 2365.";
+        }
+    }
+
+    // --- MODAL ---
+    function openHelp() { document.getElementById('help-modal').style.display = 'flex'; }
+    function closeHelp(e, force) {
+        if(e.target.id === 'help-modal' || force) {
+            document.getElementById('help-modal').style.display = 'none';
+        }
+    }
+</script>
+
+</body>
+</html>
