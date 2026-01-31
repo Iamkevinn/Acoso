@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA UNP: Rutas con Enfoque de Género</title>
+    <style>
+        /* --- VARIABLES UNP & CONFIGURACIÓN --- */
+        :root {
+            --unp-red: #D90000; /* Rojo UNP aproximado */
+            --unp-blue: #002855; /* Azul oscuro institucional */
+            --gender-purple: #8e44ad; /* Púrpura Ley Rosa Elvira Cely */
+            --bg-body: #f0f2f5;
+            --white: #ffffff;
+            --text: #333333;
+            --gray-light: #e9ecef;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --radius: 8px;
+            --shadow: 0 4px 20px rgba(0,0,0,0.1);
+            --font-main: 'Roboto', 'Segoe UI', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--font-main); }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            background-image: radial-gradient(var(--gray-light) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        /* --- CONSOLA PRINCIPAL (CONTENEDOR) --- */
+        #console-container {
+            width: 100%;
+            max-width: 1024px;
+            height: 95vh;
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: 0 20px 50px rgba(0,40,85,0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border-top: 6px solid var(--unp-red);
+            position: relative;
+        }
+
+        /* --- HEADER TIPO "DASHBOARD" --- */
+        header {
+            background: var(--unp-blue);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 100;
+        }
+        
+        .brand { display: flex; align-items: center; gap: 15px; }
+        .brand-logo { 
+            width: 40px; height: 40px; background: var(--unp-red); border-radius: 50%; 
+            display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 1.2rem;
+        }
+        .brand-text h1 { font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; }
+        .brand-text span { font-size: 0.75rem; opacity: 0.8; }
+
+        .status-badge {
+            background: rgba(255,255,255,0.1);
+            padding: 5px 15px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            border: 1px solid rgba(255,255,255,0.2);
+            display: flex; align-items: center; gap: 5px;
+        }
+        .status-dot { width: 8px; height: 8px; background: var(--success); border-radius: 50%; animation: blink 2s infinite; }
+
+        /* --- ÁREA DE VISUALIZACIÓN --- */
+        #viewport {
+            flex: 1;
+            position: relative;
+            background: #fdfdfd;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 2rem;
+        }
+
+        .scene {
+            position: absolute;
+            top: 0; left: 0; width: 100%; min-height: 100%;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0; pointer-events: none;
+            transform: scale(0.95);
+            transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        .scene.active { opacity: 1; pointer-events: all; transform: scale(1); z-index: 10; }
+
+        /* --- ELEMENTOS UI --- */
+        h2 { color: var(--unp-blue); margin-bottom: 1.5rem; text-align: center; font-weight: 700; text-transform: uppercase; }
+        p { max-width: 700px; text-align: center; line-height: 1.6; margin-bottom: 2rem; color: #555; }
+
+        .btn-unp {
+            background: var(--unp-red);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 4px 6px rgba(217, 0, 0, 0.3);
+            display: inline-flex; align-items: center; gap: 10px;
+        }
+        .btn-unp:hover { background: #b30000; transform: translateY(-2px); }
+        .btn-outline { background: transparent; border: 2px solid var(--unp-blue); color: var(--unp-blue); box-shadow: none; }
+        .btn-outline:hover { background: var(--unp-blue); color: white; }
+
+        /* --- ESCENA 1: INTRO (ALERTA) --- */
+        .alert-box {
+            border: 2px solid var(--unp-red);
+            background: #fff5f5;
+            padding: 2rem;
+            max-width: 600px;
+            text-align: center;
+            border-radius: var(--radius);
+            position: relative;
+        }
+        .alert-icon { font-size: 4rem; margin-bottom: 1rem; color: var(--unp-red); animation: pulse 2s infinite; }
+
+        /* --- ESCENA 2: DIRECTIVA 01 (TARJETAS GIRATORIAS) --- */
+        .cards-container { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+        .flip-card {
+            background-color: transparent;
+            width: 250px; height: 300px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+        .flip-inner {
+            position: relative; width: 100%; height: 100%;
+            text-align: center; transition: transform 0.6s; transform-style: preserve-3d;
+            box-shadow: var(--shadow); border-radius: var(--radius);
+        }
+        .flip-card:hover .flip-inner { transform: rotateY(180deg); }
+        .flip-front, .flip-back {
+            position: absolute; width: 100%; height: 100%;
+            backface-visibility: hidden; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; padding: 20px; border-radius: var(--radius);
+        }
+        .flip-front { background: white; border-top: 5px solid var(--unp-blue); }
+        .flip-back { background: var(--unp-blue); color: white; transform: rotateY(180deg); }
+        .icon-card { font-size: 3rem; margin-bottom: 15px; color: var(--unp-blue); }
+
+        /* --- ESCENA 3: COMPARADOR (SWITCH) --- */
+        .comparator-stage {
+            display: flex; width: 100%; max-width: 800px; height: 400px;
+            background: white; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow);
+        }
+        .comp-side { flex: 1; padding: 2rem; transition: 0.5s; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .comp-left { background: #f8f9fa; border-right: 1px solid #ddd; }
+        .comp-right { background: #e8f5e9; opacity: 0.3; filter: grayscale(100%); }
+        
+        .comp-active .comp-right { opacity: 1; filter: grayscale(0%); background: #e8f5e9; }
+        .comp-active .comp-left { opacity: 0.5; background: #f8f9fa; }
+
+        .toggle-switch-container { margin: 2rem 0; display: flex; align-items: center; gap: 15px; }
+        .toggle-btn {
+            width: 60px; height: 30px; background: #ccc; border-radius: 30px; position: relative; cursor: pointer; transition: 0.3s;
+        }
+        .toggle-btn::after {
+            content: ''; position: absolute; top: 2px; left: 2px; width: 26px; height: 26px;
+            background: white; border-radius: 50%; transition: 0.3s;
+        }
+        .toggle-on { background: var(--success); }
+        .toggle-on::after { transform: translateX(30px); }
+
+        /* --- ESCENA 4: RUTA (TIMELINE INTERACTIVA) --- */
+        .timeline-container { position: relative; max-width: 700px; width: 100%; padding-left: 30px; }
+        .timeline-line {
+            position: absolute; left: 15px; top: 0; bottom: 0; width: 4px; background: #ddd; z-index: 0;
+        }
+        .timeline-progress {
+            position: absolute; left: 15px; top: 0; width: 4px; background: var(--success); z-index: 1; height: 0%; transition: height 1s;
+        }
+        .timeline-step {
+            position: relative; margin-bottom: 30px; padding: 15px;
+            background: white; border-radius: 8px; border: 1px solid #eee;
+            margin-left: 20px; cursor: pointer; transition: 0.3s;
+            opacity: 0.6; z-index: 2;
+        }
+        .timeline-step::before {
+            content: ''; position: absolute; left: -29px; top: 50%; transform: translateY(-50%);
+            width: 14px; height: 14px; background: #bbb; border: 4px solid white; border-radius: 50%; z-index: 3; box-shadow: 0 0 5px rgba(0,0,0,0.2); transition: 0.3s;
+        }
+        .timeline-step.active { opacity: 1; transform: translateX(10px); border-left: 4px solid var(--success); box-shadow: var(--shadow); }
+        .timeline-step.active::before { background: var(--success); border-color: var(--success); }
+        .step-content { display: none; font-size: 0.9rem; margin-top: 10px; color: #555; border-top: 1px solid #eee; padding-top: 10px;}
+
+        /* --- ESCENA 6: LEY ROSA ELVIRA CELY (ESCUDO) --- */
+        .shield-container { position: relative; width: 300px; height: 350px; display: flex; justify-content: center; align-items: center; }
+        .shield-bg { font-size: 15rem; color: var(--gender-purple); opacity: 0.1; position: absolute; }
+        .standard-orbit { position: absolute; width: 100px; height: 100px; background: white; border-radius: 50%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; font-size: 0.7rem; box-shadow: var(--shadow); border: 2px solid var(--gender-purple); animation: float 3s infinite; padding: 10px;}
+        .orbit-1 { top: 0; left: 50%; transform: translateX(-50%); }
+        .orbit-2 { bottom: 20px; left: 0; animation-delay: 0.5s; }
+        .orbit-3 { bottom: 20px; right: 0; animation-delay: 1s; }
+
+        /* --- ESCENA 7: SIMULACIÓN CHAT --- */
+        .chat-interface {
+            width: 100%; max-width: 600px; background: #fff; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; height: 400px;
+        }
+        .chat-header { background: #eee; padding: 10px; font-weight: bold; display: flex; align-items: center; gap: 10px; font-size: 0.9rem; }
+        .chat-body { flex: 1; padding: 20px; overflow-y: auto; background: #f9f9f9; display: flex; flex-direction: column; gap: 15px; }
+        .msg { padding: 10px 15px; border-radius: 15px; max-width: 80%; font-size: 0.9rem; }
+        .msg-in { background: #e4e6eb; align-self: flex-start; border-bottom-left-radius: 5px; }
+        .msg-system { text-align: center; font-size: 0.8rem; color: #888; margin: 10px 0; }
+        
+        .decision-panel { padding: 15px; background: white; border-top: 1px solid #ddd; display: flex; flex-direction: column; gap: 10px; }
+        .decision-btn { padding: 10px; border: 1px solid var(--unp-blue); background: white; color: var(--unp-blue); border-radius: 5px; cursor: pointer; text-align: left; font-size: 0.85rem; transition: 0.2s; }
+        .decision-btn:hover { background: #f0f7ff; }
+
+        /* --- FAB AYUDA --- */
+        .fab-help {
+            position: absolute; bottom: 20px; right: 20px;
+            width: 50px; height: 50px; background: var(--unp-blue); color: white;
+            border-radius: 50%; display: flex; justify-content: center; align-items: center;
+            font-size: 1.5rem; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 200;
+        }
+        
+        /* Modal Ayuda */
+        .modal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 500; display: none; justify-content: center; align-items: center; }
+        .modal-content { background: white; width: 90%; max-width: 500px; padding: 2rem; border-radius: var(--radius); position: relative; }
+
+        /* Animaciones */
+        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.8; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @keyframes float { 0%, 100% { transform: translateY(0) translateX(-50%); } 50% { transform: translateY(-10px) translateX(-50%); } }
+        /* Ajuste float para orbitas laterales */
+        @keyframes floatSimple { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+        @media (max-width: 768px) {
+            .flip-card { width: 100%; height: 200px; }
+            .comparator-stage { flex-direction: column; height: auto; }
+            .comp-side { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="console-container">
+    <header>
+        <div class="brand">
+            <div class="brand-logo">🛡️</div>
+            <div class="brand-text">
+                <h1>Unidad Nacional de Protección</h1>
+                <span>Capacitación Interna</span>
+            </div>
+        </div>
+        <div class="status-badge">
+            <div class="status-dot"></div>
+            SISTEMA ACTIVO
+        </div>
+    </header>
+
+    <div id="viewport">
+        
+        <!-- SCENE 1: INTRO -->
+        <div class="scene active" id="s1">
+            <div class="alert-box">
+                <div class="alert-icon">⚠️</div>
+                <h2 style="color: var(--unp-red);">Alerta de Protocolo</h2>
+                <p><strong>“Un protocolo que no se activa, también genera daño.”</strong></p>
+                <p>Bienvenido al módulo de activación de rutas con enfoque de género. Su misión es garantizar que el papel se convierta en protección real.</p>
+                <button class="btn-unp" onclick="navTo(2)">Iniciar Recorrido ➜</button>
+            </div>
+        </div>
+
+        <!-- SCENE 2: DIRECTIVA 01 (CARDS) -->
+        <div class="scene" id="s2">
+            <h2>Marco Institucional: Directiva 01 de 2023</h2>
+            <p>Pase el cursor (o toque) las tarjetas para revelar los pilares obligatorios.</p>
+            
+            <div class="cards-container">
+                <div class="flip-card">
+                    <div class="flip-inner">
+                        <div class="flip-front">
+                            <div class="icon-card">📋</div>
+                            <h3>Obligatoriedad</h3>
+                            <small>Girar para ver detalle</small>
+                        </div>
+                        <div class="flip-back">
+                            <p>No es opcional. Todas las entidades deben tener y activar protocolos específicos con enfoque de género.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flip-card">
+                    <div class="flip-inner">
+                        <div class="flip-front">
+                            <div class="icon-card">⚖️</div>
+                            <h3>Responsabilidad</h3>
+                            <small>Girar para ver detalle</small>
+                        </div>
+                        <div class="flip-back">
+                            <p>La prevención y atención es indelegable. La institución responde si la ruta falla o revictimiza.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flip-card">
+                    <div class="flip-inner">
+                        <div class="flip-front">
+                            <div class="icon-card">👁️</div>
+                            <h3>Seguimiento</h3>
+                            <small>Girar para ver detalle</small>
+                        </div>
+                        <div class="flip-back">
+                            <p>No basta con recibir la queja. Se debe monitorear la efectividad de las medidas de protección.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <br><br>
+            <button class="btn-outline" onclick="navTo(3)">Siguiente: Efectividad ➜</button>
+        </div>
+
+        <!-- SCENE 3: COMPARADOR (PAPER VS ACTION) -->
+        <div class="scene" id="s3">
+            <h2>¿Qué es una ruta efectiva?</h2>
+            <p>Active el interruptor para transformar una ruta formal en una ruta real.</p>
+            
+            <div class="toggle-switch-container">
+                <span>Ruta en Papel</span>
+                <div class="toggle-btn" id="comp-toggle" onclick="toggleComparator()"></div>
+                <span>Ruta Efectiva</span>
+            </div>
+
+            <div class="comparator-stage" id="comp-stage">
+                <div class="comp-side comp-left">
+                    <div style="font-size: 3rem;">📁</div>
+                    <h3>Burocracia</h3>
+                    <p>Trámites lentos, exigencia de pruebas excesivas, duda ante la víctima.</p>
+                </div>
+                <div class="comp-side comp-right">
+                    <div style="font-size: 3rem;">⚡</div>
+                    <h3>Acción UNP</h3>
+                    <p>Tiempos de respuesta inmediatos, presunción de buena fe, medidas cautelares.</p>
+                </div>
+            </div>
+            <br>
+            <button class="btn-outline" id="btn-s3" style="display:none;" onclick="navTo(4)">Activar Ruta ➜</button>
+        </div>
+
+        <!-- SCENE 4: RUTA (TIMELINE) -->
+        <div class="scene" id="s4">
+            <h2>Activación de la Ruta: Paso a Paso</h2>
+            <p>Haga clic en cada hito para avanzar en el proceso de protección.</p>
+            
+            <div class="timeline-container">
+                <div class="timeline-line"></div>
+                <div class="timeline-progress" id="tl-prog"></div>
+                
+                <div class="timeline-step" onclick="activateStep(1)">
+                    <strong>1. Recepción del Caso</strong>
+                    <div class="step-content" id="step-c-1">Escucha activa, empática y sin juicios. No exigir pruebas forenses inmediatas.</div>
+                </div>
+                <div class="timeline-step" onclick="activateStep(2)">
+                    <strong>2. Medidas Inmediatas</strong>
+                    <div class="step-content" id="step-c-2">Separación de espacios, teletrabajo o reubicación temporal para evitar contacto con el agresor.</div>
+                </div>
+                <div class="timeline-step" onclick="activateStep(3)">
+                    <strong>3. Acompañamiento</strong>
+                    <div class="step-content" id="step-c-3">Apoyo psicosocial y jurídico. Activación de la red externa (Fiscalía, Salud) si es necesario.</div>
+                </div>
+                <div class="timeline-step" onclick="activateStep(4)">
+                    <strong>4. Seguimiento</strong>
+                    <div class="step-content" id="step-c-4">Verificación de que las medidas se cumplen y la violencia ha cesado.</div>
+                </div>
+            </div>
+            <br>
+            <button class="btn-outline" id="btn-s4" style="display:none;" onclick="navTo(5)">Enfoque Rosa Elvira Cely ➜</button>
+        </div>
+
+        <!-- SCENE 5: LEY ROSA ELVIRA CELY -->
+        <div class="scene" id="s5">
+            <h2 style="color: var(--gender-purple);">Estándares Ley Rosa Elvira Cely</h2>
+            <p>La protección no es un favor, es un derecho reforzado.</p>
+            
+            <div class="shield-container">
+                <div class="shield-bg">🛡️</div>
+                
+                <div class="standard-orbit orbit-1">
+                    <strong>Protección Prioritaria</strong><br>La vida e integridad están por encima de trámites.
+                </div>
+                <div class="standard-orbit orbit-2" style="animation-name: floatSimple;">
+                    <strong>Trato Digno</strong><br>Prohibida la revictimización institucional.
+                </div>
+                <div class="standard-orbit orbit-3" style="animation-name: floatSimple;">
+                    <strong>No Repetición</strong><br>Garantías para que el hecho no vuelva a ocurrir.
+                </div>
+            </div>
+            <br><br>
+            <button class="btn-unp" onclick="navTo(6)">Simulación de Caso ➜</button>
+        </div>
+
+        <!-- SCENE 6: SIMULACIÓN (CHAT) -->
+        <div class="scene" id="s6">
+            <h2>Simulación de Decisión</h2>
+            <p>Analice el reporte y tome la decisión correcta bajo la Directiva 01.</p>
+            
+            <div class="chat-interface">
+                <div class="chat-header">
+                    <div style="width: 10px; height: 10px; background: #2ed573; border-radius: 50%;"></div>
+                    Reporte de Caso #UNP-2024-89
+                </div>
+                <div class="chat-body" id="chat-box">
+                    <div class="msg-system">Chat Iniciado - 09:00 AM</div>
+                    <div class="msg msg-in"><strong>Funcionaria:</strong> "Hola, quiero reportar que mi supervisor me hace comentarios sexuales constantes. Hoy me gritó porque no acepté salir con él. Tengo miedo de volver a la oficina."</div>
+                </div>
+                <div class="decision-panel" id="decision-opts">
+                    <button class="decision-btn" onclick="resolveCase(1)">A. "Cálmate. ¿Tienes pruebas grabadas? Sin pruebas no podemos hacer nada grave."</button>
+                    <button class="decision-btn" onclick="resolveCase(2)">B. "Te escuchamos. Activamos ruta inmediata: medidas de separación preventiva y apoyo psicosocial hoy mismo."</button>
+                    <button class="decision-btn" onclick="resolveCase(3)">C. "Voy a llamar al supervisor para confrontarlos a los dos y que arreglen esto hablando."</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE 7: CIERRE -->
+        <div class="scene" id="s7">
+            <div style="font-size: 5rem; color: var(--unp-red);">✅</div>
+            <h2>Módulo Finalizado</h2>
+            <p><strong>“En la UNP, la protección empieza cuando la ruta se activa.”</strong></p>
+            <div style="background: #eef; padding: 20px; border-radius: 8px; text-align: left; max-width: 600px;">
+                <p style="margin: 0;">Has recorrido los pasos clave para una atención efectiva, digna y con enfoque de género. Recuerda que tu diligencia puede salvar vidas.</p>
+            </div>
+            <br>
+            <button class="btn-outline" onclick="location.reload()">Reiniciar Módulo</button>
+        </div>
+
+    </div>
+
+    <!-- AYUDA FLOTANTE -->
+    <div class="fab-help" onclick="toggleModal()">?</div>
+    
+    <div class="modal" id="help-modal">
+        <div class="modal-content">
+            <h3 style="color: var(--unp-blue); border-bottom: 2px solid var(--unp-red); padding-bottom: 10px;">Glosario Operativo</h3>
+            <p><strong>Debida Diligencia Reforzada:</strong> Obligación de actuar con mayor celeridad y cuidado cuando hay riesgo de violencia de género.</p>
+            <p><strong>No Revictimización:</strong> Evitar someter a la víctima a interrogatorios repetitivos, juicios de valor o confrontaciones con el agresor.</p>
+            <p><strong>Ruta Efectiva:</strong> Aquella que produce resultados tangibles (protección) y no se queda en trámites administrativos.</p>
+            <button class="btn-unp" style="width: 100%; margin-top: 15px;" onclick="toggleModal()">Cerrar</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // --- NAVEGACIÓN ---
+    function navTo(num) {
+        document.querySelectorAll('.scene').forEach(s => s.classList.remove('active'));
+        document.getElementById('s' + num).classList.add('active');
+    }
+
+    // --- ESCENA 3: COMPARADOR ---
+    function toggleComparator() {
+        const btn = document.getElementById('comp-toggle');
+        const stage = document.getElementById('comp-stage');
+        const btnNext = document.getElementById('btn-s3');
+        
+        btn.classList.toggle('toggle-on');
+        stage.classList.toggle('comp-active');
+        
+        if (btn.classList.contains('toggle-on')) {
+            btnNext.style.display = 'inline-block';
+        }
+    }
+
+    // --- ESCENA 4: TIMELINE ---
+    let stepsUnlocked = 0;
+    function activateStep(stepNum) {
+        // Solo permite activar en orden
+        if (stepNum !== stepsUnlocked + 1) return;
+        
+        const step = document.querySelector(`.timeline-step:nth-child(${stepNum + 2})`); // +2 por line y progress divs
+        const content = document.getElementById(`step-c-${stepNum}`);
+        
+        step.classList.add('active');
+        content.style.display = 'block';
+        
+        // Update bar
+        const pct = (stepNum / 4) * 100;
+        document.getElementById('tl-prog').style.height = pct + '%';
+        
+        stepsUnlocked++;
+        if (stepsUnlocked === 4) {
+            document.getElementById('btn-s4').style.display = 'inline-block';
+        }
+    }
+
+    // --- ESCENA 6: SIMULACIÓN ---
+    function resolveCase(option) {
+        const chat = document.getElementById('chat-box');
+        const opts = document.getElementById('decision-opts');
+        
+        let reply = "";
+        let feedback = "";
+        let isCorrect = false;
+
+        if (option === 1) {
+            reply = "Opción A: Exigir pruebas de entrada.";
+            feedback = "❌ <strong>Incorrecto.</strong> Exigir pruebas plenas para activar la ruta es una barrera de acceso. La Directiva 01 exige creer en el relato inicial para proteger.";
+        } else if (option === 2) {
+            reply = "Opción B: Protección inmediata y escucha.";
+            feedback = "✅ <strong>¡Correcto!</strong> Esta es la Debida Diligencia Reforzada. Primero proteges (separación) y acompañas, luego investigas.";
+            isCorrect = true;
+        } else if (option === 3) {
+            reply = "Opción C: Confrontación (Careo).";
+            feedback = "❌ <strong>Peligroso.</strong> La Ley prohíbe la conciliación o confrontación en casos de violencia. Esto revictimiza y pone en riesgo a la denunciante.";
+        }
+
+        // Add User Msg
+        chat.innerHTML += `<div class="msg" style="background:var(--unp-blue); color:white; align-self:flex-end;">${reply}</div>`;
+        
+        // Add System Feedback
+        setTimeout(() => {
+            chat.innerHTML += `<div class="msg msg-system" style="text-align:left; color:#333; background:${isCorrect ? '#d4edda' : '#f8d7da'}; width:100%; max-width:100%;">${feedback}</div>`;
+            chat.scrollTop = chat.scrollHeight; // Auto scroll
+            
+            // Hide buttons, show continue
+            opts.innerHTML = `<button class="btn-unp" onclick="navTo(7)">${isCorrect ? 'Finalizar Módulo' : 'Reintentar Escenario'}</button>`;
+            if(!isCorrect) {
+                opts.querySelector('button').onclick = () => { location.reload(); }; // Simplificación para reintento
+                opts.querySelector('button').innerText = "Reiniciar Escenario";
+                opts.querySelector('button').style.background = "#555";
+            }
+        }, 600);
+    }
+
+    // --- MODAL ---
+    function toggleModal() {
+        const modal = document.getElementById('help-modal');
+        modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
+    }
+</script>
+
+</body>
+</html>
