@@ -1,0 +1,1532 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cartografía Social de Riesgos</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Work+Sans:wght@300;400;600;700&display=swap');
+        
+        :root {
+            --color-bg: #0d0d0d;
+            --color-surface: #1a1a1a;
+            --color-text: #e0e0e0;
+            --color-text-dim: #888;
+            --color-danger: #ff3b30;
+            --color-warning: #ff9500;
+            --color-critical: #ff2d55;
+            --color-accent: #ff453a;
+            --font-mono: 'JetBrains Mono', monospace;
+            --font-body: 'Work Sans', sans-serif;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: var(--font-body);
+            background: var(--color-bg);
+            color: var(--color-text);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+        
+        /* UTILIDADES */
+        .screen {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            position: relative;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        
+        .screen.hidden {
+            opacity: 0;
+            transform: scale(0.98);
+            pointer-events: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+        }
+        
+        .btn {
+            padding: 1rem 2.5rem;
+            background: transparent;
+            border: 2px solid var(--color-danger);
+            color: var(--color-text);
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--color-danger);
+            transition: left 0.3s ease;
+            z-index: -1;
+        }
+        
+        .btn:hover::before {
+            left: 0;
+        }
+        
+        .btn:hover {
+            color: #fff;
+            border-color: var(--color-danger);
+        }
+        
+        /* FASE 1: ADVERTENCIA */
+        .screen-warning {
+            text-align: center;
+            max-width: 800px;
+        }
+        
+        .warning-icon {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 2rem;
+            border: 3px solid var(--color-danger);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            animation: pulse-warning 2s ease-in-out infinite;
+            position: relative;
+        }
+        
+        .warning-icon::before {
+            content: '';
+            position: absolute;
+            inset: -10px;
+            border: 1px solid var(--color-danger);
+            opacity: 0.3;
+            animation: expand-ring 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse-warning {
+            0%, 100% { transform: scale(1); border-color: var(--color-danger); }
+            50% { transform: scale(1.05); border-color: var(--color-warning); }
+        }
+        
+        @keyframes expand-ring {
+            0% { transform: scale(1); opacity: 0.3; }
+            100% { transform: scale(1.3); opacity: 0; }
+        }
+        
+        .screen-warning h1 {
+            font-family: var(--font-mono);
+            font-size: clamp(1.4rem, 4vw, 2.2rem);
+            font-weight: 800;
+            line-height: 1.3;
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .screen-warning p {
+            font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+            font-weight: 300;
+            line-height: 1.7;
+            margin-bottom: 1rem;
+            color: var(--color-text-dim);
+        }
+        
+        .screen-warning p strong {
+            color: var(--color-danger);
+            font-weight: 600;
+        }
+        
+        /* FASE 2: CARTOGRAFÍA */
+        .screen-map {
+            flex-direction: column;
+            padding: 0;
+            align-items: stretch;
+        }
+        
+        .map-header {
+            background: var(--color-surface);
+            border-bottom: 2px solid var(--color-danger);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+        
+        .map-title {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--color-danger);
+        }
+        
+        .risk-meter {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .risk-label {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--color-text-dim);
+        }
+        
+        .risk-bar {
+            width: 200px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .risk-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--color-warning), var(--color-danger), var(--color-critical));
+            width: 0%;
+            transition: width 0.5s ease;
+            position: relative;
+        }
+        
+        .risk-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .risk-value {
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            font-weight: 700;
+            min-width: 50px;
+            text-align: right;
+            color: var(--color-danger);
+        }
+        
+        .map-container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 0;
+            flex: 1;
+            min-height: calc(100vh - 80px);
+        }
+        
+        .tags-panel {
+            background: var(--color-surface);
+            border-right: 2px solid rgba(255, 255, 255, 0.1);
+            padding: 2rem 1.5rem;
+            overflow-y: auto;
+        }
+        
+        .tags-panel h3 {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 1.5rem;
+            color: var(--color-warning);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 0.5rem;
+        }
+        
+        .tag {
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.75rem;
+            background: rgba(255, 69, 58, 0.1);
+            border: 1px solid rgba(255, 69, 58, 0.3);
+            border-left: 3px solid var(--color-danger);
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+            position: relative;
+        }
+        
+        .tag::after {
+            content: '→';
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--color-danger);
+            opacity: 0.5;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+        
+        .tag:hover {
+            background: rgba(255, 69, 58, 0.2);
+            border-color: var(--color-danger);
+            transform: translateX(5px);
+        }
+        
+        .tag:hover::after {
+            opacity: 1;
+            transform: translateY(-50%) translateX(3px);
+        }
+        
+        .tag.selected-for-drop {
+            background: var(--color-warning);
+            color: #000;
+            border-color: var(--color-warning);
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255, 149, 0, 0.6);
+        }
+        
+        .tag.selected-for-drop::after {
+            content: '✓';
+            color: #000;
+        }
+        
+        .tag.used {
+            opacity: 0.3;
+            cursor: not-allowed;
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .zone.ready-to-receive {
+            animation: readyPulse 1s ease-in-out infinite;
+            border-color: var(--color-warning);
+            background: rgba(255, 149, 0, 0.1);
+        }
+        
+        @keyframes readyPulse {
+            0%, 100% { 
+                box-shadow: 0 0 0 0 rgba(255, 149, 0, 0.7);
+            }
+            50% { 
+                box-shadow: 0 0 0 15px rgba(255, 149, 0, 0);
+            }
+        }
+        
+        .mobile-hint {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 149, 0, 0.95);
+            color: #000;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-align: center;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 10px 40px rgba(255, 149, 0, 0.5);
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        
+        .mobile-hint.visible {
+            display: block;
+        }
+        
+        @media (max-width: 768px) {
+            .mobile-hint {
+                bottom: 1rem;
+                padding: 0.875rem 1.5rem;
+                font-size: 0.8rem;
+                max-width: 90%;
+            }
+        }
+        
+        .map-canvas {
+            padding: 2rem;
+            position: relative;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(255, 59, 48, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(255, 149, 0, 0.02) 0%, transparent 50%);
+        }
+        
+        .instruction {
+            position: relative;
+            background: rgba(255, 69, 58, 0.15);
+            border: 2px solid var(--color-danger);
+            border-left: 6px solid var(--color-danger);
+            padding: 1.5rem;
+            font-family: var(--font-body);
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .instruction-title {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--color-danger);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .instruction-title::before {
+            content: '▸';
+            font-size: 1.2rem;
+        }
+        
+        .instruction-step {
+            margin-bottom: 0.75rem;
+            padding-left: 1.5rem;
+            position: relative;
+            line-height: 1.6;
+        }
+        
+        .instruction-step::before {
+            content: attr(data-step);
+            position: absolute;
+            left: 0;
+            background: var(--color-danger);
+            color: #fff;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 700;
+            font-family: var(--font-mono);
+        }
+        
+        .instruction-step.completed {
+            opacity: 0.5;
+            text-decoration: line-through;
+        }
+        
+        .instruction-step.active {
+            color: var(--color-warning);
+            font-weight: 600;
+        }
+        
+        .instruction-step.active::before {
+            background: var(--color-warning);
+            animation: pulse-step 1s ease-in-out infinite;
+        }
+        
+        @keyframes pulse-step {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .zones-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 3rem;
+            position: relative;
+        }
+        
+        .zone {
+            background: rgba(255, 255, 255, 0.02);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            min-height: 200px;
+            position: relative;
+            transition: all 0.4s ease;
+            cursor: pointer;
+        }
+        
+        .zone::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent, rgba(255, 69, 58, 0.05));
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        
+        .zone::after {
+            content: 'Clic para activar';
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--color-warning);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .zone:hover::before {
+            opacity: 1;
+        }
+        
+        .zone:hover::after {
+            opacity: 1;
+        }
+        
+        .zone.active {
+            border-color: var(--color-danger);
+            background: rgba(255, 69, 58, 0.05);
+        }
+        
+        .zone.active::after {
+            content: '✓ ZONA ACTIVADA';
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: var(--color-danger);
+            color: #fff;
+            padding: 0.4rem 0.8rem;
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-radius: 2px;
+        }
+        
+        @keyframes pulse-border {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+        
+        .zone-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: block;
+            filter: grayscale(1);
+            transition: filter 0.4s ease;
+        }
+        
+        .zone.active .zone-icon {
+            filter: grayscale(0);
+        }
+        
+        .zone-name {
+            font-family: var(--font-mono);
+            font-size: 1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+            letter-spacing: 1px;
+        }
+        
+        .zone-description {
+            font-size: 0.85rem;
+            color: var(--color-text-dim);
+            line-height: 1.6;
+        }
+        
+        .zone-tags {
+            margin-top: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            min-height: 40px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 1rem;
+        }
+        
+        .zone-tag {
+            padding: 0.4rem 0.8rem;
+            background: rgba(255, 69, 58, 0.2);
+            border: 1px solid var(--color-danger);
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            animation: tagAppear 0.3s ease;
+        }
+        
+        @keyframes tagAppear {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        .zone.dropzone-active {
+            border-color: var(--color-warning);
+            background: rgba(255, 149, 0, 0.15);
+            transform: scale(1.02);
+        }
+        
+        /* FASE 3: TIEMPO */
+        .timeline-section {
+            margin-top: 3rem;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .timeline-header {
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 1.5rem;
+            color: var(--color-warning);
+        }
+        
+        .timeline {
+            display: flex;
+            gap: 1rem;
+            overflow-x: auto;
+            padding-bottom: 1rem;
+        }
+        
+        .time-slot {
+            min-width: 180px;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .time-slot:hover {
+            border-color: var(--color-warning);
+            background: rgba(255, 149, 0, 0.05);
+        }
+        
+        .time-slot.selected {
+            border-color: var(--color-danger);
+            background: rgba(255, 69, 58, 0.1);
+        }
+        
+        .time-slot.selected::before {
+            content: '✓';
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            color: var(--color-danger);
+            font-weight: 700;
+        }
+        
+        .time-slot h4 {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+        
+        .time-slot p {
+            font-size: 0.75rem;
+            color: var(--color-text-dim);
+        }
+        
+        .phrases-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 5;
+        }
+        
+        .floating-phrase {
+            position: absolute;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 45, 85, 0.25);
+            border: 1px solid rgba(255, 45, 85, 0.6);
+            font-size: 0.85rem;
+            font-style: italic;
+            color: var(--color-text);
+            backdrop-filter: blur(4px);
+            transform-origin: center;
+            animation: phraseFloat 0.6s ease-out;
+            box-shadow: 0 4px 20px rgba(255, 45, 85, 0.4);
+        }
+        
+        @keyframes phraseFloat {
+            from {
+                opacity: 0;
+                transform: scale(0.5) translateY(100px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+        
+        .floating-phrase::before {
+            content: '"';
+            position: absolute;
+            left: 0.3rem;
+            top: 0.2rem;
+            font-size: 1.2rem;
+            opacity: 0.4;
+            font-family: serif;
+        }
+        
+        .floating-phrase::after {
+            content: '"';
+            position: absolute;
+            right: 0.3rem;
+            bottom: 0.2rem;
+            font-size: 1.2rem;
+            opacity: 0.4;
+            font-family: serif;
+        }
+        
+        /* Efecto de oscurecimiento progresivo */
+        .zones-grid.contaminated::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 45, 85, 0.05);
+            pointer-events: none;
+            z-index: 1;
+            transition: background 0.5s ease;
+        }
+        
+        .zones-grid.heavily-contaminated::before {
+            background: rgba(255, 45, 85, 0.15);
+            margin-top: 3rem;
+            padding: 2rem;
+            background: rgba(255, 59, 48, 0.03);
+            border: 2px solid rgba(255, 59, 48, 0.2);
+        }
+        
+        .phrases-header {
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 1.5rem;
+            color: var(--color-critical);
+        }
+        
+        .phrases-cloud {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            padding: 2rem;
+        }
+        
+        .phrase {
+            padding: 0.75rem 1.25rem;
+            background: rgba(255, 45, 85, 0.15);
+            border: 1px solid rgba(255, 45, 85, 0.4);
+            font-size: 0.9rem;
+            font-style: italic;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            user-select: none;
+            position: relative;
+        }
+        
+        .phrase::before {
+            content: '"';
+            position: absolute;
+            left: 0.5rem;
+            top: 0.5rem;
+            font-size: 1.5rem;
+            opacity: 0.3;
+            font-family: serif;
+        }
+        
+        .phrase::after {
+            content: '"';
+            position: absolute;
+            right: 0.5rem;
+            bottom: 0.5rem;
+            font-size: 1.5rem;
+            opacity: 0.3;
+            font-family: serif;
+        }
+        
+        .phrase:hover {
+            background: rgba(255, 45, 85, 0.25);
+            border-color: var(--color-critical);
+            transform: scale(1.05);
+        }
+        
+        .phrase.used {
+            opacity: 0.2;
+            cursor: not-allowed;
+            transform: scale(0.95);
+        }
+        
+        .continue-btn-container {
+            margin-top: 3rem;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .continue-btn {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+        
+        .continue-btn.enabled {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        /* FASE 5: REVELACIÓN */
+        .screen-revelation {
+            text-align: center;
+            max-width: 900px;
+        }
+        
+        .revelation-icon {
+            font-size: 4rem;
+            margin-bottom: 2rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+        
+        .revelation-title {
+            font-family: var(--font-mono);
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            font-weight: 800;
+            line-height: 1.3;
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .revelation-text {
+            font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+            font-weight: 300;
+        }
+        
+        .revelation-text strong {
+            color: var(--color-danger);
+            font-weight: 700;
+        }
+        
+        .revelation-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 3rem 0;
+        }
+        
+        .stat-card {
+            padding: 2rem;
+            background: rgba(255, 69, 58, 0.05);
+            border: 2px solid var(--color-danger);
+            border-left: 6px solid var(--color-danger);
+        }
+        
+        .stat-value {
+            font-family: var(--font-mono);
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--color-danger);
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--color-text-dim);
+        }
+        
+        .institutional-box {
+            margin-top: 3rem;
+            padding: 2.5rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            text-align: left;
+        }
+        
+        .institutional-box h3 {
+            font-family: var(--font-mono);
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+            color: var(--color-warning);
+            letter-spacing: 1px;
+        }
+        
+        .institutional-box ul {
+            list-style: none;
+        }
+        
+        .institutional-box li {
+            padding-left: 1.5rem;
+            margin-bottom: 1rem;
+            position: relative;
+            line-height: 1.7;
+        }
+        
+        .institutional-box li::before {
+            content: '▸';
+            position: absolute;
+            left: 0;
+            color: var(--color-danger);
+            font-weight: 700;
+        }
+        
+        .final-message {
+            margin-top: 3rem;
+            padding: 2.5rem;
+            background: rgba(255, 59, 48, 0.1);
+            border: 3px solid var(--color-danger);
+            font-size: clamp(1.1rem, 2.5vw, 1.3rem);
+            font-weight: 600;
+            line-height: 1.6;
+        }
+        
+        /* RESPONSIVE */
+        @media (max-width: 1024px) {
+            .map-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .tags-panel {
+                border-right: none;
+                border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+                padding: 1.5rem;
+                max-height: none;
+            }
+            
+            .tags-panel h3 {
+                margin-bottom: 1rem;
+            }
+            
+            #tags-container {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.75rem;
+            }
+            
+            .tag {
+                margin-bottom: 0;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .map-header {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 1rem;
+            }
+            
+            .risk-meter {
+                width: 100%;
+                justify-content: space-between;
+                flex-wrap: wrap;
+            }
+            
+            .risk-label {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+            
+            .risk-bar {
+                flex: 1;
+                min-width: 150px;
+            }
+            
+            .zones-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .zone {
+                padding: 1.5rem;
+                min-height: 180px;
+            }
+            
+            .revelation-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .map-canvas {
+                padding: 1rem;
+            }
+            
+            .timeline-section {
+                padding: 1.5rem;
+            }
+            
+            .timeline {
+                flex-direction: column;
+            }
+            
+            .time-slot {
+                min-width: 100%;
+            }
+            
+            .phrases-section {
+                padding: 1.5rem;
+            }
+            
+            .phrases-cloud {
+                padding: 1rem;
+                gap: 0.75rem;
+            }
+            
+            .phrase {
+                font-size: 0.8rem;
+                padding: 0.6rem 1rem;
+            }
+            
+            .floating-phrase {
+                font-size: 0.75rem;
+                padding: 0.4rem 0.8rem;
+            }
+            
+            #tags-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .instruction {
+                position: relative;
+                top: 0;
+                margin-bottom: 1.5rem;
+                padding: 1rem;
+                font-size: 0.85rem;
+            }
+            
+            .instruction-step {
+                font-size: 0.85rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .screen-warning h1 {
+                font-size: 1.2rem;
+            }
+            
+            .screen-warning p {
+                font-size: 1rem;
+            }
+            
+            .btn {
+                padding: 0.875rem 1.75rem;
+                font-size: 0.8rem;
+            }
+            
+            .zone-icon {
+                font-size: 2rem;
+            }
+            
+            .zone-name {
+                font-size: 0.9rem;
+            }
+            
+            .zone-description {
+                font-size: 0.8rem;
+            }
+            
+            .stat-value {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- FASE 1: ADVERTENCIA -->
+    <div class="screen screen-warning" id="screen-warning">
+        <div>
+            <div class="warning-icon">⚠</div>
+            <h1>El riesgo no está<br>en las personas</h1>
+            <p><strong>Está en los lugares, los momentos y las dinámicas</strong></p>
+            <p>que todos conocen.</p>
+            <button class="btn" onclick="enterMap()">Entrar al Mapa</button>
+        </div>
+    </div>
+
+    <!-- FASE 2, 3, 4: CARTOGRAFÍA -->
+    <div class="screen screen-map hidden" id="screen-map">
+        <div class="map-header">
+            <div class="map-title">Cartografía de Riesgos</div>
+            <div class="risk-meter">
+                <span class="risk-label">Nivel de Riesgo Acumulado</span>
+                <div class="risk-bar">
+                    <div class="risk-fill" id="risk-fill"></div>
+                </div>
+                <span class="risk-value" id="risk-value">0%</span>
+            </div>
+        </div>
+        
+        <div class="map-container">
+            <div class="tags-panel">
+                <h3>Factores de Riesgo</h3>
+                <div id="tags-container">
+                    <div class="tag" data-tag="jerarquía">Jerarquía</div>
+                    <div class="tag" data-tag="aislamiento">Aislamiento</div>
+                    <div class="tag" data-tag="dependencia">Dependencia</div>
+                    <div class="tag" data-tag="silencio">Silencio</div>
+                    <div class="tag" data-tag="normalización">Normalización</div>
+                    <div class="tag" data-tag="impunidad">Impunidad</div>
+                </div>
+            </div>
+            
+            <div class="map-canvas">
+                <div class="instruction" id="instruction">
+                    <div class="instruction-title">INSTRUCCIONES PASO A PASO</div>
+                    <div class="instruction-step active" data-step="1" id="step-1">
+                        <strong>Paso 1:</strong> Haga clic en las zonas para activarlas (mínimo 3)
+                    </div>
+                    <div class="instruction-step" data-step="2" id="step-2">
+                        <strong>Paso 2:</strong> Seleccione un factor de riesgo, luego haga clic en una zona activada
+                    </div>
+                    <div class="instruction-step" data-step="3" id="step-3">
+                        <strong>Paso 3:</strong> Seleccione momentos críticos en la línea de tiempo más abajo
+                    </div>
+                    <div class="instruction-step" data-step="4" id="step-4">
+                        <strong>Paso 4:</strong> Haga clic en las frases del "Muro del Silencio" (verá aparecer en el mapa)
+                    </div>
+                </div>
+                
+                <div class="zones-grid" id="zones-grid">
+                    <div class="zone" data-zone="oficina" onclick="activateZone('oficina')">
+                        <span class="zone-icon">🏢</span>
+                        <div class="zone-name">Oficinas Cerradas</div>
+                        <div class="zone-description">Espacios privados, sin testigos, con dinámicas de poder.</div>
+                        <div class="zone-tags" data-dropzone="oficina"></div>
+                    </div>
+                    
+                    <div class="zone" data-zone="vehiculo" onclick="activateZone('vehiculo')">
+                        <span class="zone-icon">🚗</span>
+                        <div class="zone-name">Vehículos Institucionales</div>
+                        <div class="zone-description">Traslados, viajes, patrullajes. Espacios móviles de control.</div>
+                        <div class="zone-tags" data-dropzone="vehiculo"></div>
+                    </div>
+                    
+                    <div class="zone" data-zone="nocturno" onclick="activateZone('nocturno')">
+                        <span class="zone-icon">🌙</span>
+                        <div class="zone-name">Turnos Nocturnos</div>
+                        <div class="zone-description">Personal reducido, menos supervisión, mayor vulnerabilidad.</div>
+                        <div class="zone-tags" data-dropzone="nocturno"></div>
+                    </div>
+                    
+                    <div class="zone" data-zone="aislado" onclick="activateZone('aislado')">
+                        <span class="zone-icon">📍</span>
+                        <div class="zone-name">Zonas Aisladas</div>
+                        <div class="zone-description">Puestos remotos, áreas sin cámaras, espacios sin presencia.</div>
+                        <div class="zone-tags" data-dropzone="aislado"></div>
+                    </div>
+                    
+                    <div class="zone" data-zone="evaluacion" onclick="activateZone('evaluacion')">
+                        <span class="zone-icon">📋</span>
+                        <div class="zone-name">Evaluaciones</div>
+                        <div class="zone-description">Momentos de dependencia máxima, poder sobre trayectorias.</div>
+                        <div class="zone-tags" data-dropzone="evaluacion"></div>
+                    </div>
+                    
+                    <div class="zone" data-zone="social" onclick="activateZone('social')">
+                        <span class="zone-icon">🍷</span>
+                        <div class="zone-name">Espacios Sociales</div>
+                        <div class="zone-description">Reuniones informales, celebraciones, límites difusos.</div>
+                        <div class="zone-tags" data-dropzone="social"></div>
+                    </div>
+                </div>
+                
+                <!-- Capa de frases que aparecen sobre el mapa -->
+                <div class="phrases-overlay" id="phrases-overlay"></div>
+                
+                <!-- FASE 3: TIEMPO -->
+                <div class="timeline-section">
+                    <div class="timeline-header">⏰ Momentos Críticos (Seleccione)</div>
+                    <div class="timeline" id="timeline">
+                        <div class="time-slot" onclick="selectTime(this)">
+                            <h4>Turnos Nocturnos</h4>
+                            <p>Menos personal, mayor exposición</p>
+                        </div>
+                        <div class="time-slot" onclick="selectTime(this)">
+                            <h4>Viajes de Trabajo</h4>
+                            <p>Fuera del entorno habitual</p>
+                        </div>
+                        <div class="time-slot" onclick="selectTime(this)">
+                            <h4>Evaluaciones</h4>
+                            <p>Dependencia laboral máxima</p>
+                        </div>
+                        <div class="time-slot" onclick="selectTime(this)">
+                            <h4>Fin de Contrato</h4>
+                            <p>Vulnerabilidad por renovación</p>
+                        </div>
+                        <div class="time-slot" onclick="selectTime(this)">
+                            <h4>Periodo de Prueba</h4>
+                            <p>Imposibilidad de quejarse</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- FASE 4: LENGUAJE -->
+                <div class="phrases-section">
+                    <div class="phrases-header">🗨 Muro del Silencio: Frases Normalizadas</div>
+                    <p style="text-align: center; margin-bottom: 1.5rem; color: var(--color-text);">
+                        <strong>Estas frases contaminan el mapa.</strong><br>
+                        <span style="font-size: 0.9rem; color: var(--color-text-dim);">
+                            Haga clic en cada frase para agregarla al mapa.<br>
+                            Aparecerán flotando sobre las zonas, oscureciendo los espacios.
+                        </span>
+                    </p>
+                    <div class="phrases-cloud" id="phrases-cloud">
+                        <div class="phrase" data-phrase="1">Él es así</div>
+                        <div class="phrase" data-phrase="2">No exagere</div>
+                        <div class="phrase" data-phrase="3">Aguante</div>
+                        <div class="phrase" data-phrase="4">No se meta en problemas</div>
+                        <div class="phrase" data-phrase="5">Es parte del trabajo</div>
+                        <div class="phrase" data-phrase="6">Tiene que ser más fuerte</div>
+                        <div class="phrase" data-phrase="7">Todos pasamos por eso</div>
+                        <div class="phrase" data-phrase="8">¿Y por qué no dijo nada antes?</div>
+                    </div>
+                </div>
+                
+                <div class="continue-btn-container">
+                    <button class="btn continue-btn" id="continue-btn" onclick="showRevelation()">
+                        Ver Revelación Final
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FASE 5: REVELACIÓN -->
+    <div class="screen screen-revelation hidden" id="screen-revelation">
+        <div>
+            <div class="revelation-icon">⚠️</div>
+            <h2 class="revelation-title">Estas zonas no son secretas</h2>
+            <p class="revelation-text">
+                El riesgo <strong>persiste</strong> porque se <strong>normaliza</strong>.
+            </p>
+            <p class="revelation-text">
+                No son casos aislados.<br>
+                Son <strong>patrones estructurales</strong> que todos reconocen.
+            </p>
+            
+            <div class="revelation-stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-zones">0</div>
+                    <div class="stat-label">Zonas Identificadas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-factors">0</div>
+                    <div class="stat-label">Factores Asignados</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-phrases">0</div>
+                    <div class="stat-label">Frases Normalizadoras</div>
+                </div>
+            </div>
+            
+            <div class="institutional-box">
+                <h3>Directiva Presidencial 01 de 2023</h3>
+                <ul>
+                    <li>La prevención debe ser <strong>estructural</strong>, no reactiva ni individual.</li>
+                    <li>Identificar y transformar espacios, dinámicas y momentos de riesgo.</li>
+                    <li>Rutas de atención efectivas con <strong>enfoque de género</strong>.</li>
+                    <li>Protocolos que protejan a quien denuncia, no que revictimicen.</li>
+                    <li>Consecuencias reales para quienes ejercen violencia.</li>
+                </ul>
+            </div>
+            
+            <div class="final-message">
+                Cuando el riesgo es cartografiable,<br>
+                cuando todos conocen las zonas,<br>
+                cuando el lenguaje lo sostiene:<br><br>
+                <strong>El silencio deja de ser individual<br>
+                y se convierte en sistema.</strong>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ESTADO DEL JUEGO
+        const gameState = {
+            riskLevel: 0,
+            zonesActivated: new Set(),
+            factorsAssigned: 0,
+            timesSelected: new Set(),
+            phrasesUsed: 0,
+            zoneFactors: {},
+            currentStep: 1
+        };
+        
+        // ACTUALIZAR PROGRESO DE INSTRUCCIONES
+        function updateInstructionProgress() {
+            // Paso 1: Activar zonas
+            if (gameState.zonesActivated.size >= 3 && gameState.currentStep === 1) {
+                document.getElementById('step-1').classList.remove('active');
+                document.getElementById('step-1').classList.add('completed');
+                document.getElementById('step-2').classList.add('active');
+                gameState.currentStep = 2;
+            }
+            
+            // Paso 2: Arrastrar factores
+            if (gameState.factorsAssigned >= 4 && gameState.currentStep === 2) {
+                document.getElementById('step-2').classList.remove('active');
+                document.getElementById('step-2').classList.add('completed');
+                document.getElementById('step-3').classList.add('active');
+                gameState.currentStep = 3;
+            }
+            
+            // Paso 3: Seleccionar tiempos
+            if (gameState.timesSelected.size >= 2 && gameState.currentStep === 3) {
+                document.getElementById('step-3').classList.remove('active');
+                document.getElementById('step-3').classList.add('completed');
+                document.getElementById('step-4').classList.add('active');
+                gameState.currentStep = 4;
+            }
+            
+            // Paso 4: Arrastrar frases
+            if (gameState.phrasesUsed >= 2 && gameState.currentStep === 4) {
+                document.getElementById('step-4').classList.remove('active');
+                document.getElementById('step-4').classList.add('completed');
+            }
+        }
+
+        // SISTEMA DE CLICK PARA FACTORES
+        const tags = document.querySelectorAll('.tag');
+        const dropzones = document.querySelectorAll('[data-dropzone]');
+        
+        let selectedTag = null;
+        
+        tags.forEach(tag => {
+            // Eliminar atributo draggable
+            tag.removeAttribute('draggable');
+            
+            // Click para seleccionar
+            tag.addEventListener('click', (e) => {
+                if (tag.classList.contains('used')) return;
+                
+                e.stopPropagation();
+                
+                // Deseleccionar otros
+                document.querySelectorAll('.tag').forEach(t => t.classList.remove('selected-for-drop'));
+                
+                // Seleccionar este
+                tag.classList.add('selected-for-drop');
+                selectedTag = tag;
+                
+                // Activar zonas para recibir
+                document.querySelectorAll('.zone.active').forEach(z => z.classList.add('ready-to-receive'));
+                
+                // Mostrar hint
+                showMobileHint('Ahora haga clic en una zona activada para asignar este factor');
+            });
+        });
+        
+        // CLICK EN ZONAS PARA ASIGNAR FACTORES
+        dropzones.forEach(zone => {
+            zone.parentElement.addEventListener('click', (e) => {
+                if (!selectedTag || !zone.parentElement.classList.contains('active')) return;
+                
+                const tagText = selectedTag.dataset.tag;
+                const zoneId = zone.dataset.dropzone;
+                
+                // Agregar tag visual
+                const zoneTag = document.createElement('div');
+                zoneTag.className = 'zone-tag';
+                zoneTag.textContent = tagText;
+                zone.appendChild(zoneTag);
+                
+                // Marcar como usado
+                selectedTag.classList.add('used');
+                selectedTag.classList.remove('selected-for-drop');
+                
+                // Actualizar estado
+                gameState.factorsAssigned++;
+                if (!gameState.zoneFactors[zoneId]) {
+                    gameState.zoneFactors[zoneId] = [];
+                }
+                gameState.zoneFactors[zoneId].push(tagText);
+                
+                updateRiskLevel(5);
+                updateInstructionProgress();
+                showMobileHint('✓ Factor asignado correctamente');
+                
+                // Limpiar estado
+                selectedTag = null;
+                document.querySelectorAll('.zone').forEach(z => z.classList.remove('ready-to-receive'));
+            });
+        });
+        
+        // SISTEMA DE CLICK PARA FRASES
+        const phrases = document.querySelectorAll('.phrase');
+        const phrasesOverlay = document.getElementById('phrases-overlay');
+        
+        function addPhraseToMap(phraseText) {
+            // Crear frase flotante en posición aleatoria
+            const floatingPhrase = document.createElement('div');
+            floatingPhrase.className = 'floating-phrase';
+            floatingPhrase.textContent = phraseText;
+            
+            // Posición aleatoria dentro del área del mapa
+            const randomTop = Math.random() * 70 + 10; // 10% a 80%
+            const randomLeft = Math.random() * 70 + 10; // 10% a 80%
+            const randomRotate = Math.random() * 10 - 5; // -5deg a 5deg
+            
+            floatingPhrase.style.top = randomTop + '%';
+            floatingPhrase.style.left = randomLeft + '%';
+            floatingPhrase.style.transform = `rotate(${randomRotate}deg)`;
+            
+            phrasesOverlay.appendChild(floatingPhrase);
+            
+            // Aplicar contaminación visual al grid
+            const zonesGrid = document.getElementById('zones-grid');
+            if (gameState.phrasesUsed >= 4) {
+                zonesGrid.classList.add('heavily-contaminated');
+            } else if (gameState.phrasesUsed >= 2) {
+                zonesGrid.classList.add('contaminated');
+            }
+        }
+        
+        phrases.forEach(phrase => {
+            // Eliminar atributo draggable
+            phrase.removeAttribute('draggable');
+            
+            // Click para usar
+            phrase.addEventListener('click', (e) => {
+                if (phrase.classList.contains('used')) return;
+                
+                e.stopPropagation();
+                const phraseText = phrase.textContent;
+                phrase.classList.add('used');
+                gameState.phrasesUsed++;
+                
+                // Agregar frase al mapa visualmente
+                addPhraseToMap(phraseText);
+                
+                updateRiskLevel(8);
+                updateInstructionProgress();
+                showMobileHint('✓ La frase ahora contamina el mapa');
+            });
+        });
+        
+        // ACTIVAR ZONAS
+        function activateZone(zoneId) {
+            const zone = document.querySelector(`[data-zone="${zoneId}"]`);
+            if (!zone.classList.contains('active')) {
+                zone.classList.add('active');
+                gameState.zonesActivated.add(zoneId);
+                updateRiskLevel(10);
+                updateInstructionProgress();
+            }
+        }
+        
+        // SELECCIONAR TIEMPO
+        function selectTime(element) {
+            if (!element.classList.contains('selected')) {
+                element.classList.add('selected');
+                gameState.timesSelected.add(element.querySelector('h4').textContent);
+                updateRiskLevel(7);
+                updateInstructionProgress();
+            }
+        }
+        
+        // ACTUALIZAR NIVEL DE RIESGO
+        function updateRiskLevel(increment) {
+            gameState.riskLevel = Math.min(100, gameState.riskLevel + increment);
+            document.getElementById('risk-fill').style.width = gameState.riskLevel + '%';
+            document.getElementById('risk-value').textContent = gameState.riskLevel + '%';
+            
+            // Habilitar botón cuando hay suficiente interacción
+            if (gameState.zonesActivated.size >= 3 && 
+                gameState.factorsAssigned >= 4 && 
+                gameState.phrasesUsed >= 2) {
+                document.getElementById('continue-btn').classList.add('enabled');
+            }
+        }
+        
+        // MOSTRAR HINTS MÓVILES
+        let hintTimeout;
+        function showMobileHint(message) {
+            const hint = document.getElementById('mobile-hint');
+            hint.textContent = message;
+            hint.classList.add('visible');
+            
+            clearTimeout(hintTimeout);
+            hintTimeout = setTimeout(() => {
+                hint.classList.remove('visible');
+            }, 2500);
+        }
+        
+        // NAVEGACIÓN
+        function enterMap() {
+            document.getElementById('screen-warning').classList.add('hidden');
+            document.getElementById('screen-map').classList.remove('hidden');
+            
+            // Mostrar hint de bienvenida
+            setTimeout(() => {
+                showMobileHint('Instrucciones: Primero active zonas con clic, luego asigne factores');
+            }, 1000);
+        }
+        
+        function showRevelation() {
+            // Actualizar estadísticas
+            document.getElementById('stat-zones').textContent = gameState.zonesActivated.size;
+            document.getElementById('stat-factors').textContent = gameState.factorsAssigned;
+            document.getElementById('stat-phrases').textContent = gameState.phrasesUsed;
+            
+            document.getElementById('screen-map').classList.add('hidden');
+            document.getElementById('screen-revelation').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+    
+    <!-- Hint móvil para feedback contextual -->
+    <div class="mobile-hint" id="mobile-hint"></div>
+</body>
+</html>
