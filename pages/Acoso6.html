@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análisis de Riesgo Estructural</title>
+    <style>
+        /* --- VARIABLES & ESTÉTICA INSTITUCIONAL (SEGURIDAD/PROTECCIÓN) --- */
+        :root {
+            --primary: #1a2a44; /* Azul Profundo (Institucional) */
+            --secondary: #3e5c76; /* Azul Acero */
+            --accent: #c1292e; /* Rojo Alerta */
+            --highlight: #f1d302; /* Amarillo Precaución */
+            --bg-tech: #f0f4f8;
+            --text-dark: #232528;
+            --text-light: #5a6b7c;
+            --white: #ffffff;
+            --radius: 6px; /* Bordes más rectos para seriedad */
+            --shadow: 0 4px 15px rgba(26, 42, 68, 0.15);
+            --font: 'Segoe UI', Tahoma, sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--font); }
+
+        body {
+            background-color: #dee2e6;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            /* Fondo tipo malla técnica sutil */
+            background-image: linear-gradient(#ccc 1px, transparent 1px), linear-gradient(90deg, #ccc 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        /* --- CONTENEDOR PRINCIPAL (LA TABLET/CONSOLA) --- */
+        #main-console {
+            width: 100%;
+            max-width: 1100px;
+            height: 95vh;
+            background: var(--white);
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        @media (min-width: 1024px) { #main-console { border-radius: 12px; height: 90vh; } }
+
+        /* --- HEADER --- */
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 4px solid var(--accent);
+            z-index: 100;
+        }
+        
+        .sys-id { font-family: 'Courier New', monospace; font-size: 0.8rem; opacity: 0.7; letter-spacing: 2px; }
+        .title h1 { font-size: 1.2rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* --- VIEWPORT (ÁREA CAMBIANTE) --- */
+        .viewport {
+            flex: 1;
+            position: relative;
+            background: var(--bg-tech);
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; min-height: 100%;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0; pointer-events: none;
+            transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+            transform: scale(0.98);
+        }
+
+        .screen.active {
+            opacity: 1; pointer-events: all;
+            transform: scale(1); z-index: 10;
+        }
+
+        /* --- UI ELEMENTS --- */
+        h2 { color: var(--primary); margin-bottom: 1.5rem; font-size: 1.8rem; text-align: center; }
+        p { max-width: 700px; text-align: center; color: var(--text-light); margin-bottom: 2rem; line-height: 1.6; }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: bold;
+            transition: 0.3s;
+            border-radius: 4px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .btn:hover { background: var(--secondary); transform: translateY(-2px); }
+
+        /* --- SCREEN 1: INTRO (RUPTURA) --- */
+        .intro-graphic {
+            width: 150px; height: 150px;
+            border: 4px solid var(--primary);
+            border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+        .intro-graphic::before {
+            content: ''; position: absolute; width: 100%; height: 100%;
+            border: 2px dashed var(--secondary); border-radius: 50%;
+            animation: spin 10s linear infinite;
+        }
+        .intro-icon { font-size: 4rem; }
+
+        /* --- SCREEN 2: EXPLORADOR (RADAR/BLUEPRINT) --- */
+        .blueprint-container {
+            width: 100%; max-width: 600px; height: 400px;
+            position: relative;
+            background-image: 
+                linear-gradient(var(--secondary) 1px, transparent 1px),
+                linear-gradient(90deg, var(--secondary) 1px, transparent 1px);
+            background-size: 100px 100px;
+            border: 2px solid var(--secondary);
+            margin-bottom: 20px;
+            display: flex; justify-content: center; align-items: center;
+        }
+        
+        /* Central Structure */
+        .structure-shape {
+            width: 200px; height: 200px;
+            border: 4px solid var(--primary);
+            transform: rotate(45deg);
+            position: absolute;
+            background: rgba(26, 42, 68, 0.05);
+        }
+
+        .hotspot {
+            position: absolute;
+            width: 40px; height: 40px;
+            background: var(--accent);
+            color: white;
+            border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer;
+            font-size: 1.2rem;
+            box-shadow: 0 0 0 rgba(193, 41, 46, 0.4);
+            animation: pulseRed 2s infinite;
+            transition: 0.3s;
+            z-index: 5;
+        }
+        .hotspot:hover { transform: scale(1.2); z-index: 10; }
+        .hotspot.read { background: var(--secondary); animation: none; box-shadow: none; }
+
+        /* Posiciones */
+        .hs-1 { top: 10%; left: 50%; transform: translateX(-50%); } /* Jerarquía */
+        .hs-2 { bottom: 10%; left: 50%; transform: translateX(-50%); } /* Silencio */
+        .hs-3 { top: 50%; left: 10%; transform: translateY(-50%); } /* Fuerza */
+        .hs-4 { top: 50%; right: 10%; transform: translateY(-50%); } /* Masculinización */
+        .hs-5 { top: 50%; left: 50%; transform: translate(-50%, -50%); } /* Dependencia */
+
+        /* Modal Info */
+        .info-panel {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            width: 90%; max-width: 500px;
+            background: white; padding: 15px; border-left: 5px solid var(--primary);
+            box-shadow: var(--shadow);
+            display: none; animation: slideUp 0.3s;
+        }
+
+        /* --- SCREEN 3: COMPARADOR (GAUGE) --- */
+        .compare-layout { display: flex; gap: 30px; width: 100%; max-width: 900px; align-items: center; }
+        .controls-col { flex: 1; display: flex; flex-direction: column; gap: 15px; }
+        .meter-col { flex: 1; display: flex; flex-direction: column; align-items: center; }
+
+        .toggle-card {
+            background: white; padding: 15px; border: 1px solid #ccc; border-radius: 4px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        
+        /* Custom Switch */
+        .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--accent); }
+        input:checked + .slider:before { transform: translateX(26px); }
+
+        /* Medidor de Riesgo */
+        .risk-meter-bg {
+            width: 60px; height: 250px; background: #ddd; border-radius: 30px;
+            position: relative; overflow: hidden; border: 2px solid #bbb;
+        }
+        .risk-fill {
+            position: absolute; bottom: 0; width: 100%; height: 20%; /* Base level */
+            background: linear-gradient(to top, #28a745, #f1d302, #c1292e);
+            transition: height 0.8s ease-out;
+        }
+        .risk-label { margin-top: 15px; font-weight: bold; font-size: 1.2rem; color: var(--text-dark); }
+
+        /* --- SCREEN 4: NORMALIZACIÓN (CARDS) --- */
+        .phrase-card {
+            background: white; border-top: 5px solid var(--primary);
+            padding: 2rem; width: 100%; max-width: 500px;
+            box-shadow: var(--shadow); text-align: center;
+            margin-bottom: 2rem;
+            min-height: 150px; display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; font-weight: 500; font-style: italic;
+        }
+        .decision-btns { display: flex; gap: 20px; }
+        .btn-opt { flex: 1; padding: 15px 20px; cursor: pointer; border: 2px solid #ddd; background: white; font-weight: bold; transition: 0.2s; border-radius: 4px;}
+        .btn-opt:hover { background: #f8f9fa; border-color: #999; }
+        .btn-green { border-color: #28a745; color: #28a745; }
+        .btn-red { border-color: var(--accent); color: var(--accent); }
+        
+        .btn-green:hover { background: #28a745; color: white; }
+        .btn-red:hover { background: var(--accent); color: white; }
+
+        .feedback-toast {
+            margin-top: 1rem; padding: 10px 20px; background: #333; color: white; border-radius: 4px;
+            opacity: 0; transition: opacity 0.3s;
+        }
+
+        /* --- SCREEN 5: CIERRE --- */
+        .final-concept {
+            font-size: 2.5rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+        }
+
+        /* ANIMATIONS */
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes pulseRed { 0% { box-shadow: 0 0 0 0 rgba(193, 41, 46, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(193, 41, 46, 0); } 100% { box-shadow: 0 0 0 0 rgba(193, 41, 46, 0); } }
+        @keyframes slideUp { from { transform: translateY(20px) translateX(-50%); opacity: 0; } to { transform: translateY(0) translateX(-50%); opacity: 1; } }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .compare-layout { flex-direction: column-reverse; }
+            .risk-meter-bg { height: 20px; width: 100%; }
+            .risk-fill { width: 20%; height: 100%; background: linear-gradient(to right, #28a745, #f1d302, #c1292e); }
+            .meter-col { width: 100%; }
+            .blueprint-container { height: 300px; }
+            .hs-3 { left: 5px; } .hs-4 { right: 5px; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="main-console">
+    <header>
+        <div class="title">
+            <span class="sys-id">MÓDULO: RIESGO ESTRUCTURAL // VER 2.0</span>
+            <h1>Análisis de Entorno</h1>
+        </div>
+        <div style="width:10px; height:10px; background:#28a745; border-radius:50%; box-shadow:0 0 10px #28a745;"></div>
+    </header>
+
+    <div class="viewport">
+        
+        <!-- PANTALLA 1: INTRODUCCIÓN -->
+        <div class="screen active" id="s1">
+            <div class="intro-graphic">
+                <div class="intro-icon">🏢</div>
+            </div>
+            <h2>Ruptura de la Neutralidad</h2>
+            <p><strong>“No todos los entornos laborales generan el mismo nivel de riesgo.”</strong></p>
+            <p>Este módulo no busca juzgar a las personas. Su objetivo es analizar cómo las estructuras rígidas, jerárquicas y masculinizadas pueden convertirse en un factor de riesgo invisible para el acoso.</p>
+            <button class="btn" onclick="navTo(2)">Iniciar Escáner Estructural</button>
+        </div>
+
+        <!-- PANTALLA 2: MAPA DE FACTORES -->
+        <div class="screen" id="s2">
+            <h2>1. Mapa de Factores de Riesgo</h2>
+            <p>Explore la estructura. Haga clic en los puntos rojos parpadeantes para identificar los nodos críticos.</p>
+            
+            <div class="blueprint-container">
+                <div class="structure-shape"></div>
+                
+                <div class="hotspot hs-1" onclick="showInfo(this, 'Jerarquías Rígidas', 'En estructuras verticales estrictas (mando-obediencia), decir NO a un superior se percibe como insubordinación, no como un límite personal.')">👑</div>
+                <div class="hotspot hs-2" onclick="showInfo(this, 'Cultura del Silencio', '“Lo que pasa en el esquema, se queda en el esquema”. La lealtad mal entendida encubre violencias.')">😶</div>
+                <div class="hotspot hs-3" onclick="showInfo(this, 'Uso de la Fuerza', 'El manejo de armas y la protección física naturalizan la agresividad y el contacto físico invasivo.')">🔫</div>
+                <div class="hotspot hs-4" onclick="showInfo(this, 'Masculinización', 'Un entorno numéricamente dominado por hombres tiende a normalizar chistes sexistas y excluir lo “femenino”.')">👔</div>
+                <div class="hotspot hs-5" onclick="showInfo(this, 'Dependencia Laboral', 'La inestabilidad contractual (OPS) hace que denunciar se sienta como un riesgo de perder el sustento.')">📝</div>
+
+                <div id="info-modal" class="info-panel">
+                    <h3 id="info-title" style="color:var(--primary); margin-bottom:5px;">Titulo</h3>
+                    <p id="info-desc" style="font-size:0.9rem; margin:0; text-align:left;">Desc</p>
+                </div>
+            </div>
+            
+            <button class="btn" id="btn-s2" style="display:none; margin-top: 15px;" onclick="navTo(3)">Analizar Nivel de Riesgo</button>
+        </div>
+
+        <!-- PANTALLA 3: COMPARADOR DE CONTEXTOS -->
+        <div class="screen" id="s3">
+            <h2>2. El Entorno como Multiplicador</h2>
+            <p>Active las características de un entorno de seguridad y observe cómo aumenta el riesgo estructural sin que cambien las personas.</p>
+            
+            <div class="compare-layout">
+                <div class="controls-col">
+                    <div class="toggle-card">
+                        <span>Jerarquía estricta (Mando)</span>
+                        <label class="switch"><input type="checkbox" onchange="updateMeter()"><span class="slider"></span></label>
+                    </div>
+                    <div class="toggle-card">
+                        <span>Porte de Armas / Riesgo Vital</span>
+                        <label class="switch"><input type="checkbox" onchange="updateMeter()"><span class="slider"></span></label>
+                    </div>
+                    <div class="toggle-card">
+                        <span>Aislamiento / Turnos Largos</span>
+                        <label class="switch"><input type="checkbox" onchange="updateMeter()"><span class="slider"></span></label>
+                    </div>
+                    <div class="toggle-card">
+                        <span>Cultura de "Aguante"</span>
+                        <label class="switch"><input type="checkbox" onchange="updateMeter()"><span class="slider"></span></label>
+                    </div>
+                </div>
+
+                <div class="meter-col">
+                    <div class="risk-meter-bg">
+                        <div class="risk-fill" id="risk-fill"></div>
+                    </div>
+                    <div class="risk-label" id="risk-label">Riesgo Bajo</div>
+                </div>
+            </div>
+            
+            <button class="btn" id="btn-s3" style="display:none; margin-top: 2rem;" onclick="navTo(4)">Siguiente: Cultura y Lenguaje</button>
+        </div>
+
+        <!-- PANTALLA 4: MICRO-SIMULACIÓN (LENGUAJE) -->
+        <div class="screen" id="s4">
+            <h2>3. Normalización Cultural</h2>
+            <p>El lenguaje construye realidad. Clasifique la frase: ¿Aumenta el riesgo al normalizar violencia o lo reduce?</p>
+            
+            <div class="phrase-card" id="phrase-text">
+                "Aquí hay que tener piel dura, si se ofende por un chiste, no sirve para esto."
+            </div>
+
+            <div class="decision-btns">
+                <button class="btn-opt btn-red" onclick="judgePhrase('risk')">⚠️ Aumenta el Riesgo</button>
+                <button class="btn-opt btn-green" onclick="judgePhrase('safe')">🛡️ Reduce el Riesgo</button>
+            </div>
+
+            <div class="feedback-toast" id="feedback-msg">Correcto</div>
+        </div>
+
+        <!-- PANTALLA 5: CIERRE -->
+        <div class="screen" id="s5">
+            <div style="font-size: 4rem; color: var(--accent);">⚠️</div>
+            <div class="final-concept">RIESGO ESTRUCTURAL</div>
+            <p>El problema no es solo "una manzana podrida". Es un sistema que, por sus características de fuerza y jerarquía, puede silenciar a las víctimas si no existen protocolos fuertes.</p>
+            <div style="background: white; border:1px solid #ddd; padding:20px; border-left: 5px solid var(--primary); text-align: left; max-width: 600px;">
+                <p style="margin:0; text-align: left;"><strong>Reflexión Final:</strong><br>
+                Cuando el riesgo es estructural, la prevención no puede depender de la valentía individual para denunciar. Se requieren mecanismos institucionales proactivos.</p>
+            </div>
+            <br>
+            <button class="btn" onclick="finishModule()">Continuar a Protocolos y Rutas</button>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // --- ESTADO ---
+    let currentScreen = 1;
+
+    // --- NAVEGACIÓN ---
+    function navTo(num) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById('s' + num).classList.add('active');
+    }
+
+    // --- ESCENA 2: MAPA ---
+    let foundHotspots = 0;
+    function showInfo(el, title, desc) {
+        // Marcar como leído
+        if (!el.classList.contains('read')) {
+            el.classList.add('read');
+            el.innerHTML = "✓";
+            foundHotspots++;
+        }
+
+        // Mostrar Modal
+        const modal = document.getElementById('info-modal');
+        document.getElementById('info-title').innerText = title;
+        document.getElementById('info-desc').innerText = desc;
+        
+        // Reset animación
+        modal.style.display = 'none';
+        modal.offsetHeight; 
+        modal.style.display = 'block';
+
+        // Habilitar siguiente si completó
+        if (foundHotspots >= 5) {
+            document.getElementById('btn-s2').style.display = 'inline-block';
+        }
+    }
+
+    // --- ESCENA 3: MEDIDOR ---
+    function updateMeter() {
+        const checks = document.querySelectorAll('input[type="checkbox"]:checked').length;
+        const fill = document.getElementById('risk-fill');
+        const label = document.getElementById('risk-label');
+        const btn = document.getElementById('btn-s3');
+
+        // Calcular porcentaje (Base 20% + 20% por cada check)
+        const pct = 20 + (checks * 20);
+        fill.style.height = pct + '%';
+        // Ajuste para móvil (width)
+        if(window.innerWidth <= 768) fill.style.width = pct + '%';
+
+        // Texto y Color
+        if (pct <= 20) {
+            label.innerText = "Riesgo Bajo (Oficina Genérica)";
+            label.style.color = "#28a745";
+        } else if (pct <= 60) {
+            label.innerText = "Riesgo Medio";
+            label.style.color = "#f1d302";
+        } else {
+            label.innerText = "ALTA VULNERABILIDAD ESTRUCTURAL";
+            label.style.color = "#c1292e";
+        }
+
+        if (checks >= 3) {
+            btn.style.display = 'inline-block';
+        }
+    }
+
+    // --- ESCENA 4: CLASIFICADOR ---
+    const phrases = [
+        { text: "“Aquí hay que tener piel dura, si se ofende por un chiste, no sirve para esto.”", type: "risk", feedback: "Normaliza la violencia verbal y deslegitima el malestar de la víctima." },
+        { text: "“Cualquier situación incómoda repórtela de inmediato, aquí la respaldamos.”", type: "safe", feedback: "Crea seguridad psicológica y confianza en la ruta." },
+        { text: "“Eso es normal entre los muchachos, no le pare bolas.”", type: "risk", feedback: "Minimiza el acoso y refuerza el pacto de silencio." }
+    ];
+    let phraseIndex = 0;
+
+    function judgePhrase(choice) {
+        const current = phrases[phraseIndex];
+        const feedbackEl = document.getElementById('feedback-msg');
+        
+        if (choice === current.type) {
+            feedbackEl.innerText = "¡Correcto! " + current.feedback;
+            feedbackEl.style.background = "#28a745";
+        } else {
+            feedbackEl.innerText = "Incorrecto. " + current.feedback;
+            feedbackEl.style.background = "#c1292e";
+        }
+        
+        feedbackEl.style.opacity = 1;
+
+        setTimeout(() => {
+            feedbackEl.style.opacity = 0;
+            phraseIndex++;
+            if (phraseIndex < phrases.length) {
+                document.getElementById('phrase-text').innerText = phrases[phraseIndex].text;
+            } else {
+                navTo(5);
+            }
+        }, 2500);
+    }
+
+    function finishModule() {
+        alert("Has completado el módulo de Análisis Estructural. Redirigiendo a Protocolos...");
+        location.reload();
+    }
+</script>
+
+</body>
+</html>
