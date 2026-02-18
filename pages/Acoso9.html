@@ -5,16 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OVA: El Lenguaje del Silencio</title>
     <style>
-        /* --- 1. VARIABLES & RESET (Estética Institucional Oscura) --- */
+        /* --- 1. VARIABLES & RESET (Estética 25N - Clara y Corporativa) --- */
         :root {
-            --bg-base: #eef2f5;
-            --bg-dark: #1a1f24;
-            --text-main: #2c3e50;
-            --text-inverse: #f8f9fa;
-            --accent-danger: #d63031; /* Rojo Alerta */
-            --accent-warn: #fdcb6e;
-            --accent-inst: #0984e3; /* Azul Institucional */
-            --overlay-dark: rgba(0,0,0,0.85);
+            /* Paleta extraída de la imagen 25N Colombia sin machismo */
+            --brand-orange: #ef5a24; /* Naranja 25N */
+            --brand-yellow: #fec20e; /* Amarillo hojas */
+            --brand-purple: #7e3f98; /* Morado Transversalidad */
+            
+            --bg-base: #f9f9f9;     /* Fondo general muy claro */
+            --bg-card: #ffffff;     /* Blanco puro para tarjetas */
+            
+            --text-main: #333333;   /* Gris oscuro para lectura */
+            --text-light: #666666;  /* Gris medio */
+            
+            /* Redefinición de variables lógicas */
+            --bg-dark: #ffffff;     /* CAMBIO: Ahora es blanco (antes era oscuro) */
+            --text-inverse: #4a4a4a; /* CAMBIO: Ahora es oscuro (para leer sobre blanco) */
+            
+            --accent-danger: #ef5a24; /* El "Rojo Alerta" ahora es Naranja Corporativo */
+            --accent-warn: #fec20e;
+            --accent-inst: #7e3f98;   /* Azul ahora es Morado Corporativo */
+            
+            --overlay-dark: rgba(255, 255, 255, 0.95); /* Overlay claro */
             --font-main: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             --transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
@@ -31,6 +43,8 @@
             justify-content: center;
             align-items: center;
             transition: background-color 2s ease;
+            /* Fondo suave con degradado sutil */
+            background: linear-gradient(135deg, #fffcf5 0%, #fff 100%);
         }
 
         /* --- 2. CONTENEDOR PRINCIPAL (APP SHELL) --- */
@@ -39,17 +53,24 @@
             max-width: 900px;
             height: 90vh;
             background: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            border-radius: 12px;
+            /* Sombra más suave y colorida (morada) */
+            box-shadow: 0 10px 40px rgba(126, 63, 152, 0.15);
             position: relative;
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            border: 1px solid rgba(0,0,0,0.05);
         }
 
-        /* Estado de "Crisis Institucional" (se activa vía JS) */
-        body.crisis-mode { background-color: #2d3436; }
-        body.crisis-mode #app-shell { border: 2px solid var(--accent-danger); }
+        /* Estado de "Crisis Institucional" - Versión Clara */
+        body.crisis-mode { 
+            background-color: #fff0e6; /* Fondo naranja muy pálido */
+        }
+        body.crisis-mode #app-shell { 
+            border: 4px solid var(--brand-orange); 
+            box-shadow: 0 0 30px rgba(239, 90, 36, 0.3);
+        }
 
         /* --- 3. PANTALLAS (VIEWS) --- */
         .view {
@@ -71,20 +92,23 @@
             opacity: 1; pointer-events: all; transform: scale(1); z-index: 10;
         }
 
-        /* --- VISTA 1: INTRO (RUPTURA) --- */
+        /* --- VISTA 1: INTRO (AHORA CLARA) --- */
         #view-intro {
-            background: var(--bg-dark);
-            color: var(--text-inverse);
+            background: #ffffff;
+            background-image: radial-gradient(circle at top right, rgba(254, 194, 14, 0.1), transparent 40%),
+                              radial-gradient(circle at bottom left, rgba(126, 63, 152, 0.1), transparent 40%);
+            color: var(--text-main);
             text-align: center;
         }
         
         .glitch-text {
             font-size: 2.5rem;
-            font-weight: 800;
+            font-weight: 900;
             text-transform: uppercase;
             position: relative;
             margin-bottom: 2rem;
-            color: var(--accent-danger);
+            color: var(--brand-orange); /* Naranja principal */
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.1);
             animation: pulseText 2s infinite;
         }
 
@@ -93,9 +117,13 @@
             max-width: 600px;
             line-height: 1.6;
             margin-bottom: 3rem;
-            border-left: 4px solid var(--accent-danger);
+            border-left: 5px solid var(--brand-purple); /* Borde morado */
             padding-left: 20px;
             text-align: left;
+            background: rgba(126, 63, 152, 0.05); /* Fondo morado muy sutil */
+            padding: 20px;
+            border-radius: 0 8px 8px 0;
+            color: #444;
         }
 
         .btn-start {
@@ -103,18 +131,25 @@
             font-size: 1rem;
             font-weight: bold;
             text-transform: uppercase;
-            letter-spacing: 2px;
-            background: transparent;
-            color: var(--text-inverse);
-            border: 2px solid var(--accent-danger);
+            letter-spacing: 1px;
+            background: var(--brand-purple); /* Botón sólido morado */
+            color: white;
+            border: none;
+            border-radius: 50px; /* Bordes redondeados amigables */
             cursor: pointer;
             transition: var(--transition);
+            box-shadow: 0 4px 15px rgba(126, 63, 152, 0.3);
         }
-        .btn-start:hover { background: var(--accent-danger); color: white; box-shadow: 0 0 20px var(--accent-danger); }
+        .btn-start:hover { 
+            background: var(--brand-orange); /* Hover Naranja */
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(239, 90, 36, 0.4);
+            color: white;
+        }
 
         /* --- VISTA 2: GAMEPLAY (ANÁLISIS) --- */
         #view-game {
-            background: #fdfdfd;
+            background: #ffffff;
             justify-content: flex-start;
             padding-top: 4rem;
         }
@@ -122,18 +157,22 @@
         /* Indicador de Riesgo (Meter) */
         .risk-hud {
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 8px;
-            background: #e0e0e0;
+            top: 0; left: 0; width: 100%; height: 10px;
+            background: #eee;
         }
         .risk-bar {
             height: 100%; width: 0%;
-            background: linear-gradient(90deg, #2ecc71, #f1c40f, #e74c3c);
+            /* Gradiente de Verde a Naranja/Rojo corporativo */
+            background: linear-gradient(90deg, #a8e063, #fec20e, #ef5a24);
             transition: width 0.5s ease;
         }
         .risk-label {
-            position: absolute; top: 15px; right: 20px;
+            position: absolute; top: 20px; right: 20px;
             font-size: 0.8rem; font-weight: bold; text-transform: uppercase;
-            color: var(--text-main);
+            color: var(--brand-purple); /* Texto morado */
+            background: rgba(255,255,255,0.9);
+            padding: 5px 10px;
+            border-radius: 4px;
         }
 
         /* Tarjeta de Frase */
@@ -147,22 +186,23 @@
         .phrase-card {
             width: 100%; height: 100%;
             background: white;
-            border: 1px solid #ccc;
-            border-left: 6px solid var(--text-main);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: 1px solid #e0e0e0;
+            border-left: 8px solid var(--brand-orange); /* Acento Naranja */
+            box-shadow: 0 15px 35px rgba(0,0,0,0.08);
             display: flex; flex-direction: column;
             justify-content: center; align-items: center;
             padding: 2rem;
             text-align: center;
             font-size: 1.5rem;
             font-weight: 600;
-            color: var(--text-main);
+            color: #333;
             transition: transform 0.5s;
             position: relative;
+            border-radius: 8px;
         }
 
-        .phrase-card::before { content: '"'; font-size: 4rem; position: absolute; top: -10px; left: 10px; color: #eee; }
-        .phrase-card::after { content: '"'; font-size: 4rem; position: absolute; bottom: -30px; right: 10px; color: #eee; }
+        .phrase-card::before { content: '"'; font-size: 5rem; position: absolute; top: -20px; left: 15px; color: #f0f0f0; font-family: serif; }
+        .phrase-card::after { content: '"'; font-size: 5rem; position: absolute; bottom: -50px; right: 15px; color: #f0f0f0; font-family: serif; }
 
         /* Botones de Clasificación */
         .actions-grid {
@@ -174,26 +214,31 @@
 
         .btn-action {
             padding: 20px;
-            border: 1px solid #ddd;
+            border: 2px solid #f0f0f0;
             background: white;
             font-size: 0.9rem;
             font-weight: bold;
             color: #555;
             cursor: pointer;
             transition: 0.2s;
-            border-radius: 6px;
+            border-radius: 12px;
         }
-        .btn-action:hover { transform: translateY(-3px); border-color: var(--text-main); color: var(--text-main); }
+        .btn-action:hover { 
+            transform: translateY(-3px); 
+            border-color: var(--brand-purple); 
+            color: var(--brand-purple); 
+            background: #fdf8ff;
+        }
         
         /* Efecto al seleccionar */
-        .btn-action.selected-wrong { background: var(--accent-danger); color: white; border-color: var(--accent-danger); }
-        .btn-action.selected-correct { background: var(--text-main); color: white; border-color: var(--text-main); }
+        .btn-action.selected-wrong { background: var(--brand-orange); color: white; border-color: var(--brand-orange); }
+        .btn-action.selected-correct { background: var(--brand-purple); color: white; border-color: var(--brand-purple); }
 
         /* Feedback Overlay */
         .feedback-overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255,255,255,0.95);
+            background: rgba(255,255,255,0.98); /* Fondo casi blanco */
             display: flex; flex-direction: column;
             justify-content: center; align-items: center;
             z-index: 20;
@@ -203,28 +248,43 @@
         }
         .feedback-overlay.show { opacity: 1; pointer-events: all; }
 
-        .impact-icon { font-size: 4rem; margin-bottom: 1rem; color: var(--accent-danger); animation: shake 0.5s; }
-        .impact-title { font-size: 1.5rem; color: var(--accent-danger); margin-bottom: 1rem; text-transform: uppercase; }
-        .impact-desc { font-size: 1.1rem; color: #333; max-width: 500px; line-height: 1.5; }
-        .btn-next { margin-top: 2rem; padding: 10px 30px; background: var(--text-main); color: white; border: none; cursor: pointer; }
+        .impact-icon { font-size: 4rem; margin-bottom: 1rem; color: var(--brand-orange); animation: shake 0.5s; }
+        .impact-title { font-size: 1.5rem; color: var(--brand-purple); margin-bottom: 1rem; text-transform: uppercase; font-weight: 800; }
+        .impact-desc { font-size: 1.1rem; color: #444; max-width: 500px; line-height: 1.5; }
+        .btn-next { 
+            margin-top: 2rem; 
+            padding: 12px 35px; 
+            background: var(--brand-purple); 
+            color: white; 
+            border: none; 
+            border-radius: 30px;
+            font-weight: bold;
+            cursor: pointer; 
+            box-shadow: 0 4px 10px rgba(126, 63, 152, 0.3);
+        }
+        .btn-next:hover { background: #5e2a75; }
 
         /* --- VISTA 3: REVELACIÓN (CIERRE) --- */
         #view-outro {
-            background: var(--bg-dark);
-            color: white;
+            background: white;
+            color: #333;
             text-align: left;
             align-items: flex-start;
+            /* Decoración de fondo */
+            background-image: linear-gradient(to top, #fff 80%, #fff5f0 100%);
         }
         
-        .final-title { font-size: 2rem; margin-bottom: 1rem; color: var(--accent-danger); }
-        .final-list { margin-left: 20px; margin-bottom: 2rem; font-size: 1.1rem; line-height: 1.8; color: #ccc; }
-        .final-list li strong { color: white; }
+        .final-title { font-size: 2rem; margin-bottom: 1rem; color: var(--brand-orange); font-weight: 900; }
+        .final-list { margin-left: 20px; margin-bottom: 2rem; font-size: 1.1rem; line-height: 1.8; color: #555; }
+        .final-list li strong { color: var(--brand-purple); }
         .highlight-box {
-            background: rgba(255,255,255,0.05);
-            border-left: 4px solid var(--accent-inst);
+            background: #fffbf0; /* Fondo amarillo muy suave */
+            border-left: 5px solid var(--brand-yellow);
             padding: 1.5rem;
             margin-top: 1rem;
             width: 100%;
+            border-radius: 0 8px 8px 0;
+            color: #333;
         }
 
         /* --- ANIMACIONES --- */
@@ -238,6 +298,7 @@
             .phrase-card { font-size: 1.2rem; height: 200px; }
             .actions-grid { grid-template-columns: 1fr; }
             .btn-action { padding: 15px; }
+            #app-shell { height: 95vh; border-radius: 0; }
         }
     </style>
 </head>
@@ -449,11 +510,11 @@
             // Efectos ambientales (Phase 4: Acumulación)
             if (currentIndex > 1) {
                 document.getElementById('risk-status').innerText = "Nivel de Riesgo: MODERADO";
-                document.getElementById('risk-status').style.color = "#f1c40f";
+                document.getElementById('risk-status').style.color = "#ef5a24"; // Cambio a naranja corporativo
             }
             if (currentIndex > 3) {
                 document.getElementById('risk-status').innerText = "Nivel de Riesgo: CRÍTICO";
-                document.getElementById('risk-status').style.color = "#e74c3c";
+                document.getElementById('risk-status').style.color = "#d32f2f";
                 document.body.classList.add('crisis-mode'); // Cambia el fondo del body
             }
         }
