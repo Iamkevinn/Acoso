@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simulador Interseccional Dinámico</title>
     <style>
-        /* --- ESTILOS GENERALES (Igual que antes pero refinados) --- */
+        /* --- ESTILOS GENERALES --- */
         :root {
             --primary: #2c3e50;
             --accent: #e67e22;
@@ -25,19 +25,21 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            overflow: hidden;
+            overflow: hidden; /* Evita scroll en el body principal */
         }
 
         #app-container {
             width: 100%;
-            max-width: 900px;
+            max-width: 950px; /* Un poco más ancho para PC */
             height: 95vh;
-            max-height: 720px;
+            max-height: 750px;
             background: var(--white);
             border-radius: var(--radius);
             box-shadow: 0 20px 60px rgba(0,0,0,0.4);
             position: relative;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
         /* --- SLIDES SYSTEM --- */
@@ -45,7 +47,7 @@
             position: absolute;
             width: 100%;
             height: 100%;
-            padding: 2rem;
+            padding: 1.5rem; /* Padding reducido */
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
@@ -56,6 +58,7 @@
             transform: translateX(50px);
             pointer-events: none;
             background: white;
+            z-index: 1;
         }
 
         .slide.active {
@@ -71,115 +74,202 @@
         }
 
         /* --- UI ELEMENTS --- */
-        h1, h2 { color: var(--primary); margin-bottom: 0.5rem; text-align: center; }
-        p { color: #666; max-width: 600px; text-align: center; line-height: 1.5; margin-bottom: 2rem; }
+        h1, h2 { color: var(--primary); margin: 0 0 1rem 0; text-align: center; }
+        p { color: #666; max-width: 600px; text-align: center; line-height: 1.5; margin-bottom: 1.5rem; }
 
         .btn-action {
             background: var(--accent);
             color: white;
             border: none;
-            padding: 12px 30px;
-            font-size: 1.1rem;
+            padding: 10px 25px;
+            font-size: 1rem;
             border-radius: 50px;
             cursor: pointer;
             font-weight: bold;
             box-shadow: 0 4px 15px rgba(230, 126, 34, 0.3);
             transition: transform 0.2s;
+            flex-shrink: 0; /* Evita que el botón se aplaste */
         }
         .btn-action:hover { transform: scale(1.05); }
 
-        /* --- SIMULADOR GRID --- */
+        /* --- SIMULADOR GRID (LAYOUT INTELIGENTE) --- */
         .sim-layout {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 350px 1fr; /* Visual fijo izq, Controles derecha (o viceversa según diseño) */
+            /* En este caso pondremos: Controles Izq (Flexible) - Visual Der (Fijo) */
+            grid-template-columns: 1fr 320px; 
             gap: 20px;
             width: 100%;
             height: 100%;
-            align-items: center;
+            overflow: hidden; /* Importante */
+            padding-bottom: 20px;
         }
 
-        /* Controles */
-        .control-group { margin-bottom: 15px; width: 100%; }
-        .label { font-size: 0.85rem; font-weight: bold; color: #95a5a6; margin-bottom: 5px; display: block; text-transform: uppercase; letter-spacing: 1px; }
-        .options-row { display: flex; gap: 8px; }
+        /* AREA DE CONTROLES (IZQUIERDA) */
+        .control-area {
+            height: 100%;
+            overflow-y: auto; /* SCROLL SOLO AQUÍ */
+            padding-right: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        /* Scrollbar bonito */
+        .control-area::-webkit-scrollbar { width: 6px; }
+        .control-area::-webkit-scrollbar-thumb { background-color: #bdc3c7; border-radius: 10px; }
+
+        .control-group { background: #fdfdfd; padding: 8px; border-radius: 8px; border: 1px solid #f0f0f0; }
+        .label { font-size: 0.7rem; font-weight: bold; color: #7f8c8d; margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: 0.5px; }
+        .options-row { display: flex; gap: 5px; flex-wrap: wrap; }
+        
         .opt-btn {
             flex: 1;
-            padding: 12px;
+            padding: 8px 10px; /* Más compacto */
             border: 1px solid #ddd;
             background: white;
-            border-radius: 8px;
+            border-radius: 6px;
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             transition: all 0.2s;
+            white-space: nowrap; /* Evita saltos de línea dentro del botón */
+            text-overflow: ellipsis;
+            min-width: fit-content;
         }
         .opt-btn:hover { background: #f9f9f9; border-color: #bbb; }
         .opt-btn.selected {
             background: var(--primary);
             color: white;
             border-color: var(--primary);
-            box-shadow: 0 4px 10px rgba(44, 62, 80, 0.2);
+            box-shadow: 0 2px 5px rgba(44, 62, 80, 0.2);
         }
 
-        /* Visualizador */
+        /* AREA VISUAL (DERECHA) */
         .sim-visual {
             background: #fdfdfd;
             border: 2px dashed #dcdcdc;
             border-radius: var(--radius);
             height: 100%;
-            max-height: 400px;
+            max-height: 100%; /* Ocupa el alto disponible */
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start; /* Elementos desde arriba */
+            padding: 20px;
             position: relative;
+            box-sizing: border-box;
+            overflow: hidden; /* Sin scrollbars aquí */
         }
 
-        .avatar { font-size: 5rem; margin-bottom: 20px; transition: transform 0.3s; }
-        
-        .badge-container { display: flex; flex-direction: column; gap: 8px; width: 80%; }
-        .badge {
-            padding: 8px;
-            border-radius: 6px;
-            color: white;
-            font-weight: bold;
-            text-align: center;
-            font-size: 0.8rem;
-            opacity: 0;
-            transform: translateY(10px);
-            transition: all 0.4s ease;
+        .avatar { 
+            font-size: 5rem; 
+            margin-bottom: 15px; 
+            margin-top: 10px;
+            transition: transform 0.3s; 
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.1));
         }
-        .badge.visible { opacity: 1; transform: translateY(0); }
+        
+        /* CONTENEDOR DE BADGES (TIPO NUBE) */
+        .badge-container { 
+            display: flex; 
+            flex-wrap: wrap; /* CLAVE: Permite que bajen si no caben */
+            justify-content: center;
+            align-content: flex-start;
+            gap: 6px; 
+            width: 100%; 
+            overflow: visible; /* No cortar sombras */
+        }
+
+        .badge {
+            padding: 5px 10px;
+            border-radius: 20px; /* Más redondos tipo 'Tag' */
+            color: white;
+            font-weight: 600;
+            text-align: center;
+            font-size: 0.7rem;
+            opacity: 0;
+            display: none; 
+            transform: scale(0.9);
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .badge.visible { opacity: 1; transform: scale(1); display: inline-block; }
+        
+        /* Colores */
         .badge-gender { background: #8e44ad; }
         .badge-contract { background: #c0392b; }
         .badge-ethnic { background: #d35400; }
+        .badge-territory { background: #27ae60; }
+        .badge-peace { background: #2980b9; }
+        .badge-care { background: #f39c12; }
+        .badge-neuro { background: #16a085; }
 
-        /* --- RESULTADO DINÁMICO (NUEVO) --- */
+        /* --- RESULTADO DINÁMICO --- */
         .result-card {
             background: #f8f9fa;
-            border-left: 6px solid var(--primary); /* Se cambia con JS */
-            padding: 2rem;
+            border-left: 6px solid var(--primary);
+            padding: 1.5rem;
             border-radius: 8px;
             box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-            max-width: 700px;
             width: 100%;
             text-align: left;
             animation: slideUp 0.5s ease;
+            max-height: 60vh;
+            overflow-y: auto;
         }
         
         .result-header { display: flex; align-items: center; gap: 15px; margin-bottom: 1rem; }
-        .result-icon { font-size: 2.5rem; }
-        .result-title { font-size: 1.4rem; color: #333; font-weight: bold; margin: 0; }
-        .result-body { font-size: 1rem; color: #555; line-height: 1.6; }
-        
-        .tags { margin-top: 15px; display: flex; gap: 10px; }
-        .tag { font-size: 0.75rem; padding: 4px 10px; background: #e0e0e0; border-radius: 4px; color: #555; font-weight: bold; }
+        .result-icon { font-size: 2rem; }
+        .result-title { font-size: 1.2rem; color: #333; font-weight: bold; margin: 0; }
+        .result-body { font-size: 0.95rem; color: #555; line-height: 1.5; }
+        .tags { margin-top: 10px; display: flex; gap: 5px; flex-wrap: wrap; }
+        .tag { font-size: 0.7rem; padding: 3px 8px; background: #e0e0e0; border-radius: 4px; color: #555; font-weight: bold; }
 
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- MEDIA QUERY --- */
+        /* --- MEDIA QUERY (MÓVIL) --- */
         @media (max-width: 768px) {
-            .sim-layout { grid-template-columns: 1fr; }
-            .sim-visual { height: 200px; margin-top: 20px; }
+            #app-container { height: 100vh; border-radius: 0; max-height: none; }
+            
+            .sim-layout { 
+                grid-template-columns: 1fr; /* Una sola columna */
+                grid-template-rows: auto 1fr; /* Visual AUTO (Arriba), Controles FR (Abajo) */
+                gap: 10px;
+            }
+
+            /* Visual arriba, pequeño y fijo */
+            .sim-visual {
+                order: -1; /* Manda esto arriba visualmente */
+                height: auto;
+                min-height: 140px; /* Altura mínima para avatar + badges */
+                padding: 10px;
+                border-bottom: 2px dashed #ddd;
+                border: 2px dashed #dcdcdc; /* Borde completo se ve mejor */
+                flex-direction: row; /* Avatar a la izq, badges a la derecha */
+                justify-content: center;
+                gap: 15px;
+            }
+
+            .avatar {
+                font-size: 3.5rem; /* Más pequeño en móvil */
+                margin: 0;
+            }
+
+            .badge-container {
+                justify-content: flex-start; /* Alinear a la izq cerca del avatar */
+                align-content: center;
+                max-width: 70%; /* Espacio para badges */
+            }
+
+            .control-area {
+                padding-bottom: 80px; /* Espacio extra abajo para que no se corte el último botón */
+            }
+
+            h2 { font-size: 1.2rem; margin-bottom: 0.5rem; }
+            
+            /* Ajuste botones opciones para que sean fáciles de tocar */
+            .opt-btn { padding: 10px 5px; font-size: 0.75rem; }
+            
             .result-header { flex-direction: column; text-align: center; }
             .result-card { text-align: center; }
             .tags { justify-content: center; }
@@ -194,74 +284,123 @@
     <div class="slide active" id="slide-1">
         <div style="font-size: 4rem; margin-bottom: 1rem;">⚖️</div>
         <h1>El Peso de las Estructuras</h1>
-        <p>El acoso laboral y sexual no ocurre en el vacío. Dependiendo de quién eres y cómo trabajas, las barreras para denunciar cambian drásticamente.</p>
+        <p>El acoso laboral y sexual no ocurre en el vacío. Identifica cómo las barreras para denunciar cambian según quién eres.</p>
         <button class="btn-action" onclick="goToSlide(2)">Comenzar Simulación</button>
     </div>
 
     <!-- SLIDE 2: SIMULADOR -->
     <div class="slide" id="slide-2">
-        <h2 style="margin-bottom: 2rem;">Configura el Perfil</h2>
+        <h2>Configura el Perfil</h2>
+        
         <div class="sim-layout">
-            <!-- Controles -->
-            <div style="width: 100%;">
+            
+            <!-- CONTROLES (Ahora con scroll propio y ordenados) -->
+            <div class="control-area">
+                <!-- 1. GÉNERO -->
                 <div class="control-group">
-                    <span class="label">Identidad de Género</span>
+                    <span class="label">1. Identidad / Orientación</span>
                     <div class="options-row">
                         <button class="opt-btn" onclick="selectOption('gender', 'male', this)">Hombre Cis</button>
                         <button class="opt-btn" onclick="selectOption('gender', 'female', this)">Mujer Cis</button>
                         <button class="opt-btn" onclick="selectOption('gender', 'lgbt', this)">LGBTIQ+</button>
+                        <button class="opt-btn" onclick="selectOption('gender', 'intersex', this)">Intersexual</button>
                     </div>
                 </div>
+                
+                <!-- 2. VINCULACIÓN -->
                 <div class="control-group">
-                    <span class="label">Tipo de Contrato</span>
+                    <span class="label">2. Tipo de Vinculación</span>
                     <div class="options-row">
-                        <button class="opt-btn" onclick="selectOption('contract', 'stable', this)">Planta</button>
-                        <button class="opt-btn" onclick="selectOption('contract', 'temp', this)">Temporal</button>
+                        <button class="opt-btn" onclick="selectOption('contract', 'public', this)">Servidor@ Públic@</button>
+                        <button class="opt-btn" onclick="selectOption('contract', 'contractor', this)">Contratista</button>
                         <button class="opt-btn" onclick="selectOption('contract', 'outsourced', this)">Tercerizado</button>
                     </div>
                 </div>
+
+                <!-- 3. ETNIA -->
                 <div class="control-group">
-                    <span class="label">Pertenencia Étnica</span>
+                    <span class="label">3. Pertenencia Étnica</span>
                     <div class="options-row">
                         <button class="opt-btn" onclick="selectOption('ethnic', 'no', this)">No</button>
-                        <button class="opt-btn" onclick="selectOption('ethnic', 'yes', this)">Sí</button>
+                        <button class="opt-btn" onclick="selectOption('ethnic', 'yes', this)">Sí, pertenece</button>
+                    </div>
+                </div>
+
+                <!-- 4. TERRITORIAL -->
+                <div class="control-group">
+                    <span class="label">4. Enfoque Territorial</span>
+                    <div class="options-row">
+                        <button class="opt-btn" onclick="selectOption('territory', 'urban', this)">Urbano</button>
+                        <button class="opt-btn" onclick="selectOption('territory', 'rural', this)">Rural</button>
+                    </div>
+                </div>
+
+                <!-- 5. PAZ -->
+                <div class="control-group">
+                    <span class="label">5. Firmante de Paz</span>
+                    <div class="options-row">
+                        <button class="opt-btn" onclick="selectOption('peace', 'no', this)">No</button>
+                        <button class="opt-btn" onclick="selectOption('peace', 'yes', this)">Sí, firmante</button>
+                    </div>
+                </div>
+
+                <!-- 6. CUIDADOR -->
+                <div class="control-group">
+                    <span class="label">6. Cuidador/a (Cabeza de Familia)</span>
+                    <div class="options-row">
+                        <button class="opt-btn" onclick="selectOption('caregiver', 'no', this)">No</button>
+                        <button class="opt-btn" onclick="selectOption('caregiver', 'yes', this)">Sí</button>
+                    </div>
+                </div>
+
+                <!-- 7. NEURODIVERGENCIA -->
+                <div class="control-group">
+                    <span class="label">7. Neurodivergencia</span>
+                    <div class="options-row">
+                        <button class="opt-btn" onclick="selectOption('neuro', 'no', this)">No</button>
+                        <button class="opt-btn" onclick="selectOption('neuro', 'yes', this)">Sí</button>
                     </div>
                 </div>
             </div>
 
-            <!-- Visual Feedback -->
+            <!-- VISUAL (Fijo a la derecha en PC, Arriba en Celular) -->
             <div class="sim-visual">
                 <div class="avatar" id="avatar-display">👤</div>
                 <div class="badge-container">
-                    <div id="badge-gender" class="badge badge-gender">Carga de Género</div>
-                    <div id="badge-contract" class="badge badge-contract">Inestabilidad Laboral</div>
-                    <div id="badge-ethnic" class="badge badge-ethnic">Discriminación Racial</div>
+                    <div id="badge-gender" class="badge badge-gender">Diversidad/Género</div>
+                    <div id="badge-contract" class="badge badge-contract">Contrato Inestable</div>
+                    <div id="badge-ethnic" class="badge badge-ethnic">Discrim. Racial</div>
+                    <div id="badge-territory" class="badge badge-territory">Ruralidad</div>
+                    <div id="badge-peace" class="badge badge-peace">Estigma Firmante</div>
+                    <div id="badge-care" class="badge badge-care">Carga Cuidados</div>
+                    <div id="badge-neuro" class="badge badge-neuro">Barrera Cognitiva</div>
                 </div>
-                <button id="btn-analyze" class="btn-action" style="margin-top: 20px; display: none; background: var(--primary);" onclick="generateAnalysis()">Diagnosticar Riesgo 🔍</button>
+                
+                <!-- El botón aparece dentro del visual pero al final -->
+                <button id="btn-analyze" class="btn-action" style="margin-top: auto; display: none; background: var(--primary); width: 100%; font-size: 0.9rem;" onclick="generateAnalysis()">Diagnosticar Riesgo 🔍</button>
             </div>
         </div>
     </div>
 
-    <!-- SLIDE 3: RESULTADO DINÁMICO -->
+    <!-- SLIDE 3: RESULTADO -->
     <div class="slide" id="slide-3">
         <h2>Diagnóstico Estructural</h2>
-        <p style="margin-bottom: 1rem;">Basado en las variables seleccionadas:</p>
         
-        <!-- Aquí se inyecta el contenido dinámico -->
         <div id="dynamic-result" class="result-card">
             <!-- JS llenará esto -->
         </div>
 
-        <button class="btn-action" style="margin-top: 2rem;" onclick="goToSlide(4)">Continuar al Cierre</button>
-        <button class="btn-action" style="margin-top: 10px; background: transparent; color: #777; border: 1px solid #ccc; font-size: 0.9rem;" onclick="goToSlide(2)">← Probar otra combinación</button>
+        <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
+            <button class="btn-action" onclick="goToSlide(4)">Continuar al Cierre</button>
+            <button class="btn-action" style="background: transparent; color: #777; border: 1px solid #ccc;" onclick="goToSlide(2)">← Volver</button>
+        </div>
     </div>
 
     <!-- SLIDE 4: CIERRE -->
     <div class="slide" id="slide-4">
         <div style="font-size: 4rem; margin-bottom: 1rem;">💡</div>
         <h1>Conclusión</h1>
-        <p>La interseccionalidad nos enseña que no basta con tener "una política de acoso". Necesitamos protocolos que protejan específicamente a quienes tienen contratos precarios o sufren discriminación múltiple.</p>
-        <p><strong>El objetivo es nivelar el terreno para que todos puedan trabajar seguros.</strong></p>
+        <p>La interseccionalidad demuestra que los protocolos "neutros" fallan porque las personas no son neutras. Quienes acumulan barreras (contractuales, de género, sociales) necesitan rutas de protección reforzadas.</p>
         <button class="btn-action" onclick="location.reload()">Reiniciar Curso</button>
     </div>
 
@@ -272,39 +411,11 @@
     let state = {
         gender: null,
         contract: null,
-        ethnic: null
-    };
-
-    // BASE DE DATOS DE RESPUESTAS (La magia ocurre aquí)
-    const feedbackDB = {
-        // Escenario: Bajo Riesgo (Privilegio relativo)
-        lowRisk: {
-            title: "Perfil con 'Escudos' Estructurales",
-            icon: "🛡️",
-            color: "#27ae60", // Verde
-            text: "Aunque nadie está exento de sufrir acoso, este perfil cuenta con barreras de protección: la estabilidad laboral reduce el miedo al despido y no sufrir racismo ni sexismo sistémico facilita que su voz sea escuchada si decide denunciar."
-        },
-        // Escenario: Riesgo Económico (Contrato es el problema principal)
-        economicRisk: {
-            title: "Barrera de Silencio Económico",
-            icon: "🤐",
-            color: "#e67e22", // Naranja
-            text: "El factor crítico aquí es el <strong>contrato precario</strong>. El acosador suele aprovecharse de esto: sabe que la víctima necesita el trabajo y temerá no ser renovada si se queja. El acoso se convierte en una forma de extorsión laboral."
-        },
-        // Escenario: Riesgo de Género (Mujer/LGBTIQ + Estabilidad)
-        genderRisk: {
-            title: "Violencia de Poder y Género",
-            icon: "🛑",
-            color: "#9b59b6", // Púrpura
-            text: "A pesar de tener estabilidad laboral, el riesgo proviene de una cultura organizacional machista. El acoso puede manifestarse como 'bromas', menosprecio profesional o bloqueo de ascensos para 'disciplinar' a las mujeres o disidencias."
-        },
-        // Escenario: Interseccionalidad Crítica (Suma de todo)
-        criticalRisk: {
-            title: "Vulnerabilidad Estructural Crítica",
-            icon: "🚨",
-            color: "#c0392b", // Rojo
-            text: "<strong>Aquí se acumulan todas las capas.</strong> La inestabilidad laboral impide denunciar, mientras que el racismo y el sexismo aumentan la probabilidad de ser objeto de violencia. El sistema suele culpar a la víctima o invalidar su testimonio."
-        }
+        ethnic: null,
+        territory: null,
+        peace: null,
+        caregiver: null,
+        neuro: null
     };
 
     // NAVEGACIÓN
@@ -318,95 +429,104 @@
         setTimeout(() => target.classList.add('active'), 50);
     }
 
-    // LÓGICA DE SELECCIÓN
+    // SELECCIÓN DE OPCIONES
     function selectOption(category, value, btn) {
         state[category] = value;
         
-        // UI Botones
+        // Efecto botón seleccionado
         const siblings = btn.parentElement.children;
         for(let s of siblings) s.classList.remove('selected');
         btn.classList.add('selected');
 
-        // UI Visual Badges
+        // Actualizar UI
         updateVisuals();
 
-        // Verificar si todo está completo para mostrar botón
-        if(state.gender && state.contract && state.ethnic) {
-            document.getElementById('btn-analyze').style.display = 'block';
+        // Verificar completitud
+        const allSelected = Object.values(state).every(x => x !== null);
+        
+        const btnAnalyze = document.getElementById('btn-analyze');
+        if(allSelected) {
+            btnAnalyze.style.display = 'block';
+            // Animación pequeña para llamar atención
+            btnAnalyze.animate([
+                { transform: 'scale(1)' },
+                { transform: 'scale(1.05)' },
+                { transform: 'scale(1)' }
+            ], { duration: 300 });
         }
     }
 
     function updateVisuals() {
-        // Avatar cambio sutil
+        // Avatar
         const av = document.getElementById('avatar-display');
-        if(state.gender === 'male') av.innerText = '👨‍💼';
-        else if(state.gender === 'female') av.innerText = '👩‍💼';
-        else if(state.gender === 'lgbt') av.innerText = '🏳️‍🌈';
+        let icon = '👤';
+        if(state.gender === 'male') icon = '👨‍💼';
+        else if(state.gender === 'female') icon = '👩‍💼';
+        else if(state.gender === 'lgbt') icon = '🏳️‍🌈';
+        else if(state.gender === 'intersex') icon = '⚧️';
+        av.innerText = icon;
 
-        // Badges
-        toggleBadge('badge-gender', state.gender !== 'male' && state.gender !== null);
-        toggleBadge('badge-contract', state.contract !== 'stable' && state.contract !== null);
+        // Badges (Lógica simple)
+        toggleBadge('badge-gender', (state.gender !== 'male' && state.gender !== null));
+        toggleBadge('badge-contract', (state.contract === 'contractor' || state.contract === 'outsourced'));
         toggleBadge('badge-ethnic', state.ethnic === 'yes');
+        toggleBadge('badge-territory', state.territory === 'rural');
+        toggleBadge('badge-peace', state.peace === 'yes');
+        toggleBadge('badge-care', state.caregiver === 'yes');
+        toggleBadge('badge-neuro', state.neuro === 'yes');
     }
 
     function toggleBadge(id, show) {
         const el = document.getElementById(id);
-        if(show) el.classList.add('visible');
-        else el.classList.remove('visible');
+        if(show) {
+            el.classList.add('visible');
+        } else {
+            el.classList.remove('visible');
+        }
     }
 
-    // GENERADOR DE ANÁLISIS (LÓGICA MEJORADA)
+    // ANÁLISIS DE RIESGO
     function generateAnalysis() {
-        let resultData = {};
-        
-        // 1. Detección de patrones
-        const isPrecarious = (state.contract === 'outsourced' || state.contract === 'temp');
-        const isMinority = (state.gender === 'female' || state.gender === 'lgbt');
-        const isEthnic = (state.ethnic === 'yes');
+        let riskFactors = [];
+        let riskScore = 0;
 
-        // 2. Árbol de decisión para elegir el mensaje
-        if (isPrecarious && isMinority && isEthnic) {
-            // Caso peor escenario: Todo junto
-            resultData = feedbackDB.criticalRisk;
-        } else if (isPrecarious && !isMinority && !isEthnic) {
-            // Hombre blanco pero precarizado
-            resultData = feedbackDB.economicRisk;
-        } else if (!isPrecarious && isMinority && !isEthnic) {
-            // Mujer/LGBT blanca y estable
-            resultData = feedbackDB.genderRisk;
-        } else if (isPrecarious && isMinority) {
-             // Precarizada + Genero (común)
-            resultData = feedbackDB.criticalRisk; // Lo tratamos como crítico
-        } else if (!isPrecarious && !isMinority && !isEthnic) {
-            // Hombre blanco estable
-            resultData = feedbackDB.lowRisk;
+        // Lógica de puntuación
+        if (state.gender === 'female' || state.gender === 'lgbt') { riskFactors.push("Género"); riskScore += 2; }
+        if (state.gender === 'intersex') { riskFactors.push("Identidad/Cuerpo"); riskScore += 2; }
+        if (state.contract === 'contractor') { riskFactors.push("Contrato OPS"); riskScore += 2; }
+        if (state.contract === 'outsourced') { riskFactors.push("Tercerización"); riskScore += 3; }
+        if (state.ethnic === 'yes') { riskFactors.push("Racismo"); riskScore += 2; }
+        if (state.territory === 'rural') { riskFactors.push("Ruralidad"); riskScore += 1; }
+        if (state.peace === 'yes') { riskFactors.push("Estigma Firmante"); riskScore += 2; }
+        if (state.caregiver === 'yes') { riskFactors.push("Carga Cuidados"); riskScore += 1; }
+        if (state.neuro === 'yes') { riskFactors.push("Neurodivergencia"); riskScore += 1; }
+
+        let resultData = { title: "", icon: "", color: "", text: "" };
+
+        if (riskScore === 0) {
+            resultData = { title: "Perfil con 'Escudos' Estructurales", icon: "🛡️", color: "#27ae60", text: "Este perfil cuenta con protecciones. La estabilidad laboral y la ausencia de discriminación sistémica facilitan el acceso a rutas de justicia." };
+        } else if (riskScore <= 3) {
+            resultData = { title: "Vulnerabilidad Focalizada", icon: "⚠️", color: "#f39c12", text: `Existe un riesgo específico. Factores como <strong>${riskFactors[0]}</strong> pueden ser usados para intimidar, pero existen ciertos soportes.` };
+        } else if (riskScore <= 6) {
+            resultData = { title: "Interseccionalidad Compleja", icon: "🛑", color: "#e67e22", text: "Acumulación de riesgos significativa. Denunciar pone en peligro la estabilidad económica y social de la persona." };
         } else {
-            // Combinaciones intermedias (ej: Hombre negro estable, o Mujer blanca precarizada)
-            // Default logic: Si hay precariedad, gana el riesgo económico. Si no, pero hay etnia/genero, gana género.
-            if(isPrecarious) resultData = feedbackDB.economicRisk;
-            else resultData = feedbackDB.genderRisk;
+            resultData = { title: "Vulnerabilidad Crítica", icon: "🚨", color: "#c0392b", text: "<strong>Alerta máxima.</strong> Múltiples sistemas de opresión (laboral, racial, género) actúan simultáneamente. El agresor tiene poder total sobre la víctima." };
         }
 
-        // 3. Renderizar HTML
+        // Render
         const container = document.getElementById('dynamic-result');
         container.style.borderLeftColor = resultData.color;
+        const tagsHtml = riskFactors.map(f => `<span class="tag">${f}</span>`).join('');
         
         container.innerHTML = `
             <div class="result-header">
                 <div class="result-icon">${resultData.icon}</div>
                 <div>
                     <h3 class="result-title" style="color:${resultData.color}">${resultData.title}</h3>
-                    <div class="tags">
-                        ${isMinority ? '<span class="tag">Género</span>' : ''}
-                        ${isPrecarious ? '<span class="tag">Contrato</span>' : ''}
-                        ${isEthnic ? '<span class="tag">Etnia</span>' : ''}
-                        ${!isMinority && !isPrecarious && !isEthnic ? '<span class="tag">Privilegio</span>' : ''}
-                    </div>
+                    <div class="tags">${tagsHtml}</div>
                 </div>
             </div>
-            <div class="result-body">
-                ${resultData.text}
-            </div>
+            <div class="result-body">${resultData.text}</div>
         `;
 
         goToSlide(3);
@@ -414,5 +534,4 @@
 </script>
 
 </body>
-
 </html>
