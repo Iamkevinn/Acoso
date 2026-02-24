@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rutas de Protección y Activación - Colombia 2026</title>
+    <style>
+        /* --- 1. VARIABLES & RESET --- */
+        :root {
+            --bg-app: #F4F7F6;
+            --surface: #FFFFFF;
+            --primary: #6C5CE7; /* Lila Profesional */
+            --primary-light: #A29BFE;
+            --accent: #00B894; /* Verde Éxito */
+            --warning: #FD79A8; /* Rosa Alerta */
+            --text-main: #2D3436;
+            --text-light: #636E72;
+            --shadow-card: 0 10px 30px rgba(108, 92, 231, 0.08);
+            --shadow-hover: 0 15px 35px rgba(108, 92, 231, 0.15);
+            --radius: 20px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-app);
+            color: var(--text-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* --- 2. UTILIDADES --- */
+        .container { max-width: 1000px; margin: 0 auto; padding: 20px; position: relative; z-index: 2; }
+        .hidden { display: none; }
+        .fade-in { animation: fadeIn 0.6s ease forwards; opacity: 0; transform: translateY(20px); }
+        @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+
+        h1, h2, h3 { color: var(--primary); font-weight: 700; }
+        .btn-link {
+            background: none; border: 2px solid var(--primary); color: var(--primary);
+            padding: 8px 20px; border-radius: 50px; cursor: pointer; font-weight: 600;
+            transition: 0.3s; display: inline-flex; align-items: center; gap: 8px; margin-top: 15px;
+        }
+        .btn-link:hover { background: var(--primary); color: white; }
+
+        /* --- 3. HERO SECTION & SCROLL INDICATOR --- */
+        .hero {
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: radial-gradient(circle at center, #ffffff 0%, #F4F7F6 100%);
+            position: relative;
+        }
+
+        .hero h1 { font-size: 2.8rem; max-width: 800px; margin-bottom: 20px; }
+        .hero p { font-size: 1.2rem; color: var(--text-light); max-width: 600px; }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            animation: bounce 2s infinite;
+        }
+        
+        .mouse-icon {
+            width: 30px; height: 50px; border: 2px solid var(--primary);
+            border-radius: 15px; position: relative;
+        }
+        .wheel {
+            width: 4px; height: 8px; background: var(--primary);
+            position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+            border-radius: 2px; animation: scrollWheel 1.5s infinite;
+        }
+        .arrow-down {
+            width: 15px; height: 15px; border-right: 3px solid var(--primary);
+            border-bottom: 3px solid var(--primary); transform: rotate(45deg); margin-top: 10px;
+        }
+
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes scrollWheel { 0% { top: 10px; opacity: 1; } 100% { top: 25px; opacity: 0; } }
+
+        /* --- 4. SECCIÓN 1: MAPA INTERACTIVO UNP (STEPPER) --- */
+        .card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 40px;
+            box-shadow: var(--shadow-card);
+            margin-bottom: 50px;
+            position: relative;
+        }
+
+        .stepper-container {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            margin-top: 40px;
+        }
+        
+        .stepper-line {
+            position: absolute; top: 25px; left: 0; width: 100%; height: 4px;
+            background: #E0E0E0; z-index: 1;
+        }
+        
+        .step {
+            position: relative; z-index: 2; width: 18%; text-align: center; cursor: pointer;
+            transition: transform 0.3s;
+        }
+        .step:hover { transform: translateY(-5px); }
+
+        .step-circle {
+            width: 50px; height: 50px; background: white; border: 3px solid var(--primary-light);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 10px; font-weight: bold; color: var(--primary); font-size: 1.2rem;
+            transition: 0.3s;
+        }
+        
+        .step.active .step-circle { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 0 15px var(--primary-light); }
+        
+        .step-content {
+            background: #F8F9FA; padding: 20px; border-radius: 15px; margin-top: 20px;
+            border-left: 4px solid var(--primary); display: none;
+        }
+        .step-content.active { display: block; animation: fadeIn 0.5s; }
+
+        /* --- 5. SECCIÓN 2: SIMULADOR DE DESPACHO (GAME) --- */
+        .dispatcher-area {
+            background: #fff; padding: 30px; border-radius: var(--radius);
+            box-shadow: var(--shadow-card); text-align: center;
+        }
+
+        .case-screen {
+            background: #2D3436; color: #00CEC9; font-family: 'Courier New', monospace;
+            padding: 20px; border-radius: 10px; margin-bottom: 20px; min-height: 100px;
+            display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        .entities-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;
+        }
+
+        .entity-btn {
+            background: white; border: 2px solid #EEE; padding: 15px; border-radius: 12px;
+            cursor: pointer; transition: 0.2s; font-weight: 600; color: var(--text-light);
+        }
+        .entity-btn:hover { border-color: var(--primary); color: var(--primary); background: #F4F7F6; }
+        
+        .entity-btn.correct { background: var(--accent); color: white; border-color: var(--accent); }
+        .entity-btn.wrong { background: var(--warning); color: white; border-color: var(--warning); }
+
+        /* --- 6. SECCIÓN 3: MEDIDAS (Flip Cards) --- */
+        .measures-container {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 30px;
+        }
+        @media (max-width: 768px) { .measures-container { grid-template-columns: 1fr; } }
+
+        .measure-box {
+            background: white; padding: 30px; border-radius: var(--radius);
+            box-shadow: var(--shadow-card); transition: 0.3s; border-top: 5px solid transparent;
+        }
+        .measure-box:hover { transform: translateY(-5px); }
+        .measure-box.material { border-top-color: var(--primary); }
+        .measure-box.immaterial { border-top-color: var(--accent); }
+
+        /* --- 7. MODALES (Overlay completo) --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
+            z-index: 1000; display: none; justify-content: center; align-items: center;
+            opacity: 0; transition: opacity 0.3s;
+        }
+        .modal-overlay.open { display: flex; opacity: 1; }
+
+        .modal-content {
+            background: white; width: 90%; max-width: 800px; max-height: 85vh;
+            border-radius: var(--radius); padding: 40px; overflow-y: auto;
+            position: relative; transform: translateY(20px); transition: transform 0.3s;
+        }
+        .modal-overlay.open .modal-content { transform: translateY(0); }
+
+        .close-modal {
+            position: absolute; top: 20px; right: 20px; font-size: 2rem;
+            background: none; border: none; cursor: pointer; color: var(--text-light);
+        }
+        
+        /* Estilos texto modal */
+        .modal-body h3 { border-bottom: 2px solid #F0F0F0; padding-bottom: 10px; margin-bottom: 15px; margin-top: 20px; }
+        .modal-body ul { margin-left: 20px; margin-bottom: 15px; }
+        .modal-body p { margin-bottom: 15px; text-align: justify; }
+
+    </style>
+</head>
+<body>
+
+    <!-- HERO SECTION -->
+    <section class="hero">
+        <div style="position:absolute; top:-100px; right:-100px; width:400px; height:400px; background:rgba(108,92,231,0.1); border-radius:50%; filter:blur(60px);"></div>
+        
+        <h1>Protocolos de Protección y Acceso a la Justicia</h1>
+        <p>Unidad Nacional de Protección (UNP) y Rutas Externas</p>
+        
+        <div class="scroll-indicator" onclick="document.getElementById('section1').scrollIntoView({behavior: 'smooth'})">
+            <span>Desplázate para activar protocolos</span>
+            <div class="mouse-icon"><div class="wheel"></div></div>
+            <div class="arrow-down"></div>
+        </div>
+    </section>
+
+    <div class="container">
+
+        <!-- SECCIÓN 1: RUTA UNP (INTERACTIVA) -->
+        <section id="section1" class="card fade-in">
+            <h2>1. Ruta de Protección UNP</h2>
+            <p>Sigue el proceso del Protocolo de Atención a Mujeres. Haz clic en cada paso para ver qué sucede.</p>
+
+            <div class="stepper-container">
+                <div class="stepper-line"></div>
+                
+                <div class="step active" onclick="showStep(1)">
+                    <div class="step-circle">1</div>
+                    <small>Recepción</small>
+                </div>
+                <div class="step" onclick="showStep(2)">
+                    <div class="step-circle">2</div>
+                    <small>Riesgo</small>
+                </div>
+                <div class="step" onclick="showStep(3)">
+                    <div class="step-circle">3</div>
+                    <small>Medidas</small>
+                </div>
+                <div class="step" onclick="showStep(4)">
+                    <div class="step-circle">4</div>
+                    <small>Seguimiento</small>
+                </div>
+            </div>
+
+            <!-- Contenidos de los pasos -->
+            <div id="step-1" class="step-content active">
+                <h3>🗣️ Recepción de Solicitudes</h3>
+                <p>El primer contacto es vital. Se debe garantizar un acercamiento sin barreras, sin culpar a la víctima y respetando los derechos.</p>
+                <button class="btn-link" onclick="openModal('modal-unp')">📄 Ver Protocolo Completo</button>
+            </div>
+            
+            <div id="step-2" class="step-content">
+                <h3>📊 Evaluación (CERREM)</h3>
+                <p>El caso va al <strong>Comité de Evaluación de Riesgo y Recomendación de Medidas (CERREM)</strong>. En el caso de mujeres, participan 4 delegadas de organizaciones de mujeres para asegurar un enfoque asertivo.</p>
+                <button class="btn-link" onclick="openModal('modal-unp')">📄 Ver Detalles del CERREM</button>
+            </div>
+
+            <div id="step-3" class="step-content">
+                <h3>🛡️ Implementación</h3>
+                <p>Se diseñan esquemas según el contexto (geográfico y cultural). <strong>Dato clave:</strong> La mujer puede elegir si prefiere escoltas femeninas.</p>
+                <button class="btn-link" onclick="openModal('modal-medidas')">📄 Ver Tipos de Medidas</button>
+            </div>
+
+            <div id="step-4" class="step-content">
+                <h3>🔄 Seguimiento</h3>
+                <p>Monitoreo constante de la efectividad y acompañamiento psicológico para el retiro o prórroga de las medidas.</p>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 2: SIMULADOR DE DESPACHO (GAME) -->
+        <section class="card fade-in">
+            <h2>2. Activación de Rutas Externas</h2>
+            <p>🚨 <strong>Simulador de Casos:</strong> Eres el enlace de la entidad. Lee el caso en la pantalla y selecciona la entidad correcta para activar la ruta.</p>
+
+            <div class="dispatcher-area">
+                <div class="case-screen" id="case-text">
+                    [CASO 1]: Una empleada es despedida por estar enferma sin permiso del Ministerio.
+                </div>
+                
+                <div class="entities-grid">
+                    <button class="entity-btn" onclick="checkAnswer('fiscalia', this)">Fiscalía General</button>
+                    <button class="entity-btn" onclick="checkAnswer('salud', this)">Sector Salud / EPS</button>
+                    <button class="entity-btn" onclick="checkAnswer('trabajo', this)">Ministerio del Trabajo</button>
+                    <button class="entity-btn" onclick="checkAnswer('procuraduria', this)">Procuraduría</button>
+                </div>
+
+                <div id="feedback-msg" style="margin-top: 15px; font-weight: bold; height: 20px;"></div>
+                
+                <button class="btn-link" style="margin-top: 20px;" onclick="nextCase()">⏩ Siguiente Caso</button>
+            </div>
+            
+            <div style="text-align: center;">
+                <button class="btn-link" onclick="openModal('modal-externas')">📖 Leer Teoría Rutas Externas</button>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 3: MEDIDAS Y SANCIONES -->
+        <section class="card fade-in">
+            <h2>3. Tipos de Protección y Enfoques</h2>
+            <div class="measures-container">
+                <!-- Materiales -->
+                <div class="measure-box material">
+                    <h3 style="color: var(--primary);">🛡️ Medidas Materiales</h3>
+                    <p>Físicas y tangibles.</p>
+                    <ul>
+                        <li>Escoltas (personal de protección).</li>
+                        <li>Vehículos blindados.</li>
+                        <li>Chalecos y Botones de pánico.</li>
+                    </ul>
+                    <p><em>Riesgo:</em> A veces fallan si no se adaptan al terreno (ej. dar celular donde no hay señal).</p>
+                    <button class="btn-link" onclick="openModal('modal-medidas')">Leer Más</button>
+                </div>
+
+                <!-- Inmateriales -->
+                <div class="measure-box immaterial">
+                    <h3 style="color: var(--accent);">🧠 Medidas Inmateriales</h3>
+                    <p>Preventivas y simbólicas.</p>
+                    <ul>
+                        <li>Acompañamiento psicosocial.</li>
+                        <li>Fortalecimiento organizativo.</li>
+                        <li>Reconocimiento político (Lucha contra la estigmatización).</li>
+                    </ul>
+                    <p><em>Objetivo:</em> Transformar condiciones de riesgo y empoderar.</p>
+                    <button class="btn-link" onclick="openModal('modal-medidas')">Leer Más</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 4: ENFOQUE ÉTNICO -->
+        <section class="card fade-in" style="background: linear-gradient(135deg, #fff 0%, #f9f9ff 100%);">
+            <h2>4. Enfoque Diferencial y Étnico</h2>
+            <p>La seguridad no es igual para todos. Haz clic para descubrir cómo se adapta.</p>
+            
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button class="btn-link" onclick="openModal('modal-etnico')">🌍 Adaptación Territorial</button>
+                <button class="btn-link" onclick="openModal('modal-etnico')">⚖️ "Ley Propia" Indígena</button>
+                <button class="btn-link" onclick="openModal('modal-busqueda')">🔎 Búsqueda de Desaparecidos (UBPD)</button>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 5: SANCIONES -->
+        <section class="card fade-in" style="border-left: 5px solid var(--warning);">
+            <h2>⚖️ Régimen Sancionatorio</h2>
+            <p>Consecuencias para servidores que discriminan.</p>
+            <button class="btn-link" style="color: var(--warning); border-color: var(--warning);" onclick="openModal('modal-sanciones')">👨‍⚖️ Ver Sanciones (Disciplinarias, Penales, Laborales)</button>
+        </section>
+
+    </div>
+
+    <!-- ================= MODALES DE CONTENIDO TEÓRICO COMPLETO ================= -->
+
+    <!-- Modal UNP -->
+    <div id="modal-unp" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal('modal-unp')">&times;</button>
+            <div class="modal-body">
+                <h2>1. Rutas de la Unidad Nacional de Protección (UNP)</h2>
+                <p>La UNP implementa el Protocolo de Atención a Mujeres, diseñado para incorporar el enfoque de género y evitar la revictimización en los procesos de seguridad. Esta ruta se desarrolla en las siguientes fases:</p>
+                <ul>
+                    <li><strong>Alistamiento General:</strong> Preparación de dispositivos que respondan al enfoque diferencial.</li>
+                    <li><strong>Recepción de solicitudes:</strong> Los funcionarios deben garantizar un acercamiento sin barreras, sin culpar a la víctima y cumpliendo las leyes de protección de derechos.</li>
+                    <li><strong>Evaluación del riesgo:</strong> Se realiza una valoración asertiva de la realidad de la persona y el caso se estudia en el CERREM (Comité de Evaluación de Riesgo y Recomendación de Medidas), donde se decide el ingreso al programa.</li>
+                    <li><strong>Implementación de medidas:</strong> Se diseñan esquemas de protección que consideren el contexto geográfico, cultural y el tipo de liderazgo, permitiendo que la mujer escoja si prefiere personal de protección femenino.</li>
+                    <li><strong>Seguimiento y cierre:</strong> Monitoreo constante de la efectividad de las medidas y acompañamiento psicológico para el retiro o prórroga de estas.</li>
+                </ul>
+                <h3>¿CÓMO DECIDE EL CERREM QUÉ MEDIDAS APLICAR?</h3>
+                <p>El CERREM para mujeres cuenta con la participación de cuatro representantes delegadas de las mujeres. Se consideran criterios como el impacto familiar, pertenencia étnica y realidad del territorio.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Rutas Externas -->
+    <div id="modal-externas" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal('modal-externas')">&times;</button>
+            <div class="modal-body">
+                <h2>2. Activación de Rutas Externas</h2>
+                <p>Cuando una entidad identifica casos que superan su competencia interna, debe activar canales externos:</p>
+                <ul>
+                    <li><strong>Ruta Penal (Fiscalía General de la Nación):</strong> Se activa cuando los hechos detectados constituyen un delito (abuso, violencia sexual, discriminación). Deber de denuncia de oficio.</li>
+                    <li><strong>Ruta de Salud (Ministerio de Salud / EPS):</strong> En casos de violencia sexual, para atención prioritaria, gratuita y sin denuncia previa. Protocolo médico y psicosocial inmediato.</li>
+                    <li><strong>Ruta de Trabajo (Ministerio del Trabajo):</strong> Casos de acoso laboral o despidos de personas con estabilidad laboral reforzada sin autorización del Inspector de Trabajo.</li>
+                    <li><strong>Ruta de Control (Procuraduría General de la Nación):</strong> Vigila la actuación de los servidores públicos para que no vulneren derechos.</li>
+                </ul>
+                <h3>Canales de Activación</h3>
+                <p>Línea 123, Línea 155, App ELLAS, Defensoría del Pueblo.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Medidas -->
+    <div id="modal-medidas" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal('modal-medidas')">&times;</button>
+            <div class="modal-body">
+                <h2>Diferencias entre Medidas Materiales e Inmateriales</h2>
+                <h3>1. Medidas de Protección Materiales</h3>
+                <p>Físicas, técnicas y logísticas para salvaguardar la integridad corporal.</p>
+                <ul>
+                    <li>Personal de protección (escoltas), vehículos blindados, chalecos, botones de pánico.</li>
+                    <li>Enfoque laboral: Ajustes de infraestructura y TIC.</li>
+                </ul>
+                <h3>2. Medidas de Protección Inmateriales</h3>
+                <p>Preventivas, psicosociales y políticas. Buscan transformar condiciones de riesgo.</p>
+                <ul>
+                    <li>Acompañamiento psicológico, asesoría jurídica.</li>
+                    <li>Lucha contra la estigmatización y reconocimiento político.</li>
+                    <li>Gestión laboral: Reubicación, teletrabajo.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Etnico/Busqueda -->
+    <div id="modal-etnico" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal('modal-etnico')">&times;</button>
+            <div class="modal-body">
+                <h2>Adaptación al Contexto Étnico</h2>
+                <p>Se fundamenta en un enfoque interseccional:</p>
+                <ul>
+                    <li><strong>Adecuación:</strong> Priorizar transporte fluvial si es necesario, asegurar señal de comunicación.</li>
+                    <li><strong>Autonomía:</strong> Articulación con autoridades indígenas y respeto a la "Ley Propia".</li>
+                    <li><strong>Lengua:</strong> Uso de lenguas originarias en protocolos.</li>
+                </ul>
+                <h3>Rol de Autoridades Indígenas</h3>
+                <p>Actúan en sistemas de alertas locales, prevención de violencia sexual y trata, y tienen jurisdicción propia que la Fuerza Pública debe respetar.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-busqueda" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal('modal-busqueda')">&times;</button>
+            <div class="modal-body">
+                <h2>Búsqueda de Desaparecidos con Enfoque Étnico (UBPD)</h2>
+                <p>Mandato humanitario y extrajudicial:</p>
+                <ul>
+                    <li><strong>Participación:</strong> Interlocución con autoridades propias y familiares.</li>
+                    <li><strong>Identidad Cultural:</strong> Protocolos de prospección y entrega digna respetando rituales.</li>
+                    <li><strong>Interseccionalidad:</strong> Atención prioritaria a mujeres y niñas de comunidades étnicas.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Sanciones -->
+    <div id="modal-sanciones" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal('modal-sanciones')">&times;</button>
+            <div class="modal-body">
+                <h2>Sanciones para Servidores que Discriminan</h2>
+                <h3>1. Disciplinarias</h3>
+                <p>Oficina de Control Interno Disciplinario inicia procesos por vulneración de derechos o por omisión en el acceso a la justicia.</p>
+                <h3>2. Penales</h3>
+                <p>Ley 1482 de 2011 (Actos de discriminación), Hostigamiento, Acoso Sexual (Art 210-A Código Penal).</p>
+                <h3>3. Laborales e Indemnizatorias</h3>
+                <p>Indemnización de 180 días (Ley 361 de 1997) por despido sin autorización de estabilidad reforzada. Ineficacia del despido y reintegro.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- LOGICA DE MODALES ---
+        function openModal(id) {
+            document.getElementById(id).classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('open');
+            document.body.style.overflow = 'auto';
+        }
+        window.onclick = function(e) {
+            if (e.target.classList.contains('modal-overlay')) {
+                e.target.classList.remove('open');
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        // --- LOGICA STEPPER UNP ---
+        function showStep(num) {
+            // Actualizar circulos
+            document.querySelectorAll('.step').forEach((el, index) => {
+                if (index + 1 === num) el.classList.add('active');
+                else el.classList.remove('active');
+            });
+            // Actualizar contenido
+            document.querySelectorAll('.step-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById('step-' + num).classList.add('active');
+        }
+
+        // --- LOGICA SIMULADOR (GAME) ---
+        const cases = [
+            {
+                text: "⚠️ CASO 1: Empleada despedida por condición de salud sin permiso del Inspector.",
+                answer: "trabajo",
+                explanation: "Correcto. El Ministerio del Trabajo debe autorizar despidos con estabilidad reforzada."
+            },
+            {
+                text: "⚠️ CASO 2: Víctima llega con signos de violencia sexual reciente.",
+                answer: "salud",
+                explanation: "Exacto. Se activa Salud para atención prioritaria, gratuita y sin denuncia previa."
+            },
+            {
+                text: "⚠️ CASO 3: Un servidor público está hostigando y discriminando por raza.",
+                answer: "procuraduria",
+                explanation: "Bien. La Procuraduría vigila y sanciona disciplinariamente a los servidores."
+            },
+            {
+                text: "⚠️ CASO 4: El hecho constituye claramente un delito (Abuso sexual).",
+                answer: "fiscalia",
+                explanation: "Correcto. La Fiscalía investiga la ruta penal. Hay deber de denuncia."
+            }
+        ];
+
+        let currentCase = 0;
+
+        function checkAnswer(entity, btn) {
+            const current = cases[currentCase];
+            const feedback = document.getElementById('feedback-msg');
+            const allBtns = document.querySelectorAll('.entity-btn');
+
+            // Reset buttons
+            allBtns.forEach(b => { b.classList.remove('correct', 'wrong'); b.style.pointerEvents = 'none'; });
+
+            if (entity === current.answer) {
+                btn.classList.add('correct');
+                feedback.style.color = "var(--accent)";
+                feedback.textContent = "✅ " + current.explanation;
+            } else {
+                btn.classList.add('wrong');
+                feedback.style.color = "var(--warning)";
+                feedback.textContent = "❌ Incorrecto. Intenta de nuevo o revisa la teoría.";
+                // Highlight correct one
+                allBtns.forEach(b => {
+                    if (b.getAttribute('onclick').includes(current.answer)) b.classList.add('correct');
+                });
+            }
+        }
+
+        function nextCase() {
+            currentCase++;
+            if (currentCase >= cases.length) currentCase = 0; // Loop or finish
+            
+            document.getElementById('case-text').textContent = cases[currentCase].text;
+            document.getElementById('feedback-msg').textContent = "";
+            
+            // Re-enable buttons
+            document.querySelectorAll('.entity-btn').forEach(b => {
+                b.classList.remove('correct', 'wrong');
+                b.style.pointerEvents = 'auto';
+            });
+        }
+        
+        // Cargar primer caso
+        document.getElementById('case-text').textContent = cases[0].text;
+
+        // --- SCROLL ANIMATION ---
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('fade-in');
+                }
+            });
+        });
+        document.querySelectorAll('.card').forEach((el) => observer.observe(el));
+
+    </script>
+</body>
+</html>
