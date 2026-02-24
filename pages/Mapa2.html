@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mapa Mental — Miradas Feministas de Seguridad</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --border: rgba(255,255,255,0.07);
+    --text: #e8eaf0;
+    --text-muted: #6b7280;
+    /* Paleta de colores por rama */
+    --c1: #e879f9;   /* Marco Conceptual — fucsia */
+    --c2: #f97316;   /* Diagnóstico — naranja */
+    --c3: #ef4444;   /* Retos — rojo */
+    --c4: #34d399;   /* Políticas — verde */
+    --c5: #60a5fa;   /* Institucionalidad — azul */
+    --root-c: #c084fc;
+    --radius: 14px;
+    --panel: 320px;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); font-family:'DM Sans', sans-serif; color:var(--text); }
+
+  /* ── LAYOUT ── */
+  #app { display:flex; height:100vh; width:100vw; }
+
+  /* ── SIDEBAR ── */
+  #sidebar {
+    width:var(--panel); min-width:var(--panel); height:100%;
+    background:var(--surface); border-right:1px solid var(--border);
+    display:flex; flex-direction:column; z-index:100;
+    transition:transform 0.35s cubic-bezier(.4,0,.2,1);
+  }
+  #sidebar.collapsed { transform:translateX(calc(-1 * var(--panel))); }
+
+  .sidebar-header { padding:28px 24px 20px; border-bottom:1px solid var(--border); }
+  .sidebar-header h1 { font-family:'DM Serif Display', serif; font-size:1.2rem; line-height:1.35; color:var(--text); margin-bottom:6px; }
+  .sidebar-header p { font-size:0.78rem; color:var(--text-muted); line-height:1.6; }
+
+  .sidebar-nav { flex:1; overflow-y:auto; padding:16px 0; }
+  .sidebar-nav::-webkit-scrollbar { width:4px; }
+  .sidebar-nav::-webkit-scrollbar-thumb { background:var(--surface2); border-radius:4px; }
+
+  .nav-item {
+    display:flex; align-items:center; gap:10px;
+    padding:10px 24px; cursor:pointer;
+    font-size:0.875rem; color:var(--text-muted);
+    transition:background 0.15s; position:relative;
+  }
+  .nav-item:hover { background:var(--surface2); color:var(--text); }
+  .nav-item.active { color:var(--text); }
+  .nav-item.active::before {
+    content:''; position:absolute; left:0; top:20%; height:60%;
+    width:3px; border-radius:0 3px 3px 0;
+    background:var(--accent-color, var(--root-c));
+  }
+  .nav-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; opacity:0.7; }
+  .nav-item.active .nav-dot { opacity:1; box-shadow:0 0 8px var(--accent-color, var(--root-c)); }
+  .nav-sub { padding-left:44px; }
+  .nav-sub .nav-item { font-size:0.8rem; padding:7px 16px 7px 0; }
+  .nav-sub .nav-dot { width:6px; height:6px; opacity:0.5; }
+
+  #detail-panel {
+    margin:0 16px 16px; background:var(--surface2); border-radius:var(--radius);
+    padding:16px; border:1px solid var(--border); min-height:120px;
+  }
+  #detail-panel h3 { font-size:0.95rem; font-weight:600; margin-bottom:8px; color:var(--text); }
+  #detail-panel p { font-size:0.8rem; color:var(--text-muted); line-height:1.6; }
+  #detail-panel .breadcrumb { font-size:0.72rem; color:var(--text-muted); margin-bottom:8px; opacity:0.7; }
+  .detail-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:88px; gap:8px; }
+  .detail-empty svg { opacity:0.2; }
+  .detail-empty span { font-size:0.8rem; color:var(--text-muted); }
+
+  /* ── CANVAS ── */
+  #canvas-area {
+    flex:1; position:relative; overflow:hidden; background:var(--bg);
+    background-image:radial-gradient(circle at 1px 1px, rgba(255,255,255,0.04) 1px, transparent 0);
+    background-size:32px 32px;
+  }
+
+  #mindmap-svg {
+    position:absolute; top:0; left:0; width:100%; height:100%;
+    cursor:grab; user-select:none;
+  }
+  #mindmap-svg.panning { cursor:grabbing; }
+
+  /* ── NODE CARDS ── */
+  .node-card {
+    background:var(--surface); border:1.5px solid rgba(255,255,255,0.08);
+    border-radius:12px; padding:10px 14px;
+    font-family:'DM Sans', sans-serif; font-size:13px; color:var(--text);
+    cursor:pointer; transition:all 0.2s;
+    display:flex; align-items:center; gap:8px;
+    max-width:220px; min-width:160px;
+    box-shadow:0 4px 20px rgba(0,0,0,0.4);
+    white-space:normal; word-break:break-word; line-height:1.4;
+  }
+  .node-card:hover {
+    border-color:rgba(255,255,255,0.2);
+    box-shadow:0 8px 30px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.1);
+    transform:translateY(-1px) scale(1.02); z-index:10;
+  }
+  .node-card.selected {
+    border-color:var(--accent-color, var(--root-c));
+    box-shadow:0 0 0 2px color-mix(in srgb, var(--accent-color, var(--root-c)) 30%, transparent), 0 8px 30px rgba(0,0,0,0.6);
+  }
+  .node-indicator {
+    width:8px; height:8px; border-radius:50%; flex-shrink:0;
+  }
+  .node-root-card {
+    background:linear-gradient(135deg, rgba(192,132,252,0.25) 0%, rgba(233,121,249,0.15) 100%);
+    border-color:rgba(192,132,252,0.4); padding:14px 20px;
+    font-size:14px; font-weight:600; max-width:270px;
+    box-shadow:0 0 40px rgba(192,132,252,0.15), 0 4px 20px rgba(0,0,0,0.5);
+  }
+  .node-root-card:hover { box-shadow:0 0 60px rgba(192,132,252,0.25), 0 8px 30px rgba(0,0,0,0.6); }
+  .node-toggle {
+    margin-left:auto; width:18px; height:18px; border-radius:50%;
+    background:rgba(255,255,255,0.08);
+    display:flex; align-items:center; justify-content:center;
+    font-size:11px; flex-shrink:0;
+    transition:background 0.15s, transform 0.2s;
+  }
+  .node-toggle:hover { background:rgba(255,255,255,0.18); }
+  .node-toggle.open { transform:rotate(45deg); }
+
+  /* ── CONTROLS ── */
+  #controls {
+    position:absolute; bottom:24px; right:24px;
+    display:flex; flex-direction:column; gap:8px; z-index:200;
+  }
+  .ctrl-btn {
+    width:40px; height:40px; background:var(--surface);
+    border:1px solid var(--border); border-radius:10px;
+    color:var(--text); font-size:16px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    transition:all 0.15s; box-shadow:0 4px 12px rgba(0,0,0,0.4);
+  }
+  .ctrl-btn:hover { background:var(--surface2); border-color:rgba(255,255,255,0.15); transform:scale(1.05); }
+
+  #toggle-sidebar-btn {
+    position:absolute; top:20px; left:16px; z-index:200;
+    width:36px; height:36px; background:var(--surface);
+    border:1px solid var(--border); border-radius:8px;
+    color:var(--text); font-size:14px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    transition:all 0.15s; box-shadow:0 4px 12px rgba(0,0,0,0.4);
+  }
+  #toggle-sidebar-btn:hover { background:var(--surface2); }
+
+  /* ── TOOLTIP ── */
+  #tooltip {
+    position:absolute; background:var(--surface); border:1px solid var(--border);
+    border-radius:8px; padding:8px 12px; font-size:0.78rem; color:var(--text-muted);
+    max-width:200px; pointer-events:none; z-index:300;
+    opacity:0; transition:opacity 0.15s; box-shadow:0 8px 24px rgba(0,0,0,0.5);
+  }
+  #tooltip.visible { opacity:1; }
+
+  /* ── MINIMAP ── */
+  #minimap {
+    position:absolute; bottom:24px; left:24px;
+    width:140px; height:90px; background:rgba(26,29,39,0.9);
+    border:1px solid var(--border); border-radius:10px;
+    z-index:200; overflow:hidden; backdrop-filter:blur(10px);
+  }
+
+  /* ── LEGEND ── */
+  #legend {
+    position:absolute; top:20px; right:20px;
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:10px; padding:12px 14px; z-index:200;
+    font-size:0.75rem; display:flex; flex-direction:column; gap:6px;
+  }
+  .legend-item { display:flex; align-items:center; gap:8px; color:var(--text-muted); }
+  .legend-dot { width:8px; height:8px; border-radius:50%; }
+
+  @media (max-width:768px) {
+    :root { --panel:280px; }
+    #sidebar { position:absolute; height:100%; z-index:500; box-shadow:10px 0 40px rgba(0,0,0,0.6); }
+    #sidebar.collapsed { transform:translateX(-100%); }
+    #legend, #minimap { display:none; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div class="sidebar-header">
+      <h1>Miradas Feministas de Seguridad</h1>
+      <p>Enfoques para transformar la seguridad desde la perspectiva de género e interseccionalidad</p>
+    </div>
+    <div class="sidebar-nav" id="nav-tree"></div>
+    <div id="detail-panel">
+      <div class="detail-empty">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span>Clic en un nodo para ver detalles</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CANVAS -->
+  <div id="canvas-area">
+    <button id="toggle-sidebar-btn" title="Panel">☰</button>
+    <svg id="mindmap-svg" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="glow"><feGaussianBlur stdDeviation="3" result="cb"/><feMerge><feMergeNode in="cb"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      <g id="viewport">
+        <g id="edges-layer"></g>
+        <g id="nodes-layer"></g>
+      </g>
+    </svg>
+    <div id="controls">
+      <button class="ctrl-btn" title="Zoom In" onclick="zoomBy(0.2)">+</button>
+      <button class="ctrl-btn" title="Zoom Out" onclick="zoomBy(-0.2)">−</button>
+      <button class="ctrl-btn" title="Encuadrar todo" onclick="fitView()" style="font-size:13px">⊡</button>
+      <button class="ctrl-btn" title="Expandir todo" onclick="expandAll()" style="font-size:12px">⊞</button>
+      <button class="ctrl-btn" title="Colapsar todo" onclick="collapseAll()" style="font-size:12px">⊟</button>
+    </div>
+    <div id="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c1)"></div>Marco Conceptual</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c2)"></div>Diagnóstico</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c3)"></div>Retos</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c4)"></div>Políticas</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c5)"></div>Institucionalidad</div>
+    </div>
+    <div id="minimap"><canvas id="minimap-canvas" width="140" height="90"></canvas></div>
+  </div>
+</div>
+<div id="tooltip"></div>
+
+<script>
+// ═══════════════════════════════════
+// DATA
+// ═══════════════════════════════════
+const DATA = {
+  id:"root", label:"Miradas feministas para transformar la seguridad", level:0,
+  desc:"Un enfoque que pone la vida y la dignidad en el centro, cuestionando las dinámicas de poder tradicionales y proponiendo una seguridad humana e interseccional.",
+  children:[
+    {
+      id:"c1", label:"Marco Conceptual", level:1,
+      desc:"Bases teóricas para redefinir la seguridad desde una perspectiva de género e interseccionalidad.",
+      children:[
+        {
+          id:"c1-1", label:"Seguridad feminista interseccional", level:2,
+          desc:"Propuesta que cuestiona los modelos militarizados de seguridad y centra su análisis en la vida, la dignidad y la diversidad.",
+          children:[
+            { id:"c1-1-1", label:"Cuestiona la militarización", level:3, desc:"Critica el paradigma de seguridad centrado en la fuerza militar y propone alternativas basadas en la prevención y el cuidado." },
+            { id:"c1-1-2", label:"Enfoque en la vida y dignidad", level:3, desc:"La seguridad real se mide por la calidad de vida y el respeto a la dignidad de todas las personas, no por la ausencia de conflicto armado." },
+            { id:"c1-1-3", label:"Centro en personas diversas", level:3, desc:"Incluye las experiencias de mujeres, población LGBT, personas con discapacidad y comunidades étnicas como núcleo del análisis." }
+          ]
+        },
+        {
+          id:"c1-2", label:"Feminismo", level:2,
+          desc:"Movimiento político y social que busca la igualdad de derechos y oportunidades entre todos los géneros.",
+          children:[
+            { id:"c1-2-1", label:"Crítica al sistema patriarcal", level:3, desc:"Analiza cómo el patriarcado organiza las relaciones sociales, políticas y económicas en detrimento de las mujeres y otras identidades." },
+            { id:"c1-2-2", label:"Transformación de relaciones de poder", level:3, desc:"Propone redistribuir el poder y desmantelar estructuras de dominación en todos los ámbitos: familiar, laboral, político e institucional." },
+            { id:"c1-2-3", label:"Justicia social y equidad", level:3, desc:"La igualdad formal no es suficiente; se requieren medidas afirmativas para corregir las desigualdades históricas y estructurales." }
+          ]
+        },
+        {
+          id:"c1-3", label:"Tipos de Paz", level:2,
+          desc:"Distinción entre los diferentes conceptos de paz que orientan las políticas de seguridad.",
+          children:[
+            { id:"c1-3-1", label:"Paz negativa: ausencia de guerra", level:3, desc:"Concepto tradicional que define la paz como la mera ausencia de conflicto armado, sin abordar las causas estructurales de la violencia." },
+            { id:"c1-3-2", label:"Paz positiva: justicia social", level:3, desc:"Supone la construcción activa de condiciones de equidad, bienestar y justicia que hagan sostenible la convivencia." },
+            { id:"c1-3-3", label:"Paz imperfecta: resolución cotidiana", level:3, desc:"Reconoce que la paz se construye en lo cotidiano, de manera imperfecta, a través de prácticas y relaciones concretas." }
+          ]
+        }
+      ]
+    },
+    {
+      id:"c2", label:"Diagnóstico: Mujeres y Criminalidad", level:1,
+      desc:"Análisis de cómo la inseguridad y la criminalidad afectan de manera diferenciada a las mujeres y a las personas con orientaciones sexuales e identidades de género diversas.",
+      children:[
+        {
+          id:"c2-1", label:"Inseguridad en espacios", level:2,
+          desc:"La violencia contra las mujeres ocurre tanto en el espacio privado como en el público, y tiene manifestaciones específicas en contextos rurales.",
+          children:[
+            { id:"c2-1-1", label:"Ámbito privado: violencia intrafamiliar", level:3, desc:"El hogar es el principal espacio de riesgo para las mujeres. La violencia doméstica es la forma más extendida de violencia de género." },
+            { id:"c2-1-2", label:"Ámbito público: control territorial", level:3, desc:"Los grupos armados utilizan el control del espacio público para restringir la movilidad, la autonomía y los derechos de las mujeres." },
+            { id:"c2-1-3", label:"Contexto rural: brechas de propiedad", level:3, desc:"Las mujeres rurales enfrentan violencias específicas ligadas al despojo de tierras, la informalidad de la propiedad y el aislamiento institucional." }
+          ]
+        },
+        {
+          id:"c2-2", label:"Violencias específicas", level:2,
+          desc:"Formas de violencia que tienen un impacto particular sobre las mujeres y la población LGBT.",
+          children:[
+            { id:"c2-2-1", label:"Violencia sexual como arma de control", level:3, desc:"En contextos de conflicto, la violencia sexual es utilizada sistemáticamente por actores armados para aterrorizar a comunidades y ejercer control territorial." },
+            { id:"c2-2-2", label:"Trata de personas y explotación", level:3, desc:"Las mujeres y niñas son las principales víctimas de la trata, vinculada a redes de explotación sexual y laboral que operan en economías criminales." },
+            { id:"c2-2-3", label:"Violencia por prejuicio (LGBT)", level:3, desc:"La población con orientaciones sexuales e identidades de género diversas enfrenta violencias específicas motivadas por el odio y la discriminación." }
+          ]
+        },
+        {
+          id:"c2-3", label:"Roles en la macrocriminalidad", level:2,
+          desc:"La participación de mujeres en estructuras criminales está mediada por condiciones de vulnerabilidad socioeconómica.",
+          children:[
+            { id:"c2-3-1", label:"Mujeres como eslabón débil (cárceles)", level:3, desc:"Las mujeres tienden a ocupar roles periféricos y de bajo nivel en organizaciones criminales, siendo las más afectadas por las capturas y condenas." },
+            { id:"c2-3-2", label:"Participación por pobreza y marginalidad", level:3, desc:"El reclutamiento de mujeres en estructuras criminales es facilitado por contextos de pobreza extrema, violencia intrafamiliar y exclusión social." }
+          ]
+        }
+      ]
+    },
+    {
+      id:"c3", label:"Retos Estructurales", level:1,
+      desc:"Obstáculos sistémicos que impiden la construcción de una seguridad real e incluyente para las mujeres.",
+      children:[
+        { id:"c3-1", label:"Desigualdades históricas y sociales", level:2, desc:"Las brechas de género acumuladas en acceso a educación, tierra, empleo formal y participación política debilitan la capacidad de las mujeres para exigir seguridad." },
+        { id:"c3-2", label:"Corrupción y captura del Estado", level:2, desc:"La infiltración de grupos criminales en instituciones públicas vulnera los sistemas de protección y deja a las mujeres sin garantías reales de acceso a la justicia." },
+        { id:"c3-3", label:"Tráfico ilegal de armas ligeras", level:2, desc:"La proliferación de armas pequeñas alimenta la violencia doméstica y comunitaria, incrementando el riesgo de feminicidio y de violencias graves." },
+        { id:"c3-4", label:"Economías ilícitas — Narcotráfico", level:2, desc:"Las economías criminales generan entornos de violencia extrema que afectan desproporcionadamente a las mujeres en territorios donde el Estado tiene presencia débil." }
+      ]
+    },
+    {
+      id:"c4", label:"Pautas para Políticas Públicas", level:1,
+      desc:"Lineamientos estratégicos para orientar la acción del Estado en materia de seguridad con enfoque de género.",
+      children:[
+        {
+          id:"c4-1", label:"Pilar I: Cultura de Paz", level:2,
+          desc:"Medidas orientadas a transformar las condiciones estructurales que generan violencia y desigualdad.",
+          children:[
+            { id:"c4-1-1", label:"Autonomía económica de las mujeres", level:3, desc:"Fortalecer el acceso de las mujeres al empleo formal, al crédito y a los recursos productivos como condición para reducir su vulnerabilidad ante la violencia." },
+            { id:"c4-1-2", label:"Acceso a tierras y vivienda rural", level:3, desc:"Garantizar los derechos de propiedad de las mujeres rurales mediante titulación conjunta, adjudicación preferente y formalización de predios." },
+            { id:"c4-1-3", label:"Educación contra la discriminación", level:3, desc:"Transformar los currículos y la cultura escolar para eliminar los estereotipos de género y promover relaciones de respeto e igualdad desde la infancia." }
+          ]
+        },
+        {
+          id:"c4-2", label:"Pilar II: Protección y Seguridad", level:2,
+          desc:"Acciones directas para proteger a las mujeres en mayor riesgo y responder efectivamente a las violencias.",
+          children:[
+            { id:"c4-2-1", label:"Prevención de violencias por GAO/GDO", level:3, desc:"Desarrollar estrategias de seguridad que anticipen y prevengan las violencias de grupos armados organizados y delincuencia organizada sobre mujeres y comunidades." },
+            { id:"c4-2-2", label:"Protección a lideresas y defensoras", level:3, desc:"Implementar medidas de protección efectivas, oportunas y con enfoque diferencial para las mujeres que defienden derechos humanos y son amenazadas por ello." },
+            { id:"c4-2-3", label:"Enfoque diferencial en la UNP", level:3, desc:"Adaptar los esquemas de protección de la Unidad Nacional de Protección a las necesidades específicas y los riesgos particulares de las mujeres beneficiarias." }
+          ]
+        },
+        {
+          id:"c4-3", label:"Pilar III: Desmantelamiento", level:2,
+          desc:"Estrategias para desarticular las estructuras criminales que generan violencia contra las mujeres.",
+          children:[
+            { id:"c4-3-1", label:"Investigación de finanzas y lavado", level:3, desc:"Priorizar la persecución de los activos y las finanzas de organizaciones criminales como herramienta para desarticular su capacidad operativa." },
+            { id:"c4-3-2", label:"Justicia con enfoque de género", level:3, desc:"Garantizar que los procesos de sometimiento a la justicia incorporen el reconocimiento y la reparación de las violencias específicas cometidas contra mujeres." },
+            { id:"c4-3-3", label:"Desarme y control de armas", level:3, desc:"Implementar políticas estrictas de control de armas de fuego para reducir la disponibilidad de armas que alimentan la violencia doméstica y el feminicidio." },
+            { id:"c4-3-4", label:"Sustitución voluntaria de cultivos", level:3, desc:"Promover programas de sustitución de cultivos ilícitos que reconozcan el rol de las mujeres en la economía campesina y garanticen su participación." }
+          ]
+        }
+      ]
+    },
+    {
+      id:"c5", label:"Institucionalidad y Seguimiento", level:1,
+      desc:"Mecanismos institucionales para garantizar la implementación y el monitoreo de las políticas de seguridad con enfoque de género.",
+      children:[
+        { id:"c5-1", label:"Comisión Nacional de Garantías (CNGS)", level:2, desc:"Órgano de alto nivel creado por el Acuerdo de Paz para el desmantelamiento de organizaciones criminales, que debe incorporar perspectiva de género en su mandato." },
+        { id:"c5-2", label:"Unidad Especial de Investigación (UEI)", level:2, desc:"Entidad de la Fiscalía creada para investigar organizaciones sucesoras del paramilitarismo, que debe priorizar los casos de violencia contra mujeres y lideresas." },
+        { id:"c5-3", label:"Veeduría de organizaciones de mujeres", level:2, desc:"Espacios formales de control ciudadano liderados por organizaciones de mujeres para monitorear el cumplimiento de las políticas de seguridad con enfoque de género." },
+        { id:"c5-4", label:"Presupuestos sensibles al género", level:2, desc:"Aplicar metodologías de análisis presupuestal que visibilicen y garanticen los recursos destinados a políticas de igualdad y seguridad para las mujeres." }
+      ]
+    }
+  ]
+};
+
+// ═══════════════════════════════════
+// LAYOUT ENGINE
+// ═══════════════════════════════════
+const BRANCH_COLORS = [null,'#e879f9','#f97316','#ef4444','#34d399','#60a5fa'];
+const NODE_W=220, NODE_H=58, H_GAP=100, V_GAP=18;
+const ROOT_W=270, ROOT_H=72;
+
+let nodes=[], collapsed=new Set(), selected=null;
+let transform={x:0,y:0,scale:1};
+
+function buildTree(data, parentId=null, depth=0) {
+  const node={
+    id:data.id, data, parentId, depth,
+    x:0, y:0,
+    w:depth===0?ROOT_W:NODE_W,
+    h:depth===0?ROOT_H:NODE_H,
+    color:null,
+    children:(data.children||[]).map(c=>c.id)
+  };
+  nodes.push(node);
+  if(data.children) data.children.forEach(c=>buildTree(c,data.id,depth+1));
+}
+
+function assignColors() {
+  const lvl1 = nodes.filter(n=>n.depth===1);
+  const cmap={};
+  lvl1.forEach((n,i)=>{ n.color=BRANCH_COLORS[i+1]||BRANCH_COLORS[1]; cmap[n.id]=n.color; });
+  nodes.forEach(n=>{
+    if(n.depth===0){ n.color='#c084fc'; return; }
+    if(n.depth===1) return;
+    let cur=n;
+    while(cur && cur.depth>1) cur=nodes.find(x=>x.id===cur.parentId);
+    if(cur && cmap[cur.id]) n.color=cmap[cur.id];
+  });
+}
+
+function getVisible(id) {
+  const n=nodes.find(x=>x.id===id);
+  if(!n) return [];
+  let res=[n];
+  if(!collapsed.has(id)&&n.children.length)
+    n.children.forEach(cid=>{ res=res.concat(getVisible(cid)); });
+  return res;
+}
+
+function layoutSubtree(id) {
+  const node=nodes.find(n=>n.id===id);
+  if(!node) return {height:0};
+  const vis=collapsed.has(id)?[]:node.children.filter(cid=>nodes.find(n=>n.id===cid));
+  if(!vis.length){ node._subtreeH=node.h; return {height:node.h}; }
+  let totalH=0;
+  vis.forEach((cid,i)=>{ const r=layoutSubtree(cid); if(i>0) totalH+=V_GAP; totalH+=r.height; });
+  node._subtreeH=Math.max(node.h,totalH);
+  return {height:node._subtreeH};
+}
+
+function placeNodes(id, x, y) {
+  const node=nodes.find(n=>n.id===id);
+  if(!node) return;
+  node.x=x;
+  const vis=collapsed.has(id)?[]:node.children.filter(cid=>nodes.find(n=>n.id===cid));
+  node.y=y+(node._subtreeH-node.h)/2;
+  if(!vis.length) return;
+  let cy=y;
+  vis.forEach(cid=>{
+    const child=nodes.find(n=>n.id===cid);
+    placeNodes(cid, x+node.w+H_GAP, cy);
+    cy+=child._subtreeH+V_GAP;
+  });
+}
+
+function doLayout() { layoutSubtree('root'); placeNodes('root',0,0); }
+
+// ═══════════════════════════════════
+// RENDER
+// ═══════════════════════════════════
+const svg=document.getElementById('mindmap-svg');
+const viewport=document.getElementById('viewport');
+const edgesLayer=document.getElementById('edges-layer');
+const nodesLayer=document.getElementById('nodes-layer');
+
+function render() { doLayout(); renderEdges(); renderNodes(); renderNav(); updateMinimap(); }
+
+function renderEdges() {
+  edgesLayer.innerHTML='';
+  getVisible('root').forEach(node=>{
+    if(!node.parentId) return;
+    const parent=nodes.find(n=>n.id===node.parentId);
+    if(!parent) return;
+    const x1=parent.x+parent.w, y1=parent.y+parent.h/2;
+    const x2=node.x, y2=node.y+node.h/2;
+    const cx1=x1+(x2-x1)*0.5, cx2=x2-(x2-x1)*0.4;
+    const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d',`M${x1},${y1} C${cx1},${y1} ${cx2},${y2} ${x2},${y2}`);
+    path.setAttribute('fill','none');
+    path.setAttribute('stroke',node.color||'#60a5fa');
+    path.setAttribute('stroke-width',node.depth===1?'2':'1.5');
+    path.setAttribute('stroke-opacity',node.depth===1?'0.5':'0.35');
+    edgesLayer.appendChild(path);
+  });
+}
+
+function renderNodes() {
+  nodesLayer.innerHTML='';
+  getVisible('root').forEach(node=>{
+    const fo=document.createElementNS('http://www.w3.org/2000/svg','foreignObject');
+    fo.setAttribute('x',node.x); fo.setAttribute('y',node.y);
+    fo.setAttribute('width',node.w+40); fo.setAttribute('height',node.h+20);
+    fo.style.overflow='visible';
+
+    const card=document.createElement('div');
+    const isRoot=node.depth===0;
+    card.className=isRoot?'node-card node-root-card':'node-card';
+    if(selected===node.id) card.classList.add('selected');
+    card.style.setProperty('--accent-color',node.color||'#60a5fa');
+    card.style.width=node.w+'px';
+    card.style.minHeight=node.h+'px';
+
+    if(!isRoot) {
+      const dot=document.createElement('div');
+      dot.className='node-indicator';
+      dot.style.background=node.color||'#60a5fa';
+      dot.style.boxShadow=`0 0 6px ${node.color||'#60a5fa'}`;
+      card.appendChild(dot);
+    }
+
+    const label=document.createElement('span');
+    label.textContent=node.data.label;
+    label.style.flex='1';
+    card.appendChild(label);
+
+    if(node.children.length) {
+      const tog=document.createElement('div');
+      tog.className='node-toggle'+(collapsed.has(node.id)?'':' open');
+      tog.textContent='+';
+      card.appendChild(tog);
+    }
+
+    card.onclick=(e)=>{
+      e.stopPropagation();
+      if(node.children.length){ if(collapsed.has(node.id)) collapsed.delete(node.id); else collapsed.add(node.id); }
+      selected=node.id;
+      showDetail(node);
+      render();
+    };
+    card.onmouseenter=(e)=>showTooltip(e,node);
+    card.onmouseleave=hideTooltip;
+
+    fo.appendChild(card);
+    nodesLayer.appendChild(fo);
+  });
+  applyViewport();
+}
+
+function applyViewport() {
+  viewport.setAttribute('transform',`translate(${transform.x},${transform.y}) scale(${transform.scale})`);
+}
+
+// ═══════════════════════════════════
+// DETAIL PANEL
+// ═══════════════════════════════════
+function showDetail(node) {
+  const panel=document.getElementById('detail-panel');
+  const crumbs=[];
+  let cur=node;
+  while(cur){ crumbs.unshift(cur.data.label); cur=nodes.find(n=>n.id===cur.parentId); }
+  const breadcrumb=crumbs.slice(0,-1).join(' › ');
+  panel.innerHTML=`
+    ${breadcrumb?`<div class="breadcrumb">${breadcrumb}</div>`:''}
+    <h3>${node.data.label}</h3>
+    <p>${node.data.desc||'Detalle específico de este componente.'}</p>
+  `;
+  panel.style.borderTop=`2px solid ${node.color||'#60a5fa'}`;
+}
+
+// ═══════════════════════════════════
+// SIDEBAR NAV
+// ═══════════════════════════════════
+function renderNav() {
+  const nav=document.getElementById('nav-tree');
+  nav.innerHTML='';
+  DATA.children.forEach(cat=>{
+    const catNode=nodes.find(n=>n.id===cat.id);
+    const section=document.createElement('div');
+
+    const item=document.createElement('div');
+    item.className='nav-item'+(selected===cat.id?' active':'');
+    item.style.setProperty('--accent-color',catNode?.color||'#60a5fa');
+
+    const dot=document.createElement('div');
+    dot.className='nav-dot';
+    dot.style.background=catNode?.color||'#60a5fa';
+    dot.style.boxShadow=`0 0 6px ${catNode?.color||'#60a5fa'}`;
+    item.appendChild(dot);
+    item.appendChild(document.createTextNode(cat.label));
+    item.onclick=()=>focusNode(cat.id);
+    section.appendChild(item);
+
+    if(cat.children) cat.children.forEach(sub=>{
+      const subDiv=document.createElement('div');
+      subDiv.className='nav-sub';
+      const subItem=document.createElement('div');
+      subItem.className='nav-item'+(selected===sub.id?' active':'');
+      subItem.style.setProperty('--accent-color',catNode?.color||'#60a5fa');
+      const subDot=document.createElement('div');
+      subDot.className='nav-dot';
+      subDot.style.background=catNode?.color||'#60a5fa';
+      subDot.style.width='6px'; subDot.style.height='6px'; subDot.style.opacity='0.5';
+      subItem.appendChild(subDot);
+      subItem.appendChild(document.createTextNode(sub.label));
+      subItem.onclick=()=>focusNode(sub.id);
+      subDiv.appendChild(subItem);
+      section.appendChild(subDiv);
+    });
+    nav.appendChild(section);
+  });
+}
+
+function focusNode(id) {
+  let cur=nodes.find(n=>n.id===id);
+  while(cur){ collapsed.delete(cur.id); cur=nodes.find(n=>n.id===cur.parentId); }
+  selected=id;
+  showDetail(nodes.find(n=>n.id===id));
+  render();
+  setTimeout(()=>panToNode(id),50);
+}
+
+function panToNode(id) {
+  const node=nodes.find(n=>n.id===id);
+  if(!node) return;
+  const svgRect=svg.getBoundingClientRect();
+  const tx=svgRect.width/2-(node.x+node.w/2)*transform.scale;
+  const ty=svgRect.height/2-(node.y+node.h/2)*transform.scale;
+  animatePan(tx,ty);
+}
+
+function animatePan(tx,ty,dur=400) {
+  const sx=transform.x,sy=transform.y,t0=performance.now();
+  function step(t){
+    const p=Math.min((t-t0)/dur,1), e=1-Math.pow(1-p,3);
+    transform.x=sx+(tx-sx)*e; transform.y=sy+(ty-sy)*e;
+    applyViewport();
+    if(p<1) requestAnimationFrame(step); else updateMinimap();
+  }
+  requestAnimationFrame(step);
+}
+
+// ═══════════════════════════════════
+// PAN & ZOOM
+// ═══════════════════════════════════
+let isPanning=false, panStart={x:0,y:0}, panOrigin={x:0,y:0};
+
+svg.addEventListener('mousedown',e=>{
+  if(e.target===svg||e.target===viewport){
+    isPanning=true; panStart={x:e.clientX,y:e.clientY};
+    panOrigin={x:transform.x,y:transform.y};
+    svg.classList.add('panning');
+  }
+});
+window.addEventListener('mousemove',e=>{
+  if(!isPanning) return;
+  transform.x=panOrigin.x+(e.clientX-panStart.x);
+  transform.y=panOrigin.y+(e.clientY-panStart.y);
+  applyViewport(); updateMinimap();
+});
+window.addEventListener('mouseup',()=>{ isPanning=false; svg.classList.remove('panning'); });
+
+let lastTouches=[];
+svg.addEventListener('touchstart',e=>{ lastTouches=Array.from(e.touches); isPanning=true; panStart={x:e.touches[0].clientX,y:e.touches[0].clientY}; panOrigin={x:transform.x,y:transform.y}; },{passive:true});
+svg.addEventListener('touchmove',e=>{
+  e.preventDefault();
+  if(e.touches.length===1&&isPanning){
+    transform.x=panOrigin.x+(e.touches[0].clientX-panStart.x);
+    transform.y=panOrigin.y+(e.touches[0].clientY-panStart.y);
+    applyViewport();
+  } else if(e.touches.length===2){
+    const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+    const d0=Math.hypot(lastTouches[0].clientX-lastTouches[1].clientX,lastTouches[0].clientY-lastTouches[1].clientY);
+    transform.scale=Math.max(0.2,Math.min(3,transform.scale*(d/d0)));
+    applyViewport();
+  }
+  lastTouches=Array.from(e.touches);
+},{passive:false});
+svg.addEventListener('touchend',()=>{ isPanning=false; });
+
+svg.addEventListener('wheel',e=>{
+  e.preventDefault();
+  const rect=svg.getBoundingClientRect();
+  const mx=e.clientX-rect.left,my=e.clientY-rect.top;
+  const delta=e.deltaY>0?0.88:1.13;
+  const ns=Math.max(0.15,Math.min(3,transform.scale*delta));
+  transform.x=mx-(mx-transform.x)*(ns/transform.scale);
+  transform.y=my-(my-transform.y)*(ns/transform.scale);
+  transform.scale=ns;
+  applyViewport(); updateMinimap();
+},{passive:false});
+
+function zoomBy(delta) {
+  const r=svg.getBoundingClientRect();
+  const cx=r.width/2,cy=r.height/2;
+  const ns=Math.max(0.15,Math.min(3,transform.scale+delta));
+  transform.x=cx-(cx-transform.x)*(ns/transform.scale);
+  transform.y=cy-(cy-transform.y)*(ns/transform.scale);
+  transform.scale=ns;
+  applyViewport(); updateMinimap();
+}
+
+function fitView() {
+  const vis=getVisible('root');
+  if(!vis.length) return;
+  const minX=Math.min(...vis.map(n=>n.x));
+  const minY=Math.min(...vis.map(n=>n.y));
+  const maxX=Math.max(...vis.map(n=>n.x+n.w));
+  const maxY=Math.max(...vis.map(n=>n.y+n.h));
+  const r=svg.getBoundingClientRect(), pad=80;
+  const ns=Math.min((r.width-pad*2)/(maxX-minX||1),(r.height-pad*2)/(maxY-minY||1),1.2);
+  const cx=(maxX+minX)/2,cy=(maxY+minY)/2;
+  transform.scale=ns; transform.x=r.width/2-cx*ns; transform.y=r.height/2-cy*ns;
+  applyViewport(); updateMinimap();
+}
+
+function expandAll() { collapsed.clear(); render(); setTimeout(fitView,50); }
+function collapseAll() {
+  nodes.filter(n=>n.depth===1).forEach(n=>collapsed.add(n.id));
+  render(); setTimeout(fitView,50);
+}
+
+// ═══════════════════════════════════
+// TOOLTIP
+// ═══════════════════════════════════
+const tooltip=document.getElementById('tooltip');
+function showTooltip(e,node) {
+  if(!node.data.desc) return;
+  tooltip.textContent=node.data.desc;
+  tooltip.classList.add('visible');
+}
+function hideTooltip() { tooltip.classList.remove('visible'); }
+document.addEventListener('mousemove',e=>{
+  if(!tooltip.classList.contains('visible')) return;
+  let x=e.clientX+16,y=e.clientY+16;
+  if(x+210>window.innerWidth) x=e.clientX-220;
+  if(y+80>window.innerHeight) y=e.clientY-90;
+  tooltip.style.left=x+'px'; tooltip.style.top=y+'px';
+});
+
+// ═══════════════════════════════════
+// MINIMAP
+// ═══════════════════════════════════
+function updateMinimap() {
+  const canvas=document.getElementById('minimap-canvas');
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+  const vis=getVisible('root');
+  if(!vis.length) return;
+  const minX=Math.min(...vis.map(n=>n.x));
+  const minY=Math.min(...vis.map(n=>n.y));
+  const maxX=Math.max(...vis.map(n=>n.x+n.w));
+  const maxY=Math.max(...vis.map(n=>n.y+n.h));
+  const tw=maxX-minX||1,th=maxY-minY||1,pad=8;
+  const s=Math.min((W-pad*2)/tw,(H-pad*2)/th)*0.9;
+  vis.forEach(n=>{
+    ctx.fillStyle=n.color||'#60a5fa';
+    ctx.globalAlpha=0.4;
+    ctx.beginPath();
+    ctx.roundRect((n.x-minX)*s+pad,(n.y-minY)*s+pad,Math.max(n.w*s,3),Math.max(n.h*s,2),2);
+    ctx.fill();
+  });
+  const r=svg.getBoundingClientRect();
+  const vpX=(-transform.x/transform.scale-minX)*s+pad;
+  const vpY=(-transform.y/transform.scale-minY)*s+pad;
+  const vpW=(r.width/transform.scale)*s,vpH=(r.height/transform.scale)*s;
+  ctx.globalAlpha=0.25; ctx.fillStyle='#fff';
+  ctx.fillRect(vpX,vpY,vpW,vpH);
+  ctx.globalAlpha=0.6; ctx.strokeStyle='#fff'; ctx.lineWidth=1;
+  ctx.strokeRect(vpX,vpY,vpW,vpH);
+}
+
+// ═══════════════════════════════════
+// SIDEBAR TOGGLE
+// ═══════════════════════════════════
+document.getElementById('toggle-sidebar-btn').onclick=()=>{
+  document.getElementById('sidebar').classList.toggle('collapsed');
+  setTimeout(()=>{ fitView(); updateMinimap(); },400);
+};
+
+// ═══════════════════════════════════
+// INIT
+// ═══════════════════════════════════
+buildTree(DATA);
+assignColors();
+DATA.children.forEach(c=>{ if(c.children) c.children.forEach(s=>collapsed.add(s.id)); });
+render();
+setTimeout(fitView,100);
+window.addEventListener('resize',()=>setTimeout(fitView,100));
+</script>
+</body>
+</html>

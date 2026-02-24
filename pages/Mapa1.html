@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mapa Mental — Brecha y Violencia de Género</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --border: rgba(255,255,255,0.07);
+    --text: #e8eaf0;
+    --text-muted: #6b7280;
+    --accent-root: #c084fc;
+    --accent-1: #60a5fa;
+    --accent-2: #34d399;
+    --accent-3: #f472b6;
+    --accent-4: #fbbf24;
+    --accent-root-dim: rgba(192,132,252,0.15);
+    --accent-1-dim: rgba(96,165,250,0.12);
+    --accent-2-dim: rgba(52,211,153,0.12);
+    --accent-3-dim: rgba(244,114,182,0.12);
+    --accent-4-dim: rgba(251,191,36,0.12);
+    --radius: 14px;
+    --panel: 320px;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); font-family:'DM Sans', sans-serif; color:var(--text); }
+
+  /* ---- LAYOUT ---- */
+  #app { display:flex; height:100vh; width:100vw; }
+
+  /* ---- SIDEBAR ---- */
+  #sidebar {
+    width:var(--panel);
+    min-width:var(--panel);
+    height:100%;
+    background:var(--surface);
+    border-right:1px solid var(--border);
+    display:flex;
+    flex-direction:column;
+    z-index:100;
+    transition: transform 0.35s cubic-bezier(.4,0,.2,1);
+  }
+  #sidebar.collapsed { transform:translateX(calc(-1 * var(--panel))); }
+
+  .sidebar-header {
+    padding:28px 24px 20px;
+    border-bottom:1px solid var(--border);
+  }
+  .sidebar-header h1 {
+    font-family:'DM Serif Display', serif;
+    font-size:1.25rem;
+    line-height:1.3;
+    color:var(--text);
+    margin-bottom:6px;
+  }
+  .sidebar-header p { font-size:0.8rem; color:var(--text-muted); line-height:1.5; }
+
+  .sidebar-nav { flex:1; overflow-y:auto; padding:16px 0; }
+  .sidebar-nav::-webkit-scrollbar { width:4px; }
+  .sidebar-nav::-webkit-scrollbar-track { background:transparent; }
+  .sidebar-nav::-webkit-scrollbar-thumb { background:var(--surface2); border-radius:4px; }
+
+  .nav-section { margin-bottom:4px; }
+  .nav-item {
+    display:flex; align-items:center; gap:10px;
+    padding:10px 24px;
+    cursor:pointer;
+    border-radius:0;
+    transition: background 0.15s;
+    font-size:0.875rem;
+    color:var(--text-muted);
+    position:relative;
+  }
+  .nav-item:hover { background:var(--surface2); color:var(--text); }
+  .nav-item.active { color:var(--text); }
+  .nav-item.active::before {
+    content:'';
+    position:absolute; left:0; top:20%; height:60%;
+    width:3px; border-radius:0 3px 3px 0;
+    background:var(--accent-color, var(--accent-root));
+  }
+  .nav-dot {
+    width:10px; height:10px; border-radius:50%; flex-shrink:0;
+    background:var(--accent-color, var(--accent-root));
+    opacity:0.7;
+  }
+  .nav-item.active .nav-dot { opacity:1; box-shadow: 0 0 8px var(--accent-color, var(--accent-root)); }
+
+  .nav-sub { padding-left:44px; }
+  .nav-sub .nav-item { font-size:0.8rem; padding:7px 16px 7px 0; color:var(--text-muted); }
+
+  /* Detail Panel */
+  #detail-panel {
+    margin:0 16px 16px;
+    background:var(--surface2);
+    border-radius:var(--radius);
+    padding:16px;
+    border:1px solid var(--border);
+    min-height:120px;
+    transition: all 0.3s;
+  }
+  #detail-panel h3 { font-size:0.95rem; font-weight:600; margin-bottom:8px; color:var(--text); }
+  #detail-panel p { font-size:0.8rem; color:var(--text-muted); line-height:1.6; }
+  #detail-panel .breadcrumb { font-size:0.72rem; color:var(--text-muted); margin-bottom:8px; opacity:0.7; }
+  .detail-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:8px; }
+  .detail-empty svg { opacity:0.2; }
+  .detail-empty span { font-size:0.8rem; color:var(--text-muted); }
+
+  /* ---- CANVAS AREA ---- */
+  #canvas-area {
+    flex:1;
+    position:relative;
+    overflow:hidden;
+    background:var(--bg);
+    background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.04) 1px, transparent 0);
+    background-size:32px 32px;
+  }
+
+  /* SVG Canvas */
+  #mindmap-svg {
+    position:absolute;
+    top:0; left:0;
+    width:100%; height:100%;
+    cursor:grab;
+    user-select:none;
+  }
+  #mindmap-svg.panning { cursor:grabbing; }
+
+  /* ---- NODES (SVG foreignObject) ---- */
+  .node-fo { overflow:visible; }
+
+  .node-card {
+    background: var(--surface);
+    border:1.5px solid rgba(255,255,255,0.08);
+    border-radius:12px;
+    padding:10px 14px;
+    font-family:'DM Sans', sans-serif;
+    font-size:13px;
+    color:var(--text);
+    cursor:pointer;
+    transition:all 0.2s;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    max-width:220px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    position:relative;
+    white-space:normal;
+    word-break:break-word;
+    line-height:1.4;
+  }
+  .node-card:hover {
+    border-color:rgba(255,255,255,0.2);
+    box-shadow:0 8px 30px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.1);
+    transform:translateY(-1px) scale(1.02);
+    z-index:10;
+  }
+  .node-card.selected {
+    border-color:var(--accent-color, var(--accent-root));
+    box-shadow:0 0 0 2px rgba(192,132,252,0.3), 0 8px 30px rgba(0,0,0,0.6);
+  }
+  .node-indicator {
+    width:8px; height:8px; border-radius:50%; flex-shrink:0;
+    background:var(--accent-color, var(--accent-root));
+    box-shadow: 0 0 6px var(--accent-color, var(--accent-root));
+  }
+  .node-root-card {
+    background: linear-gradient(135deg, rgba(192,132,252,0.25) 0%, rgba(96,165,250,0.15) 100%);
+    border-color:rgba(192,132,252,0.4);
+    padding:14px 20px;
+    font-size:14px;
+    font-weight:600;
+    max-width:260px;
+    box-shadow: 0 0 40px rgba(192,132,252,0.15), 0 4px 20px rgba(0,0,0,0.5);
+  }
+  .node-root-card:hover { box-shadow:0 0 60px rgba(192,132,252,0.25), 0 8px 30px rgba(0,0,0,0.6); }
+  .node-toggle {
+    margin-left:auto;
+    width:18px; height:18px; border-radius:50%;
+    background:rgba(255,255,255,0.08);
+    display:flex; align-items:center; justify-content:center;
+    font-size:11px;
+    flex-shrink:0;
+    transition:background 0.15s, transform 0.2s;
+  }
+  .node-toggle:hover { background:rgba(255,255,255,0.18); }
+  .node-toggle.open { transform:rotate(45deg); }
+
+  /* ---- CONTROLS ---- */
+  #controls {
+    position:absolute;
+    bottom:24px; right:24px;
+    display:flex; flex-direction:column; gap:8px;
+    z-index:200;
+  }
+  .ctrl-btn {
+    width:40px; height:40px;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:10px;
+    color:var(--text);
+    font-size:16px;
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    transition:all 0.15s;
+    box-shadow:0 4px 12px rgba(0,0,0,0.4);
+  }
+  .ctrl-btn:hover { background:var(--surface2); border-color:rgba(255,255,255,0.15); transform:scale(1.05); }
+
+  #toggle-sidebar-btn {
+    position:absolute;
+    top:20px; left:16px;
+    z-index:200;
+    width:36px; height:36px;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:8px;
+    color:var(--text);
+    font-size:14px;
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    transition:all 0.15s;
+    box-shadow:0 4px 12px rgba(0,0,0,0.4);
+  }
+  #toggle-sidebar-btn:hover { background:var(--surface2); }
+  #toggle-sidebar-btn.hidden { display:none; }
+
+  /* ---- TOOLTIP ---- */
+  #tooltip {
+    position:absolute;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:8px 12px;
+    font-size:0.78rem;
+    color:var(--text-muted);
+    max-width:200px;
+    pointer-events:none;
+    z-index:300;
+    opacity:0;
+    transition:opacity 0.15s;
+    box-shadow:0 8px 24px rgba(0,0,0,0.5);
+  }
+  #tooltip.visible { opacity:1; }
+
+  /* ---- MINIMAP ---- */
+  #minimap {
+    position:absolute;
+    bottom:24px; left:24px;
+    width:140px; height:90px;
+    background:rgba(26,29,39,0.9);
+    border:1px solid var(--border);
+    border-radius:10px;
+    z-index:200;
+    overflow:hidden;
+    backdrop-filter:blur(10px);
+  }
+  #minimap canvas { width:100%; height:100%; }
+
+  /* Legend */
+  #legend {
+    position:absolute;
+    top:20px; right:20px;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:12px 14px;
+    z-index:200;
+    font-size:0.75rem;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+  .legend-item { display:flex; align-items:center; gap:8px; color:var(--text-muted); }
+  .legend-dot { width:8px; height:8px; border-radius:50%; }
+
+  /* Mobile */
+  @media (max-width: 768px) {
+    :root { --panel: 280px; }
+    #sidebar {
+      position:absolute;
+      height:100%;
+      z-index:500;
+      box-shadow:10px 0 40px rgba(0,0,0,0.6);
+    }
+    #sidebar.collapsed { transform:translateX(-100%); }
+    #legend { display:none; }
+    #minimap { display:none; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div class="sidebar-header">
+      <h1>Brecha Salarial &amp; Violencia de Género</h1>
+      <p>Colombia — Análisis multidimensional del sistema de inequidades</p>
+    </div>
+    <div class="sidebar-nav" id="nav-tree"></div>
+    <div id="detail-panel">
+      <div class="detail-empty">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span>Clic en un nodo para ver detalles</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CANVAS -->
+  <div id="canvas-area">
+    <button id="toggle-sidebar-btn" title="Mostrar/ocultar panel">☰</button>
+    <svg id="mindmap-svg" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="glow">
+          <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+          <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+      <g id="viewport">
+        <g id="edges-layer"></g>
+        <g id="nodes-layer"></g>
+      </g>
+    </svg>
+
+    <!-- Controls -->
+    <div id="controls">
+      <button class="ctrl-btn" title="Zoom In" onclick="zoomBy(0.2)">+</button>
+      <button class="ctrl-btn" title="Zoom Out" onclick="zoomBy(-0.2)">−</button>
+      <button class="ctrl-btn" title="Encuadrar todo" onclick="fitView()" style="font-size:13px">⊡</button>
+      <button class="ctrl-btn" title="Expandir todo" onclick="expandAll()" style="font-size:12px">⊞</button>
+      <button class="ctrl-btn" title="Colapsar todo" onclick="collapseAll()" style="font-size:12px">⊟</button>
+    </div>
+
+    <!-- Legend -->
+    <div id="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#c084fc"></div>Raíz</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#60a5fa"></div>Categoría</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#34d399"></div>Subcategoría</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#f472b6"></div>Detalle</div>
+    </div>
+
+    <!-- Minimap -->
+    <div id="minimap"><canvas id="minimap-canvas" width="140" height="90"></canvas></div>
+  </div>
+</div>
+
+<div id="tooltip"></div>
+
+<script>
+// ═══════════════════════════════════
+// DATA
+// ═══════════════════════════════════
+const DATA = {
+  id:"root", label:"Brecha Salarial y Violencia de Género en Colombia",
+  desc:"Panorama integral sobre desigualdades económicas y violencias basadas en género en Colombia.",
+  level:0,
+  children:[
+    {
+      id:"c1", label:"Brecha Salarial de Género", level:1,
+      desc:"Diferencia porcentual entre los ingresos de hombres y mujeres en el mercado laboral colombiano.",
+      children:[
+        {
+          id:"c1-1", label:"Contexto Nacional (DANE 2019)", level:2,
+          desc:"Cifras oficiales del DANE sobre la brecha salarial en Colombia para el año 2019.",
+          children:[
+            { id:"c1-1-1", label:"Brecha promedio mensual: 12,9%", level:3, desc:"Las mujeres ganan en promedio un 12,9% menos al mes que los hombres con características similares." },
+            { id:"c1-1-2", label:"Brecha por hora: −2,3%", level:3, desc:"Por hora trabajada, las mujeres ganan un 2,3% más, pero acceden a menos horas de trabajo remunerado." },
+            { id:"c1-1-3", label:"Segregación ocupacional horizontal y vertical", level:3, desc:"Las mujeres se concentran en sectores de menor remuneración (horizontal) y enfrentan barreras para ascender (vertical)." }
+          ]
+        },
+        {
+          id:"c1-2", label:"Factores Determinantes", level:2,
+          desc:"Variables que explican el origen y la magnitud de la brecha salarial.",
+          children:[
+            { id:"c1-2-1", label:"Urbano 17,3% vs Rural 34,5%", level:3, desc:"La brecha es significativamente mayor en zonas rurales, donde la informalidad y la precariedad laboral femenina son más pronunciadas." },
+            { id:"c1-2-2", label:"Posgrado: mayor brecha (22,9%)", level:3, desc:"Paradójicamente, a mayor nivel educativo, mayor brecha. Las mujeres con posgrado ganan 22,9% menos que sus pares masculinos." },
+            { id:"c1-2-3", label:"Uso del tiempo y trabajo no remunerado", level:3, desc:"Las mujeres destinan más horas al trabajo doméstico no remunerado, reduciendo su disponibilidad para el mercado formal." },
+            { id:"c1-2-4", label:"Penalidad por maternidad", level:3, desc:"La brecha salarial aumenta con el número de hijos, evidenciando una penalización económica directa sobre la maternidad." }
+          ]
+        },
+        {
+          id:"c1-3", label:"Situación Laboral", level:2,
+          desc:"Diferencias de la brecha según la formalidad del empleo.",
+          children:[
+            { id:"c1-3-1", label:"Sector informal: brecha 29,0%", level:3, desc:"En el empleo informal la brecha casi triplica la del sector formal, afectando especialmente a mujeres de menores ingresos." },
+            { id:"c1-3-2", label:"Sector formal: brecha 5,2%", level:3, desc:"El sector formal presenta menor brecha, pero persiste gracias a mejores mecanismos de regulación salarial." },
+            { id:"c1-3-3", label:"Techos de cristal en percentiles altos", level:3, desc:"En los rangos salariales más altos, la brecha se invierte o amplía, evidenciando barreras invisibles para el acceso a posiciones de poder." }
+          ]
+        }
+      ]
+    },
+    {
+      id:"c2", label:"Violencia de Género", level:1,
+      desc:"Cualquier acto de violencia basado en el género que cause o pueda causar daño físico, sexual, psicológico o económico a las mujeres.",
+      children:[
+        {
+          id:"c2-1", label:"Conceptualización", level:2,
+          desc:"Definición y tipología de las violencias basadas en género.",
+          children:[
+            { id:"c2-1-1", label:"Roles, estereotipos y relaciones de poder", level:3, desc:"La violencia de género está arraigada en estructuras patriarcales que asignan roles diferenciados y relaciones asimétricas de poder." },
+            { id:"c2-1-2", label:"Tipos: Física, Psicológica, Sexual, Económica", level:3, desc:"Cuatro manifestaciones principales reconocidas legalmente, que frecuentemente se superponen y escalan." },
+            { id:"c2-1-3", label:"Feminicidio: expresión máxima", level:3, desc:"El asesinato de mujeres por razones de género es la forma más extrema de violencia y está tipificado como delito autónomo en Colombia desde 2015." }
+          ]
+        },
+        {
+          id:"c2-2", label:"Ámbitos Específicos", level:2,
+          desc:"Contextos particulares donde se manifiesta la violencia de género.",
+          children:[
+            { id:"c2-2-1", label:"Digital: acoso en línea y doxing", level:3, desc:"El ciberacoso, la difusión no consentida de imágenes íntimas y el doxing son formas emergentes de violencia que se incrementan con la digitalización." },
+            { id:"c2-2-2", label:"Laboral: acoso sexual y abuso de autoridad", level:3, desc:"El acoso sexual en el trabajo y el abuso de posiciones jerárquicas generan ambientes hostiles que expulsan a las mujeres del mercado laboral." },
+            { id:"c2-2-3", label:"Político: restricción de participación", level:3, desc:"La violencia política contra las mujeres limita su participación en espacios de toma de decisiones y representación pública." }
+          ]
+        }
+      ]
+    },
+    {
+      id:"c3", label:"Sistemas de Información", level:1,
+      desc:"Arquitectura institucional para el monitoreo, registro y análisis de datos sobre violencias de género.",
+      children:[
+        {
+          id:"c3-1", label:"SIVIGE — Minsalud", level:2,
+          desc:"Sistema Integrado de Violencias de Género del Ministerio de Salud y Protección Social.",
+          children:[
+            { id:"c3-1-1", label:"Visor de datos integrado", level:3, desc:"Plataforma que consolida y visualiza datos de múltiples fuentes institucionales sobre violencias de género." },
+            { id:"c3-1-2", label:"Fuentes: FGN, INMLCF, DANE, INS, UARIV", level:3, desc:"Integra información de la Fiscalía General, Instituto de Medicina Legal, DANE, Instituto Nacional de Salud y la Unidad de Víctimas." }
+          ]
+        },
+        {
+          id:"c3-2", label:"Otras Entidades Clave", level:2,
+          desc:"Sistemas de información complementarios al SIVIGE.",
+          children:[
+            { id:"c3-2-1", label:"SPOA (Fiscalía): noticias criminales", level:3, desc:"Sistema de información de la Fiscalía que registra noticias criminales relacionadas con violencias basadas en género." },
+            { id:"c3-2-2", label:"SIVIGILA (INS): salud pública", level:3, desc:"Vigilancia epidemiológica en salud pública que incluye indicadores de violencia como evento de interés en salud." },
+            { id:"c3-2-3", label:"SAT (Defensoría): alertas tempranas", level:3, desc:"Sistema de Alertas Tempranas de la Defensoría del Pueblo para prevenir violaciones de derechos humanos en territorios vulnerables." },
+            { id:"c3-2-4", label:"RELAB (DANE): registros laborales", level:3, desc:"Registros Administrativos Laborales del DANE para el análisis de brechas salariales y condiciones laborales por género." }
+          ]
+        }
+      ]
+    },
+    {
+      id:"c4", label:"Marco Normativo", level:1,
+      desc:"Instrumentos legales nacionales e internacionales que fundamentan la acción contra la brecha salarial y la violencia de género.",
+      children:[
+        { id:"c4-1", label:"Ley 1257 de 2008", level:2, desc:"Ley de sensibilización, prevención y sanción de las formas de violencia y discriminación contra las mujeres. Establece medidas de protección y atención integral." },
+        { id:"c4-2", label:"Ley 1761 de 2015 — Feminicidio", level:2, desc:"Tipifica el feminicidio como delito autónomo en el Código Penal colombiano, reconociendo el asesinato de mujeres por razones de género como crimen independiente." },
+        { id:"c4-3", label:"ODS 8.5 — Igualdad de remuneración", level:2, desc:"Meta de la Agenda 2030 que establece lograr para 2030 el empleo pleno, productivo y el trabajo decente para todos, incluyendo igualdad de remuneración por trabajo de igual valor." },
+        { id:"c4-4", label:"Convenio 190 OIT — Acoso laboral", level:2, desc:"Primer tratado internacional que aborda la violencia y el acoso en el mundo del trabajo, incluyendo la violencia de género en contextos laborales." }
+      ]
+    }
+  ]
+};
+
+// ═══════════════════════════════════
+// LAYOUT ENGINE (Reingold-Tilford inspired, horizontal tree)
+// ═══════════════════════════════════
+const COLORS = [null,'#c084fc','#60a5fa','#34d399','#f472b6','#fbbf24'];
+const NODE_W = 220, NODE_H = 58, H_GAP = 100, V_GAP = 18;
+const ROOT_W = 260, ROOT_H = 72;
+
+let nodes = [];        // flat array of node objects {id, data, x, y, w, h, parentId, children:[]}
+let collapsed = new Set(); // ids of collapsed nodes
+let selected = null;
+let transform = { x:0, y:0, scale:1 };
+
+function buildTree(data, parentId=null, depth=0) {
+  const id = data.id;
+  const isRoot = depth===0;
+  const color = depth===0 ? COLORS[1] : (depth===1 ? COLORS[1+((nodes.filter(n=>n.depth===1).length)%4)] : null);
+  const node = {
+    id, data, parentId, depth,
+    x:0, y:0,
+    w: isRoot ? ROOT_W : NODE_W,
+    h: isRoot ? ROOT_H : NODE_H,
+    color: null, // assigned after
+    children: (data.children||[]).map(c=>c.id)
+  };
+  nodes.push(node);
+  if(data.children) data.children.forEach(c=>buildTree(c, id, depth+1));
+}
+
+function assignColors() {
+  // Assign accent color based on the lvl-1 ancestor
+  const lvl1Nodes = nodes.filter(n=>n.depth===1);
+  const colorMap = {};
+  lvl1Nodes.forEach((n,i)=>{ colorMap[n.id]=COLORS[2+i%4]; n.color=COLORS[2+i%4]; });
+
+  nodes.forEach(n=>{
+    if(n.depth===0){ n.color=COLORS[1]; return; }
+    // Walk up to find lvl1
+    let cur=n;
+    while(cur && cur.depth>1){ cur=nodes.find(x=>x.id===cur.parentId); }
+    if(cur && colorMap[cur.id]) n.color=colorMap[cur.id];
+  });
+}
+
+function getVisible(id) {
+  const n = nodes.find(x=>x.id===id);
+  if(!n) return [];
+  let res = [n];
+  if(!collapsed.has(id) && n.children.length) {
+    n.children.forEach(cid=>{ res = res.concat(getVisible(cid)); });
+  }
+  return res;
+}
+
+function layoutSubtree(id) {
+  const node = nodes.find(n=>n.id===id);
+  if(!node) return { height:0 };
+
+  const visChildren = collapsed.has(id) ? [] : node.children.filter(cid=>nodes.find(n=>n.id===cid));
+
+  if(visChildren.length===0) {
+    node._subtreeH = node.h;
+    return { height: node.h };
+  }
+
+  let totalH = 0;
+  visChildren.forEach((cid,i)=>{
+    const res = layoutSubtree(cid);
+    if(i>0) totalH += V_GAP;
+    totalH += res.height;
+  });
+
+  node._subtreeH = Math.max(node.h, totalH);
+  return { height: node._subtreeH };
+}
+
+function placeNodes(id, x, y) {
+  const node = nodes.find(n=>n.id===id);
+  if(!node) return;
+
+  node.x = x;
+  const visChildren = collapsed.has(id) ? [] : node.children.filter(cid=>nodes.find(n=>n.id===cid));
+
+  if(visChildren.length===0) {
+    node.y = y + (node._subtreeH - node.h)/2;
+    return;
+  }
+
+  // Center node vertically among children
+  node.y = y + (node._subtreeH - node.h)/2;
+
+  let cy = y;
+  visChildren.forEach(cid=>{
+    const child = nodes.find(n=>n.id===cid);
+    placeNodes(cid, x + node.w + H_GAP, cy);
+    cy += child._subtreeH + V_GAP;
+  });
+}
+
+function doLayout() {
+  layoutSubtree('root');
+  placeNodes('root', 0, 0);
+}
+
+// ═══════════════════════════════════
+// RENDER
+// ═══════════════════════════════════
+const svg = document.getElementById('mindmap-svg');
+const viewport = document.getElementById('viewport');
+const edgesLayer = document.getElementById('edges-layer');
+const nodesLayer = document.getElementById('nodes-layer');
+
+function render() {
+  doLayout();
+  renderEdges();
+  renderNodes();
+  renderNav();
+  updateMinimap();
+}
+
+function renderEdges() {
+  edgesLayer.innerHTML = '';
+  const vis = getVisible('root');
+  vis.forEach(node=>{
+    if(!node.parentId) return;
+    const parent = nodes.find(n=>n.id===node.parentId);
+    if(!parent) return;
+
+    const x1 = parent.x + parent.w;
+    const y1 = parent.y + parent.h/2;
+    const x2 = node.x;
+    const y2 = node.y + node.h/2;
+    const cx1 = x1 + (x2-x1)*0.5;
+    const cx2 = x2 - (x2-x1)*0.4;
+
+    const color = node.color || '#60a5fa';
+    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d',`M${x1},${y1} C${cx1},${y1} ${cx2},${y2} ${x2},${y2}`);
+    path.setAttribute('fill','none');
+    path.setAttribute('stroke', color);
+    path.setAttribute('stroke-width', node.depth===1 ? '2' : '1.5');
+    path.setAttribute('stroke-opacity', node.depth===1 ? '0.5' : '0.35');
+    edgesLayer.appendChild(path);
+  });
+}
+
+function renderNodes() {
+  // Remove old FOs
+  nodesLayer.innerHTML='';
+  const vis = getVisible('root');
+  vis.forEach(node=>{
+    const fo = document.createElementNS('http://www.w3.org/2000/svg','foreignObject');
+    fo.setAttribute('x', node.x);
+    fo.setAttribute('y', node.y);
+    fo.setAttribute('width', node.w + 40); // extra for card padding
+    fo.setAttribute('height', node.h + 20);
+    fo.style.overflow='visible';
+
+    const card = document.createElement('div');
+    const isRoot = node.depth===0;
+    card.className = isRoot ? 'node-card node-root-card' : 'node-card';
+    if(selected===node.id) card.classList.add('selected');
+    card.style.setProperty('--accent-color', node.color||'#60a5fa');
+    card.style.width = node.w+'px';
+    card.style.minHeight = node.h+'px';
+
+    if(!isRoot) {
+      const dot = document.createElement('div');
+      dot.className='node-indicator';
+      dot.style.setProperty('--accent-color', node.color||'#60a5fa');
+      dot.style.background=node.color||'#60a5fa';
+      dot.style.boxShadow=`0 0 6px ${node.color||'#60a5fa'}`;
+      card.appendChild(dot);
+    }
+
+    const label = document.createElement('span');
+    label.textContent = node.data.label;
+    label.style.flex='1';
+    card.appendChild(label);
+
+    if(node.children.length) {
+      const tog = document.createElement('div');
+      tog.className='node-toggle' + (collapsed.has(node.id)?'':' open');
+      tog.textContent='+';
+      card.appendChild(tog);
+    }
+
+    card.onclick=(e)=>{
+      e.stopPropagation();
+      // Toggle
+      if(node.children.length) {
+        if(collapsed.has(node.id)) collapsed.delete(node.id);
+        else collapsed.add(node.id);
+      }
+      selected=node.id;
+      showDetail(node);
+      render();
+    };
+
+    card.onmouseenter=(e)=>{ showTooltip(e, node); };
+    card.onmouseleave=()=>{ hideTooltip(); };
+
+    fo.appendChild(card);
+    nodesLayer.appendChild(fo);
+  });
+
+  applyViewport();
+}
+
+function applyViewport() {
+  viewport.setAttribute('transform',`translate(${transform.x},${transform.y}) scale(${transform.scale})`);
+}
+
+// ═══════════════════════════════════
+// DETAIL PANEL
+// ═══════════════════════════════════
+function showDetail(node) {
+  const panel = document.getElementById('detail-panel');
+  // Build breadcrumb
+  const crumbs = [];
+  let cur = node;
+  while(cur) {
+    crumbs.unshift(cur.data.label);
+    cur = nodes.find(n=>n.id===cur.parentId);
+  }
+  const breadcrumb = crumbs.slice(0,-1).join(' › ');
+
+  panel.innerHTML=`
+    ${breadcrumb ? `<div class="breadcrumb">${breadcrumb}</div>` : ''}
+    <h3>${node.data.label}</h3>
+    <p>${node.data.desc||'Sin descripción disponible.'}</p>
+  `;
+  panel.style.borderTop=`2px solid ${node.color||'#60a5fa'}`;
+}
+
+// ═══════════════════════════════════
+// NAVIGATION SIDEBAR
+// ═══════════════════════════════════
+function renderNav() {
+  const nav = document.getElementById('nav-tree');
+  nav.innerHTML='';
+  // Render top-level items
+  DATA.children.forEach((cat,i)=>{
+    const catNode = nodes.find(n=>n.id===cat.id);
+    const section = document.createElement('div');
+    section.className='nav-section';
+
+    const item=document.createElement('div');
+    item.className='nav-item'+(selected===cat.id?' active':'');
+    item.style.setProperty('--accent-color', catNode?.color||'#60a5fa');
+
+    const dot=document.createElement('div');
+    dot.className='nav-dot';
+    dot.style.background=catNode?.color||'#60a5fa';
+    dot.style.boxShadow=`0 0 6px ${catNode?.color||'#60a5fa'}`;
+
+    item.appendChild(dot);
+    item.appendChild(document.createTextNode(cat.label));
+    item.onclick=()=>{ focusNode(cat.id); };
+    section.appendChild(item);
+
+    // Sub items
+    if(cat.children) {
+      cat.children.forEach(sub=>{
+        const subDiv=document.createElement('div');
+        subDiv.className='nav-sub';
+        const subItem=document.createElement('div');
+        subItem.className='nav-item'+(selected===sub.id?' active':'');
+        subItem.style.setProperty('--accent-color', catNode?.color||'#60a5fa');
+        const subDot=document.createElement('div');
+        subDot.className='nav-dot';
+        subDot.style.background=catNode?.color||'#60a5fa';
+        subDot.style.width='6px'; subDot.style.height='6px';
+        subDot.style.opacity='0.5';
+        subItem.appendChild(subDot);
+        subItem.appendChild(document.createTextNode(sub.label));
+        subItem.onclick=()=>{ focusNode(sub.id); };
+        subDiv.appendChild(subItem);
+        section.appendChild(subDiv);
+      });
+    }
+
+    nav.appendChild(section);
+  });
+}
+
+function focusNode(id) {
+  // Expand path to node
+  let cur = nodes.find(n=>n.id===id);
+  while(cur) {
+    collapsed.delete(cur.id);
+    cur = nodes.find(n=>n.id===cur.parentId);
+  }
+  selected = id;
+  const node = nodes.find(n=>n.id===id);
+  showDetail(node);
+  render();
+  // Pan to node
+  setTimeout(()=>panToNode(id), 50);
+}
+
+function panToNode(id) {
+  const node = nodes.find(n=>n.id===id);
+  if(!node) return;
+  const svgRect = svg.getBoundingClientRect();
+  const targetX = svgRect.width/2 - (node.x + node.w/2)*transform.scale;
+  const targetY = svgRect.height/2 - (node.y + node.h/2)*transform.scale;
+  animatePan(targetX, targetY);
+}
+
+function animatePan(tx, ty, duration=400) {
+  const sx=transform.x, sy=transform.y;
+  const startTime=performance.now();
+  function step(t) {
+    const p=Math.min((t-startTime)/duration,1);
+    const ease=1-Math.pow(1-p,3);
+    transform.x=sx+(tx-sx)*ease;
+    transform.y=sy+(ty-sy)*ease;
+    applyViewport();
+    if(p<1) requestAnimationFrame(step);
+    else updateMinimap();
+  }
+  requestAnimationFrame(step);
+}
+
+// ═══════════════════════════════════
+// PAN & ZOOM
+// ═══════════════════════════════════
+let isPanning=false, panStart={x:0,y:0}, panOrigin={x:0,y:0};
+
+svg.addEventListener('mousedown',e=>{
+  if(e.target===svg || e.target===viewport) {
+    isPanning=true;
+    panStart={x:e.clientX,y:e.clientY};
+    panOrigin={x:transform.x,y:transform.y};
+    svg.classList.add('panning');
+  }
+});
+window.addEventListener('mousemove',e=>{
+  if(!isPanning) return;
+  transform.x=panOrigin.x+(e.clientX-panStart.x);
+  transform.y=panOrigin.y+(e.clientY-panStart.y);
+  applyViewport();
+  updateMinimap();
+});
+window.addEventListener('mouseup',()=>{
+  isPanning=false;
+  svg.classList.remove('panning');
+});
+
+// Touch pan
+let lastTouches=[];
+svg.addEventListener('touchstart',e=>{
+  lastTouches=Array.from(e.touches);
+  isPanning=true;
+  panStart={x:e.touches[0].clientX,y:e.touches[0].clientY};
+  panOrigin={x:transform.x,y:transform.y};
+},{passive:true});
+svg.addEventListener('touchmove',e=>{
+  e.preventDefault();
+  if(e.touches.length===1 && isPanning) {
+    transform.x=panOrigin.x+(e.touches[0].clientX-panStart.x);
+    transform.y=panOrigin.y+(e.touches[0].clientY-panStart.y);
+    applyViewport();
+  } else if(e.touches.length===2) {
+    // Pinch zoom
+    const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+    const d0=Math.hypot(lastTouches[0].clientX-lastTouches[1].clientX,lastTouches[0].clientY-lastTouches[1].clientY);
+    const delta=d/d0;
+    transform.scale=Math.max(0.2,Math.min(3,transform.scale*delta));
+    applyViewport();
+  }
+  lastTouches=Array.from(e.touches);
+},{passive:false});
+svg.addEventListener('touchend',()=>{ isPanning=false; });
+
+// Wheel zoom
+svg.addEventListener('wheel',e=>{
+  e.preventDefault();
+  const rect=svg.getBoundingClientRect();
+  const mx=e.clientX-rect.left, my=e.clientY-rect.top;
+  const delta=e.deltaY>0?0.88:1.13;
+  const newScale=Math.max(0.15,Math.min(3,transform.scale*delta));
+  transform.x=mx-(mx-transform.x)*(newScale/transform.scale);
+  transform.y=my-(my-transform.y)*(newScale/transform.scale);
+  transform.scale=newScale;
+  applyViewport();
+  updateMinimap();
+},{passive:false});
+
+function zoomBy(delta) {
+  const svgRect=svg.getBoundingClientRect();
+  const cx=svgRect.width/2, cy=svgRect.height/2;
+  const newScale=Math.max(0.15,Math.min(3,transform.scale+delta));
+  transform.x=cx-(cx-transform.x)*(newScale/transform.scale);
+  transform.y=cy-(cy-transform.y)*(newScale/transform.scale);
+  transform.scale=newScale;
+  applyViewport();
+  updateMinimap();
+}
+
+function fitView() {
+  const vis=getVisible('root');
+  if(!vis.length) return;
+  const minX=Math.min(...vis.map(n=>n.x));
+  const minY=Math.min(...vis.map(n=>n.y));
+  const maxX=Math.max(...vis.map(n=>n.x+n.w));
+  const maxY=Math.max(...vis.map(n=>n.y+n.h));
+  const svgRect=svg.getBoundingClientRect();
+  const pad=80;
+  const scaleX=(svgRect.width-pad*2)/(maxX-minX||1);
+  const scaleY=(svgRect.height-pad*2)/(maxY-minY||1);
+  const newScale=Math.min(scaleX,scaleY,1.2);
+  const cx=(maxX+minX)/2, cy=(maxY+minY)/2;
+  transform.scale=newScale;
+  transform.x=svgRect.width/2-cx*newScale;
+  transform.y=svgRect.height/2-cy*newScale;
+  applyViewport();
+  updateMinimap();
+}
+
+function expandAll() {
+  collapsed.clear();
+  render();
+  setTimeout(fitView,50);
+}
+function collapseAll() {
+  nodes.filter(n=>n.depth===0||n.depth===1).forEach(n=>{
+    if(n.depth===1) collapsed.add(n.id);
+  });
+  render();
+  setTimeout(fitView,50);
+}
+
+// ═══════════════════════════════════
+// TOOLTIP
+// ═══════════════════════════════════
+const tooltip=document.getElementById('tooltip');
+function showTooltip(e, node) {
+  if(!node.data.desc) return;
+  tooltip.textContent=node.data.desc;
+  tooltip.classList.add('visible');
+  moveTooltip(e);
+}
+function hideTooltip() { tooltip.classList.remove('visible'); }
+document.addEventListener('mousemove',e=>{
+  if(tooltip.classList.contains('visible')) moveTooltip(e);
+});
+function moveTooltip(e) {
+  let x=e.clientX+16, y=e.clientY+16;
+  if(x+210>window.innerWidth) x=e.clientX-220;
+  if(y+80>window.innerHeight) y=e.clientY-90;
+  tooltip.style.left=x+'px'; tooltip.style.top=y+'px';
+}
+
+// ═══════════════════════════════════
+// MINIMAP
+// ═══════════════════════════════════
+function updateMinimap() {
+  const canvas=document.getElementById('minimap-canvas');
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width, H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+
+  const vis=getVisible('root');
+  if(!vis.length) return;
+  const minX=Math.min(...vis.map(n=>n.x));
+  const minY=Math.min(...vis.map(n=>n.y));
+  const maxX=Math.max(...vis.map(n=>n.x+n.w));
+  const maxY=Math.max(...vis.map(n=>n.y+n.h));
+  const tw=maxX-minX||1, th=maxY-minY||1;
+  const pad=8;
+  const scaleX=(W-pad*2)/tw, scaleY=(H-pad*2)/th;
+  const s=Math.min(scaleX,scaleY)*0.9;
+
+  vis.forEach(n=>{
+    const x=(n.x-minX)*s+pad;
+    const y=(n.y-minY)*s+pad;
+    const w=n.w*s; const h=n.h*s;
+    ctx.fillStyle=n.color||'#60a5fa';
+    ctx.globalAlpha=0.4;
+    ctx.beginPath();
+    ctx.roundRect(x,y,Math.max(w,3),Math.max(h,2),2);
+    ctx.fill();
+  });
+
+  // Viewport indicator
+  const svgRect=svg.getBoundingClientRect();
+  const vpX=(-transform.x/transform.scale-minX)*s+pad;
+  const vpY=(-transform.y/transform.scale-minY)*s+pad;
+  const vpW=(svgRect.width/transform.scale)*s;
+  const vpH=(svgRect.height/transform.scale)*s;
+  ctx.globalAlpha=0.25;
+  ctx.fillStyle='#fff';
+  ctx.fillRect(vpX,vpY,vpW,vpH);
+  ctx.globalAlpha=0.6;
+  ctx.strokeStyle='#fff';
+  ctx.lineWidth=1;
+  ctx.strokeRect(vpX,vpY,vpW,vpH);
+}
+
+// ═══════════════════════════════════
+// SIDEBAR TOGGLE
+// ═══════════════════════════════════
+const sidebar=document.getElementById('sidebar');
+document.getElementById('toggle-sidebar-btn').onclick=()=>{
+  sidebar.classList.toggle('collapsed');
+  setTimeout(()=>{ fitView(); updateMinimap(); },400);
+};
+
+// ═══════════════════════════════════
+// INIT
+// ═══════════════════════════════════
+buildTree(DATA);
+assignColors();
+
+// Start with lvl1 collapsed so map isn't overwhelming
+DATA.children.forEach(c=>{
+  if(c.children) c.children.forEach(s=>{ collapsed.add(s.id); });
+});
+
+render();
+setTimeout(fitView,100);
+
+// Re-fit on resize
+window.addEventListener('resize',()=>{ setTimeout(fitView,100); });
+</script>
+</body>
+</html>
