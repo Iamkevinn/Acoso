@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enfoque Diferencial e Inclusión Laboral - Colombia 2026</title>
+    <style>
+        /* --- VARIABLES & RESET --- */
+        :root {
+            --bg-color: #F3F6F9;
+            --card-bg: #FFFFFF;
+            --primary: #6C5CE7; /* Lila profesional */
+            --primary-light: #A29BFE;
+            --accent: #00CEC9; /* Turquesa suave */
+            --text-main: #2D3436;
+            --text-light: #636E72;
+            --success: #00B894;
+            --error: #FF7675;
+            --shadow: 0 10px 30px rgba(108, 92, 231, 0.1);
+            --radius: 16px;
+            --font-main: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* --- UTILIDADES --- */
+        .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(108, 92, 231, 0.4); }
+        .hidden { display: none; }
+        .fade-in { animation: fadeIn 0.8s ease forwards; opacity: 0; transform: translateY(20px); }
+
+        @keyframes fadeIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- HERO SECTION --- */
+        .hero {
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: linear-gradient(135deg, #ffffff 0%, #f3f6f9 100%);
+            position: relative;
+            padding: 20px;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+            max-width: 800px;
+        }
+
+        .hero p { font-size: 1.2rem; color: var(--text-light); max-width: 600px; }
+
+        /* Scroll Indicator Animation */
+        .scroll-indicator {
+            position: absolute;
+            bottom: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            color: var(--primary);
+            animation: bounce 2s infinite;
+            cursor: pointer;
+        }
+        .scroll-mouse {
+            width: 24px;
+            height: 40px;
+            border: 2px solid var(--primary);
+            border-radius: 20px;
+            position: relative;
+        }
+        .scroll-mouse::before {
+            content: '';
+            position: absolute;
+            top: 6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 6px;
+            background: var(--primary);
+            border-radius: 2px;
+            animation: scrollWheel 1.5s infinite;
+        }
+
+        @keyframes bounce { 0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 40% {transform: translateY(-10px);} 60% {transform: translateY(-5px);} }
+        @keyframes scrollWheel { 0% {top: 6px; opacity: 1;} 100% {top: 18px; opacity: 0;} }
+
+        /* --- SECTION 1: INTERACTIVE DASHBOARD (Políticas Públicas) --- */
+        .section-title {
+            text-align: center;
+            font-size: 2rem;
+            color: var(--primary);
+            margin: 60px 0 40px;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .dashboard-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 25px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            border-left: 5px solid transparent;
+        }
+
+        .dashboard-card:hover { transform: translateY(-5px); }
+        .dashboard-card.active { border-left-color: var(--accent); background: #F8FDFF; }
+        
+        .card-icon {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+        
+        .card-title { font-weight: bold; font-size: 1.1rem; color: var(--text-main); margin-bottom: 10px; }
+        
+        /* Contenido expandible dentro de la tarjeta */
+        .card-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease;
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+        
+        .dashboard-card.active .card-content { max-height: 500px; margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px;}
+
+        /* --- SECTION 2: TIMELINE (Buenas Prácticas) --- */
+        .timeline-container {
+            position: relative;
+            margin: 40px 0;
+            padding-left: 30px;
+        }
+
+        .timeline-container::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: #E0E0E0;
+            border-radius: 2px;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 40px;
+            opacity: 0.6;
+            transition: opacity 0.3s;
+        }
+
+        .timeline-item.viewed { opacity: 1; }
+
+        .timeline-marker {
+            position: absolute;
+            left: -38px;
+            top: 0;
+            width: 20px;
+            height: 20px;
+            background: var(--bg-color);
+            border: 4px solid var(--text-light);
+            border-radius: 50%;
+            transition: all 0.3s;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        .timeline-item.viewed .timeline-marker {
+            border-color: var(--primary);
+            background: var(--primary);
+            box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.2);
+        }
+
+        .practice-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: var(--radius);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .practice-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* --- SECTION 3: GAMIFIED LANGUAGE (Chat Simulator) --- */
+        .game-area {
+            background: #FFFFFF;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 30px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .chat-bubble {
+            background: #F1F0F0;
+            padding: 15px 20px;
+            border-radius: 20px 20px 20px 0;
+            margin-bottom: 20px;
+            position: relative;
+            color: var(--text-main);
+            font-weight: 500;
+        }
+
+        .chat-bubble.bad::before {
+            content: '⚠️ Frase problemática';
+            position: absolute;
+            top: -25px;
+            left: 0;
+            font-size: 0.8rem;
+            color: var(--error);
+            font-weight: bold;
+        }
+
+        .options-grid {
+            display: grid;
+            gap: 10px;
+        }
+
+        .option-btn {
+            background: white;
+            border: 2px solid #E0E0E0;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+
+        .option-btn:hover { border-color: var(--primary-light); background: #F8F8FF; }
+
+        .option-btn.correct { border-color: var(--success); background: #E6FFFA; color: var(--success); }
+        .option-btn.wrong { border-color: var(--error); background: #FFF5F5; color: var(--error); }
+
+        .feedback-box {
+            margin-top: 20px;
+            padding: 15px;
+            background: #F8FDFF;
+            border-radius: 10px;
+            border-left: 4px solid var(--accent);
+            display: none;
+        }
+
+        /* --- MODAL PARA TEORÍA COMPLETA --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            backdrop-filter: blur(5px);
+        }
+        .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            border-radius: var(--radius);
+            padding: 30px;
+            position: relative;
+            transform: translateY(20px);
+            transition: transform 0.3s;
+        }
+        .modal-overlay.open .modal-content { transform: translateY(0); }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+
+        /* --- DECORATION --- */
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(40px);
+            opacity: 0.4;
+            z-index: -1;
+        }
+        .blob-1 { width: 300px; height: 300px; background: var(--primary-light); top: -50px; left: -50px; }
+        .blob-2 { width: 200px; height: 200px; background: var(--accent); bottom: 10%; right: -50px; }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 1.8rem; }
+            .timeline-container { padding-left: 20px; }
+            .timeline-marker { left: -28px; width: 16px; height: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HERO SECTION -->
+    <section class="hero">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <h1>Enfoque Diferencial e Inclusión Laboral</h1>
+        <p>Curso de Actualización: Prevención del Acoso y Promoción de la Equidad (Colombia, 2026)</p>
+        <br>
+        <p style="font-size: 0.9rem; background: rgba(255,255,255,0.8); padding: 5px 15px; border-radius: 20px;">
+            ✨ Experiencia Interactiva
+        </p>
+
+        <div class="scroll-indicator" onclick="scrollToSection('section1')">
+            <span>Desliza para comenzar</span>
+            <div class="scroll-mouse"></div>
+        </div>
+    </section>
+
+    <div class="container">     
+
+        <!-- SECCIÓN 3: GAME - LENGUAJE INCLUYENTE -->
+        <section id="section3" style="margin-top: 100px; padding-bottom: 100px;">
+            <h2 class="section-title">3. Desafío: El Lenguaje Construye Realidad</h2>
+            <p style="text-align: center; margin-bottom: 20px;">Selecciona la opción correcta para corregir la frase.</p>
+
+            <!-- Nivel 1 -->
+            <div class="game-area">
+                <div class="chat-bubble bad">
+                    "Necesitamos contratar <strong>discapacitados</strong> para cumplir la cuota."
+                </div>
+                
+                <div class="options-grid" id="q1">
+                    <button class="option-btn" onclick="checkAnswer('q1', this, false)">
+                        A. "Necesitamos contratar personas con capacidades diferentes."
+                    </button>
+                    <button class="option-btn" onclick="checkAnswer('q1', this, true)">
+                        B. "Necesitamos contratar personas con discapacidad."
+                    </button>
+                </div>
+
+                <div class="feedback-box" id="feedback-q1">
+                    <h4>💡 Explicación</h4>
+                    <p><strong>Correcto:</strong> Se prioriza "personas con discapacidad" para enfatizar la dignidad del sujeto sobre su condición. Evita términos como "discapacitados" (peyorativo) o eufemismos confusos.</p>
+                </div>
+            </div>
+
+            <br><br>
+
+            <!-- Nivel 2 -->
+            <div class="game-area">
+                <div class="chat-bubble bad">
+                    "Buenos días a <strong>los funcionarios</strong> de la entidad."
+                </div>
+                
+                <div class="options-grid" id="q2">
+                    <button class="option-btn" onclick="checkAnswer('q2', this, true)">
+                        A. "Buenos días al personal de la entidad."
+                    </button>
+                    <button class="option-btn" onclick="checkAnswer('q2', this, false)">
+                        B. "Buenos días a los funcionarios y las funcionarias." (Válido pero menos eficiente)
+                    </button>
+                </div>
+
+                <div class="feedback-box" id="feedback-q2">
+                    <h4>💡 Explicación</h4>
+                    <p><strong>Mejor práctica:</strong> Usar términos neutros como "el personal", "la ciudadanía" o "el equipo" es más fluido y evita el desdoblamiento excesivo o el uso del masculino genérico.</p>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 40px;">
+                <button class="btn" style="background: var(--accent); color: #333;" onclick="openModal('modal-lenguaje', event)">📖 Ver Guía Completa de Lenguaje</button>
+            </div>
+
+        </section>
+
+    </div>
+
+    <!-- MODALES DE CONTENIDO TEÓRICO COMPLETO (Hidden by default) -->
+    
+    <!-- Modal Marco Conceptual -->
+    <div id="modal-marco" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal('modal-marco')">&times;</button>
+            <h3>Marco Conceptual de Aplicación</h3>
+            <p><strong>Enfoque Diferencial:</strong> Se aplica como una perspectiva de análisis para visibilizar a grupos poblacionales con características particulares por edad, género, orientación sexual, pertenencia étnica o discapacidad. Su objetivo es guiar la toma de decisiones públicas para cerrar brechas existentes.</p>
+            <hr style="margin: 15px 0; border: 0; border-top: 1px solid #eee;">
+            <p><strong>Enfoque Interseccional:</strong> Se utiliza para comprender cómo se cruzan múltiples identidades (como ser mujer, indígena y tener una discapacidad) en una misma persona, generando experiencias únicas de opresión o privilegio. Exige respuestas integrales.</p>
+        </div>
+    </div>
+
+    <!-- Modal Datos -->
+    <div id="modal-datos" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal('modal-datos')">&times;</button>
+            <h3>Recolección de Información y Diagnóstico</h3>
+            <p><strong>Caracterización de la población:</strong> Las entidades deben implementar registros administrativos que incluyan variables de diversidad sexual, pertenencia étnica, ciclo de vida y discapacidad.</p>
+            <p><strong>Identificación de barreras:</strong> Se realizan estudios cualitativos para identificar barreras estructurales (accesibilidad física o comunicativa).</p>
+        </div>
+    </div>
+
+    <!-- Modal Gestión -->
+    <div id="modal-gestion" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal('modal-gestion')">&times;</button>
+            <h3>Gestión Institucional y Territorial</h3>
+            <p><strong>Instancias:</strong> Oficinas de género y diversidad.</p>
+            <p><strong>Protocolos:</strong> Rutas claras para víctimas de discriminación o VBG, garantizando no revictimización.</p>
+            <p><strong>Ajustes razonables:</strong> Paso del modelo médico al modelo de derechos en discapacidad.</p>
+        </div>
+    </div>
+
+    <!-- Modal Presupuesto -->
+    <div id="modal-presupuesto" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal('modal-presupuesto')">&times;</button>
+            <h3>Participación y Presupuesto</h3>
+            <p><strong>Inclusión sustantiva:</strong> Participación de organizaciones LGBTI, mujeres y etnias desde el diagnóstico hasta la evaluación.</p>
+            <p><strong>Presupuestos sensibles al género:</strong> Asignar recursos específicos para eliminar desigualdades y medir impacto real.</p>
+        </div>
+    </div>
+
+    <!-- Modal Lenguaje -->
+    <div id="modal-lenguaje" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal('modal-lenguaje')">&times;</button>
+            <h3>Recomendaciones de Lenguaje y Comunicación</h3>
+            <ul>
+                <li><strong>Lenguaje incluyente:</strong> Evitar estereotipos y términos peyorativos.</li>
+                <li><strong>Identidad de género:</strong> Respetar nombre identitario y pronombres (trans/no binarias) independientemente del documento legal.</li>
+                <li><strong>Neutralidad:</strong> Formatos accesibles (braille, señas).</li>
+                <li><strong>Claridad:</strong> Eliminar tecnicismos innecesarios para democratizar la información.</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // --- SCROLL ANIMATION ---
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // --- DASHBOARD INTERACTION (Accordion Logic) ---
+        function toggleCard(card) {
+            // Close others
+            const allCards = document.querySelectorAll('.dashboard-card');
+            allCards.forEach(c => {
+                if(c !== card) c.classList.remove('active');
+            });
+            // Toggle current
+            card.classList.toggle('active');
+        }
+
+        // --- TIMELINE INTERACTION ---
+        function activateTimeline(marker) {
+            const item = marker.parentElement;
+            item.classList.add('viewed');
+            // Auto open the details content
+            const btn = item.querySelector('.btn');
+            if(btn) btn.click();
+        }
+
+        function toggleTimelineDetails(btn) {
+            const content = btn.parentElement.nextElementSibling;
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                content.classList.add('fade-in');
+                btn.textContent = "Ocultar";
+                // Mark parent as viewed
+                btn.closest('.timeline-item').classList.add('viewed');
+            } else {
+                content.classList.add('hidden');
+                content.classList.remove('fade-in');
+                btn.textContent = "Explorar";
+            }
+        }
+
+        // --- GAME LOGIC ---
+        function checkAnswer(questionId, btn, isCorrect) {
+            const container = document.getElementById(questionId);
+            const feedback = document.getElementById('feedback-' + questionId);
+            const buttons = container.querySelectorAll('.option-btn');
+
+            // Disable buttons after selection
+            buttons.forEach(b => b.style.pointerEvents = 'none');
+
+            if (isCorrect) {
+                btn.classList.add('correct');
+                btn.innerHTML += " ✅";
+            } else {
+                btn.classList.add('wrong');
+                btn.innerHTML += " ❌";
+                // Highlight the correct one
+                buttons.forEach(b => {
+                    if (b.getAttribute('onclick').includes('true')) {
+                        b.classList.add('correct');
+                    }
+                });
+            }
+
+            // Show feedback with animation
+            feedback.style.display = 'block';
+            feedback.classList.add('fade-in');
+        }
+
+        // --- MODAL LOGIC ---
+        function openModal(modalId, event) {
+            event.stopPropagation(); // Prevent card toggle when clicking button
+            document.getElementById(modalId).classList.add('open');
+            document.body.style.overflow = 'hidden'; // Prevent scrolling bg
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('open');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close modal on click outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal-overlay')) {
+                event.target.classList.remove('open');
+                document.body.style.overflow = 'auto';
+            }
+        }
+    </script>
+</body>
+</html>
