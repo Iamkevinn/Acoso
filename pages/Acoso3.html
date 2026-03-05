@@ -299,6 +299,80 @@
             h2 { font-size: 1.2rem; }
             p { font-size: 0.9rem; }
         }
+
+        /* NUEVOS ESTILOS PARA LA NOTA DE ESPACIOS */
+    .cs-alert-box {
+        margin-top: 30px;
+        background: #ffffff;
+        border-left: 6px solid #f59e0b; /* Color Ambar de alerta */
+        padding: 25px;
+        border-radius: 12px;
+        display: flex;
+        gap: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        align-items: flex-start;
+        border: 1px solid #e5e7eb;
+    }
+    
+    .cs-alert-icon { 
+        font-size: 2rem; 
+        color: #f59e0b; 
+        flex-shrink: 0; 
+        margin-top: 5px; 
+    }
+    
+    .cs-alert-content { 
+        width: 100%; 
+    }
+    
+    .cs-alert-content h3 { 
+        margin: 0 0 10px 0; 
+        font-size: 1.1rem; 
+        color: red; 
+        font-weight: 800; 
+    }
+    
+    .cs-alert-content p { 
+        margin: 0 0 15px 0; 
+        font-size: 0.95rem; 
+        color: #4b5563; 
+        line-height: 1.5; 
+    }
+    
+    .cs-alert-list {
+        list-style: none; 
+        display: flex; 
+        flex-wrap: wrap; 
+        gap: 10px;
+    }
+    
+    .cs-alert-list li {
+        background: #7e3f98; 
+        color: white; 
+        padding: 8px 15px;
+        margin: 5px 0px;
+        border-radius: 6px; 
+        font-size: 0.85rem; 
+        font-weight: 600; 
+        border: 1px solid #fcd34d;
+        display: flex; 
+        align-items: center; 
+        gap: 5px;
+    }
+
+    /* RESPONSIVE MANTENIENDO TUS OTRAS CLASES */
+    @media (max-width: 768px) {
+        .module-content { grid-template-columns: 1fr; }
+        .culture-header { flex-direction: column; text-align: center; }
+        .strategy-steps { flex-direction: column; }
+        .unp-final-note { flex-direction: column; text-align: center; }
+        
+        /* Ajustes específicos de la alerta para móviles */
+        .cs-alert-box { flex-direction: column; }
+        .cs-alert-list { flex-direction: column; align-items: flex-start; width: 100%; }
+        .cs-alert-list li { width: 100%; }
+    }
+    
     </style>
 </head>
 <body>
@@ -307,6 +381,22 @@
     <button class="fab-btn" onclick="toggleModal()">
         <span>📚</span> Guía Normativa
     </button>
+
+    <!-- NUEVA SECCIÓN AGREGADA: NOTA IMPORTANTE DE ESPACIOS -->
+    <div class="cs-alert-box">
+        <div class="cs-alert-icon"><i class="fas fa-exclamation-triangle"></i></div>
+        <div class="cs-alert-content">
+            <h3>⚠️ RECUERDA: El acoso traspasa la oficina</h3>
+            <p>Es vital comprender que el acoso sexual y laboral no se limita al escritorio. La normativa protege tu integridad en todos los escenarios vinculados a tu labor:</p>
+            <ul class="cs-alert-list">
+                <li>📱 <strong>Entornos Digitales:</strong> WhatsApp, correo y redes.</li>
+                <li>🕒 <strong>Fuera de Horario:</strong> Llamadas o mensajes indebidos.</li>
+                <li>🚗 <strong>Trayectos:</strong> Misiones y desplazamientos.</li>
+                <li>🥂 <strong>Espacios Sociales:</strong> Fiestas e integraciones.</li>
+            </ul>
+        </div>
+    </div>
+    <!-- FIN NUEVA SECCIÓN -->
 
     <div class="modal-overlay" id="help-modal">
         <div class="modal-content">
