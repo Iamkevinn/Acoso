@@ -1,0 +1,345 @@
+<style>
+    /* --- RESET Y BASE --- */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+:root {
+    /* Paleta UNP / 25N definida */
+    --brand-purple: #69207E;
+    --brand-orange: #FF6600;
+    --brand-magenta: #C2167F;
+    --brand-green: #8CC63F;
+    --bg-light: #FDF9FF; /* Fondo lila muy pálido */
+    --text-main: #4A4A4A;
+    --text-muted: #666666;
+    --border-light: #F3E5F5;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-light); /* Cambio a fondo claro cálido */
+    color: var(--text-main);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Patrón de fondo sutil opcional */
+    background-image: radial-gradient(rgba(105, 32, 126, 0.03) 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+/* --- SECCIÓN PRINCIPAL --- */
+.course-curriculum {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Título de sección */
+.curriculum-title {
+    text-align: center;
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 800;
+    color: var(--brand-purple); /* Morado Institucional */
+    margin-bottom: 40px;
+    letter-spacing: -0.02em;
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+/* --- CONTENEDOR DE MÓDULOS --- */
+.modules-container {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* --- TARJETA DE MÓDULO --- */
+.module-card {
+    position: relative;
+    background-color: #ffffff;
+    border: 1px solid var(--border-light);
+    border-radius: 16px; /* Bordes un poco más suaves */
+    padding: 32px;
+    box-shadow: 0 4px 6px -1px rgba(105, 32, 126, 0.05), 0 2px 4px -1px rgba(105, 32, 126, 0.03);
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    cursor: pointer;
+}
+
+/* Barra lateral decorativa (Gradiente UNP) */
+.module-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 5px;
+    /* Gradiente de Naranja a Magenta */
+    background: linear-gradient(180deg, var(--brand-orange), var(--brand-magenta));
+    opacity: 0.6; /* Visible sutilmente por defecto */
+    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s ease;
+}
+
+/* Contenedor interno */
+.module-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 24px;
+}
+
+/* --- NÚMERO DEL MÓDULO --- */
+.module-number {
+    flex-shrink: 0;
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #E1BEE7; /* Lila suave inicial */
+    line-height: 1;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    user-select: none;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* --- CONTENIDO TEXTUAL --- */
+.module-text-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.module-title-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.module-title {
+    margin: 0;
+    font-size: clamp(1.25rem, 2.5vw, 1.5rem);
+    font-weight: 700;
+    color: var(--brand-purple); /* Título en Morado */
+    line-height: 1.3;
+    transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Icono de flecha */
+.arrow-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: rgba(255, 102, 0, 0.1);
+    border-radius: 50%;
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    color: var(--brand-orange); /* Flecha Naranja */
+}
+
+.arrow-icon svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    fill: none;
+}
+
+.module-description {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+}
+
+.module-description b,
+.module-description strong {
+    color: var(--brand-magenta); /* Negritas en Magenta/Morado */
+    font-weight: 600;
+}
+
+/* --- ESTADOS INTERACTIVOS (HOVER) --- */
+.module-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 25px -5px rgba(105, 32, 126, 0.1), 0 8px 10px -6px rgba(105, 32, 126, 0.05);
+    border-color: #E1BEE7;
+}
+
+.module-card:hover::before {
+    opacity: 1;
+    width: 6px; /* Se ensancha ligeramente */
+}
+
+.module-card:hover .module-number {
+    color: var(--brand-orange); /* Número cambia a Naranja vibrante */
+    transform: scale(1.1);
+}
+
+.module-card:hover .module-title {
+    color: var(--brand-magenta); /* Título cambia a Magenta */
+}
+
+.module-card:hover .arrow-icon {
+    opacity: 1;
+    transform: translateX(0);
+    background: var(--brand-orange);
+    color: white;
+}
+
+.module-card:focus {
+    outline: 3px solid var(--brand-purple);
+    outline-offset: 2px;
+}
+
+.module-card:focus:not(:focus-visible) {
+    outline: none;
+}
+
+.module-card:active {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(105, 32, 126, 0.1), 0 4px 6px -4px rgba(105, 32, 126, 0.1);
+}
+
+/* --- RESPONSIVE DESIGN --- */
+@media (max-width: 768px) {
+    .module-card {
+        padding: 24px;
+    }
+
+    .module-content {
+        gap: 16px;
+    }
+
+    .module-number {
+        font-size: 1.5rem;
+    }
+
+    .module-title {
+        font-size: 1.25rem;
+    }
+
+    .module-description {
+        font-size: 0.938rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .modules-container {
+        gap: 16px;
+    }
+
+    .module-card {
+        padding: 20px;
+    }
+
+    .module-content {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .module-number {
+        font-size: 1.75rem;
+        color: var(--brand-orange); /* En móviles, el número ya tiene color */
+        opacity: 0.8;
+    }
+
+    .module-title-wrapper {
+        flex-wrap: wrap;
+    }
+    
+    .arrow-icon {
+        opacity: 1; /* Flecha siempre visible en móvil */
+        transform: translateX(0);
+        background: transparent;
+        color: var(--brand-orange);
+        width: auto;
+        height: auto;
+    }
+}
+
+/* --- MODO OSCURO (OPCIONAL - Adaptado a tonos Morados oscuros) --- */
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #1a0b2e; /* Morado muy oscuro */
+        color: #f3e5f5;
+    }
+
+    .module-card {
+        background-color: #2d1b4e;
+        border-color: #4a2c7a;
+    }
+
+    .module-title {
+        color: #ea80fc; /* Lila neón */
+    }
+    
+    .module-card:hover .module-title {
+        color: #ff9e80; /* Naranja pastel */
+    }
+
+    .module-description {
+        color: #d1c4e9;
+    }
+
+    .module-description b,
+    .module-description strong {
+        color: #ffffff;
+    }
+
+    .module-card:hover {
+        border-color: #69207E;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+    }
+
+    .module-card:hover .module-number {
+        color: #ff6600;
+    }
+}
+
+/* --- UTILIDADES --- */
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+</style>
+<section class="course-curriculum" aria-labelledby="curriculum-title">
+        
+
+        <div class="modules-container" role="list">
+            
+            <!-- Módulo 1 -->
+            <article class="module-card" role="listitem" aria-labelledby="module-1-title">
+                <div class="module-content">
+                    <span class="module-number" aria-hidden="true">*</span>
+                    <div class="module-text-content">
+                        <div class="module-title-wrapper">
+                            <h3 id="module-1-title" class="module-title">Objetivo General</h3>
+                            <span class="arrow-icon" aria-hidden="true">
+                                
+                                    
+                                
+                            </span>
+                        </div>
+                        <p class="module-description">
+                            Brindar herramientas teóricas y prácticas para identificar, prevenir y 
+                            <strong>actuar adecuadamente frente a situaciones de acoso laboral y sexual</strong>, 
+                            promoviendo una cultura basada en el respeto, la equidad y la dignidad humana.
+                        </p>
+                    </div>
+                </div>
+            </article>
+            
+        </div>
+    </section>
