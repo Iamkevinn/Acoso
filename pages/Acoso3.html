@@ -15,6 +15,7 @@
             --text-dark: #2c3e50;
             --text-light: #596275;
             --success: #28a745;
+            --successpro: #e58f05;
             --danger: #dc3545;
             --radius: 12px;
             --shadow: 0 8px 20px rgba(0,0,0,0.08);
@@ -128,7 +129,8 @@
         .comp-col:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
         .comp-1010 { border-color: var(--danger); }
         .comp-c190 { border-color: var(--success); background: #f0fff4; }
-        
+        .comp-c2365 { border-color: var(--successpro); background: #fffbf0; }
+
         .comp-title { font-weight: bold; font-size: 1.1rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
         .comp-list li { margin-bottom: 8px; font-size: 0.9rem; list-style: none; position: relative; padding-left: 20px; }
         .comp-list li::before { content: "•"; position: absolute; left: 0; font-weight: bold; }
@@ -408,7 +410,12 @@
                 <p>⚠️ <strong>Enfoque:</strong> Punitivo y Sancionatorio.</p>
                 <p>Busca castigar conductas individuales. Es reactiva (actúa después del daño).</p>
             </div>
-            
+            <div class="modal-section">
+                <h4>Ley 2365 de 2023</h4>
+                <p>✅ <strong>Enfoque:</strong> Preventivo y de Salud.</p>
+                <p>Busca garantizar el derecho fundamental a la igualdad y una vida libre de violencias, implementando medidas de prevención, atención y sanción del acoso sexual en el contexto laboral y en instituciones de educación</p>
+            </div>
+
             <div class="modal-section">
                 <h4>Convenio 190 OIT</h4>
                 <p>🛡️ <strong>Enfoque:</strong> Preventivo y de Salud.</p>
@@ -475,6 +482,17 @@
                             <li><strong>Visión:</strong> Problema estructural y de DDHH.</li>
                         </ul>
                     </div>
+
+                     <div class="comp-col comp-c2365">
+                        <div class="comp-title"><span>🌍</span> LEY 2365:2024 </div>
+                        <ul class="comp-list">
+                            <li><strong>Enfoque:</strong> Integral, preventivo y sancionatorio / Entornos Laborales y educativos.</li>
+                            <li><strong>Objetivo:</strong> Garantizar los derechos de igualdad y dignidad de las personas.</li>
+                            <li><strong>Acción:</strong> Empresas y Centros Educativos.</li>
+                            <li><strong>Visión:</strong> Protocolos en ámbito Publico y Privado.</li>
+                        </ul>
+                    </div>
+
                 </div>
                 <button class="btn-action" style="margin-top: 2rem;" onclick="navTo('sc-risks')">Siguiente: Enfoque de Riesgo</button>
             </div>
