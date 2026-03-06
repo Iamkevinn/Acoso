@@ -15,19 +15,19 @@
             --brand-green: #8CC63F;   /* Verde de las manos */
             
             /* Mapeo a variables funcionales */
-            --unp-red: var(--brand-orange);   /* Reemplaza al rojo por el Naranja de campaña */
-            --unp-blue: var(--brand-purple);  /* Reemplaza al azul por el Morado de género */
+            --unp-red: var(--brand-orange);   
+            --unp-blue: var(--brand-purple);  
             --gender-purple: var(--brand-magenta);
             
-            --bg-body: #FDF9FF; /* Fondo muy claro con tinte lila/rosado */
+            --bg-body: #FDF9FF; 
             --white: #ffffff;
-            --text: #4A4A4A;    /* Gris oscuro suavizado */
-            --gray-light: #F3E5F5; /* Lila muy pálido para patrones */
+            --text: #4A4A4A;    
+            --gray-light: #F3E5F5; 
             --success: var(--brand-green);
             --warning: var(--brand-yellow);
             
-            --radius: 12px; /* Bordes un poco más redondeados y amigables */
-            --shadow: 0 8px 25px rgba(105, 32, 126, 0.15); /* Sombra con tinte morado */
+            --radius: 12px; 
+            --shadow: 0 8px 25px rgba(105, 32, 126, 0.15); 
             --font-main: 'Roboto', 'Segoe UI', sans-serif;
         }
 
@@ -41,7 +41,6 @@
             justify-content: center;
             align-items: center;
             overflow: hidden;
-            /* Patrón de puntos sutil en magenta */
             background-image: radial-gradient(rgba(194, 22, 127, 0.1) 1px, transparent 1px);
             background-size: 25px 25px;
         }
@@ -57,13 +56,12 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            border-top: 8px solid var(--brand-orange); /* Naranja 25N */
+            border-top: 8px solid var(--brand-orange); 
             position: relative;
         }
 
         /* --- HEADER TIPO "DASHBOARD" --- */
         header {
-            /* Degradado Morado a Magenta como en el header de la imagen */
             background: linear-gradient(90deg, var(--brand-purple) 0%, var(--brand-magenta) 100%);
             color: white;
             padding: 1rem 2rem;
@@ -101,7 +99,7 @@
             flex: 1;
             position: relative;
             background: #ffffff;
-            background-image: linear-gradient(to bottom right, #ffffff, #fffbf0); /* Sutil calidez */
+            background-image: linear-gradient(to bottom right, #ffffff, #fffbf0); 
             overflow-y: auto;
             overflow-x: hidden;
             padding: 2rem;
@@ -129,17 +127,17 @@
         }
         p { max-width: 700px; text-align: center; line-height: 1.6; margin-bottom: 2rem; color: #555; }
 
+        /* MEJORA ACCESIBILIDAD: Botones más grandes, mejor fuente y estado focus */
         .btn-unp {
-            /* Degradado Naranja a Amarillo (Estilo botón 25N) */
             background: linear-gradient(45deg, var(--brand-orange), #FF8C00);
             color: white;
             border: none;
-            padding: 12px 30px;
-            font-size: 1rem;
+            padding: 14px 35px; /* Más área de clic */
+            font-size: 1.1rem; /* Fuente más legible */
             font-weight: bold;
             text-transform: uppercase;
             letter-spacing: 1px;
-            border-radius: 30px; /* Más redondeado */
+            border-radius: 30px; 
             cursor: pointer;
             transition: 0.3s;
             box-shadow: 0 4px 10px rgba(255, 102, 0, 0.4);
@@ -157,13 +155,22 @@
             color: var(--brand-purple); 
             box-shadow: none; 
             border-radius: 30px;
+            padding: 14px 35px; /* Más área de clic */
+            font-size: 1.1rem; /* Fuente más legible */
+            font-weight: bold;
         }
         .btn-outline:hover { background: var(--brand-purple); color: white; }
+
+        /* Accesibilidad por teclado (Tab) */
+        .btn-unp:focus-visible, .btn-outline:focus-visible {
+            outline: 3px solid var(--brand-purple);
+            outline-offset: 4px;
+        }
 
         /* --- ESCENA 1: INTRO (ALERTA) --- */
         .alert-box {
             border: 2px solid var(--brand-orange);
-            background: #FFF8E1; /* Fondo amarillo muy pálido */
+            background: #FFF8E1; 
             padding: 2rem;
             max-width: 600px;
             text-align: center;
@@ -197,7 +204,7 @@
             border-top: 5px solid var(--brand-purple); 
         }
         .flip-back { 
-            background: var(--brand-purple); /* Reverso Morado */
+            background: var(--brand-purple); 
             color: white; transform: rotateY(180deg); 
             background-image: linear-gradient(135deg, var(--brand-purple), var(--brand-magenta));
         }
@@ -212,7 +219,7 @@
         .comp-left { background: #f8f9fa; border-right: 1px solid #ddd; }
         .comp-right { background: #E8F5E9; opacity: 0.3; filter: grayscale(100%); }
         
-        .comp-active .comp-right { opacity: 1; filter: grayscale(0%); background: #F1F8E9; } /* Fondo verdoso claro */
+        .comp-active .comp-right { opacity: 1; filter: grayscale(0%); background: #F1F8E9; } 
         .comp-active .comp-left { opacity: 0.5; background: #f8f9fa; }
 
         .toggle-switch-container { margin: 2rem 0; display: flex; align-items: center; gap: 15px; color: var(--brand-purple); font-weight: bold;}
@@ -248,18 +255,46 @@
         .timeline-step.active::before { background: var(--brand-green); border-color: var(--brand-green); }
         .step-content { display: none; font-size: 0.9rem; margin-top: 10px; color: #666; border-top: 1px solid #f0f0f0; padding-top: 10px;}
 
-        /* --- ESCENA 6: LEY ROSA ELVIRA CELY (ESCUDO) --- */
-        .shield-container { position: relative; width: 300px; height: 350px; display: flex; justify-content: center; align-items: center; }
-        .shield-bg { font-size: 15rem; color: var(--brand-magenta); opacity: 0.1; position: absolute; }
+        /* --- ESCENA 6: LEY ROSA ELVIRA CELY (ESCUDO) - MEJORA ACCESIBILIDAD --- */
+        .shield-container { 
+            position: relative; 
+            width: 450px; /* Aumentado de 300px */
+            height: 450px; /* Aumentado de 350px */
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            margin: 0 auto;
+        }
+        .shield-bg { font-size: 18rem; color: var(--brand-magenta); opacity: 0.1; position: absolute; }
+        
         .standard-orbit { 
-            position: absolute; width: 100px; height: 100px; 
-            background: white; border-radius: 50%; 
-            display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; 
-            font-size: 0.7rem; box-shadow: var(--shadow); 
-            border: 2px solid var(--brand-magenta); 
-            animation: float 3s infinite; padding: 10px;
+            position: absolute; 
+            width: 170px; /* Aumentado de 100px */
+            height: 170px; /* Aumentado de 100px */
+            background: white; 
+            border-radius: 50%; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            text-align: center; 
+            font-size: 0.95rem; /* Aumentado de 0.7rem */
+            box-shadow: var(--shadow); 
+            border: 3px solid var(--brand-magenta); 
+            animation: float 3s infinite; 
+            padding: 20px; /* Aumentado para dar respiro */
+            color: var(--brand-purple);
+            line-height: 1.4;
+        }
+        
+        /* Resaltar mejor el título del círculo */
+        .standard-orbit strong {
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+            display: block;
             color: var(--brand-purple);
         }
+
         .orbit-1 { top: 0; left: 50%; transform: translateX(-50%); border-color: var(--brand-orange); }
         .orbit-2 { bottom: 20px; left: 0; animation-delay: 0.5s; border-color: var(--brand-purple); }
         .orbit-3 { bottom: 20px; right: 0; animation-delay: 1s; border-color: var(--brand-green); }
@@ -303,13 +338,40 @@
         @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.8; } 100% { transform: scale(1); opacity: 1; } }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         @keyframes float { 0%, 100% { transform: translateY(0) translateX(-50%); } 50% { transform: translateY(-10px) translateX(-50%); } }
-        /* Ajuste float para orbitas laterales */
         @keyframes floatSimple { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 
         @media (max-width: 768px) {
             .flip-card { width: 400px; height: 200px; }
             .comparator-stage { flex-direction: column; height: auto; }
             .comp-side { padding: 1rem; }
+            
+            /* Ajuste móvil para los círculos de la Ley Rosa Elvira Cely */
+            .shield-container { 
+                width: 100%; 
+                height: auto; 
+                flex-direction: column; 
+                gap: 15px; 
+            }
+            .shield-bg { 
+                position: relative; 
+                font-size: 8rem; 
+                margin-bottom: -40px; 
+                opacity: 0.05; 
+            }
+            .standard-orbit { 
+                position: relative; 
+                width: 100%; 
+                max-width: 300px; 
+                height: auto; 
+                border-radius: 12px; 
+                top: auto !important; 
+                left: auto !important; 
+                right: auto !important; 
+                bottom: auto !important; 
+                transform: none !important; 
+                animation: none !important;
+                padding: 15px;
+            }
         }
 
         .p_section{
@@ -344,7 +406,7 @@
 </br></span> </h2>
                 <p><strong>“Un protocolo que no se activa, también genera daño.”</strong></p>
                 <p>Bienvenido al módulo de activación de rutas con enfoque de género. Su misión es garantizar que el papel se convierta en protección real.</p>
-                <button class="btn-unp" onclick="navTo(2)">Iniciar Recorrido ➜</button>
+                <button class="btn-unp" onclick="navTo(2)" aria-label="Iniciar recorrido">Iniciar Recorrido ➜</button>
             </div>
         </div>
 
@@ -392,7 +454,7 @@
                 </div>
             </div>
             <br><br>
-            <button class="btn-outline" onclick="navTo(3)">Siguiente: Efectividad ➜</button>
+            <button class="btn-outline" onclick="navTo(3)" aria-label="Siguiente sección">Siguiente: Efectividad ➜</button>
         </div>
 
         <!-- SCENE 3: COMPARADOR (PAPER VS ACTION) -->
@@ -419,7 +481,7 @@
                 </div>
             </div>
             <br>
-            <button class="btn-outline" id="btn-s3" style="display:none;" onclick="navTo(4)">Activar Ruta ➜</button>
+            <button class="btn-outline" id="btn-s3" style="display:none;" onclick="navTo(4)" aria-label="Activar ruta">Activar Ruta ➜</button>
         </div>
 
         <!-- SCENE 4: RUTA (TIMELINE) -->
@@ -449,7 +511,7 @@
                 </div>
             </div>
             <br>
-            <button class="btn-outline" id="btn-s4" style="display:none;" onclick="navTo(5)">Enfoque Rosa Elvira Cely ➜</button>
+            <button class="btn-outline" id="btn-s4" style="display:none;" onclick="navTo(5)" aria-label="Ir a enfoque Rosa Elvira Cely">Enfoque Rosa Elvira Cely ➜</button>
         </div>
 
         <!-- SCENE 5: LEY ROSA ELVIRA CELY -->
@@ -461,17 +523,17 @@
                 <div class="shield-bg">🛡️</div>
                 
                 <div class="standard-orbit orbit-1">
-                    <strong>Protección Prioritaria</strong><br>La vida e integridad están por encima de trámites.
+                    <strong>Protección Prioritaria</strong>La vida e integridad están por encima de trámites.
                 </div>
                 <div class="standard-orbit orbit-2" style="animation-name: floatSimple;">
-                    <strong>Trato Digno</strong><br>Prohibida la revictimización institucional.
+                    <strong>Trato Digno</strong>Prohibida la revictimización institucional.
                 </div>
                 <div class="standard-orbit orbit-3" style="animation-name: floatSimple;">
-                    <strong>No Repetición</strong><br>Garantías para que el hecho no vuelva a ocurrir.
+                    <strong>No Repetición</strong>Garantías para que el hecho no vuelva a ocurrir.
                 </div>
             </div>
             <br><br>
-            <button class="btn-unp" onclick="navTo(6)">Simulación de Caso ➜</button>
+            <button class="btn-unp" onclick="navTo(6)" aria-label="Ir a simulación de caso">Simulación de Caso ➜</button>
         </div>
 
         <!-- SCENE 6: SIMULACIÓN (CHAT) -->
@@ -505,13 +567,13 @@
                 <p style="margin: 0;">Has recorrido los pasos clave para una atención efectiva, digna y con enfoque de género. Recuerda que tu diligencia puede salvar vidas.</p>
             </div>
             <br>
-            <button class="btn-outline" onclick="location.reload()">Reiniciar Módulo</button>
+            <button class="btn-outline" onclick="location.reload()" aria-label="Reiniciar Módulo">Reiniciar Módulo</button>
         </div>
 
     </div>
 
     <!-- AYUDA FLOTANTE -->
-    <div class="fab-help" onclick="toggleModal()">?</div>
+    <div class="fab-help" onclick="toggleModal()" aria-label="Abrir glosario de ayuda">?</div>
     
     <div class="modal" id="help-modal">
         <div class="modal-content">
@@ -600,7 +662,7 @@
             // Hide buttons, show continue
             opts.innerHTML = `<button class="btn-unp" onclick="navTo(7)">${isCorrect ? 'Finalizar Módulo' : 'Reintentar Escenario'}</button>`;
             if(!isCorrect) {
-                opts.querySelector('button').onclick = () => { location.reload(); }; // Simplificación para reintento
+                opts.querySelector('button').onclick = () => { location.reload(); }; 
                 opts.querySelector('button').innerText = "Reiniciar Escenario";
                 opts.querySelector('button').style.background = "#555";
             }
