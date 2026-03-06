@@ -71,6 +71,64 @@
             padding: 30px;
         }
 
+        /* --- NUEVO: TARJETA DE CORREO (START POINT) --- */
+        .start-card {
+            background: linear-gradient(135deg, var(--brand-orange), #ff8c00);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 8px 20px rgba(255, 102, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s;
+        }
+        
+        .start-card:hover { transform: translateY(-3px); }
+
+        .start-icon {
+            background: rgba(255,255,255,0.2);
+            width: 60px; height: 60px;
+            border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 1.8rem;
+            flex-shrink: 0;
+            animation: pulse-ring 2s infinite;
+        }
+
+        .start-content { flex: 1; }
+        .start-label { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.9; font-weight: bold; }
+        .start-text { font-size: 1.1rem; margin: 5px 0; line-height: 1.4; }
+        
+        /* Botón de correo interactivo */
+        .email-btn {
+            background: white;
+            color: var(--brand-orange);
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: 800;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 5px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: 0.2s;
+        }
+        .email-btn:hover { transform: scale(1.05); box-shadow: 0 6px 15px rgba(0,0,0,0.2); }
+        .email-btn:active { transform: scale(0.95); }
+
+        /* Tooltip de copiado */
+        .copy-feedback {
+            position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
+            background: rgba(0,0,0,0.7); color: white; padding: 5px 15px; border-radius: 5px;
+            font-size: 0.8rem; opacity: 0; transition: 0.3s; pointer-events: none;
+        }
+        .copy-feedback.show { opacity: 1; transform: translateY(-50%) translateX(-10px); }
+
         /* --- TARJETAS INTERACTIVAS (MÓDULOS) --- */
         .module-card {
             background: var(--white);
@@ -83,110 +141,74 @@
             overflow: hidden;
         }
 
-        /* Estado inactivo (Por defecto) */
         .module-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; width: 4px; height: 100%;
-            background: #ccc;
-            transition: 0.3s;
+            content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%;
+            background: #ccc; transition: 0.3s;
         }
 
-        .module-icon {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-            color: #ccc;
-            transition: 0.3s;
-            display: inline-block;
-        }
+        .module-icon { font-size: 2.5rem; margin-bottom: 15px; color: #ccc; transition: 0.3s; display: inline-block; }
 
         .module-title {
-            font-weight: 800;
-            font-size: 1.1rem;
-            color: #777;
-            margin-bottom: 10px;
-            text-transform: uppercase;
+            font-weight: 800; font-size: 1.1rem; color: #777; margin-bottom: 10px; text-transform: uppercase;
             display: flex; align-items: center; justify-content: space-between;
         }
 
-        .toggle-icon {
-            font-size: 1.2rem;
-            transition: 0.3s;
-        }
+        .toggle-icon { font-size: 1.2rem; transition: 0.3s; }
 
         .module-content {
-            font-size: 1rem;
-            line-height: 1.6;
-            color: #555;
-            max-height: 0;
-            opacity: 0;
-            overflow: hidden;
-            transition: all 0.5s ease;
+            font-size: 1rem; line-height: 1.6; color: #555; max-height: 0; opacity: 0; overflow: hidden; transition: all 0.5s ease;
         }
 
-        /* --- ESTADOS ACTIVOS (COLORES ESPECÍFICOS) --- */
-        
-        /* Módulo 1: Activación (Naranja) */
-        .module-card.active-orange {
-            border-color: rgba(255, 102, 0, 0.3);
-            box-shadow: 0 10px 25px rgba(255, 102, 0, 0.15);
-            transform: translateY(-5px);
-        }
+        /* --- ESTADOS ACTIVOS --- */
+        /* Naranja */
+        .module-card.active-orange { border-color: rgba(255, 102, 0, 0.3); box-shadow: 0 10px 25px rgba(255, 102, 0, 0.15); transform: translateY(-5px); }
         .module-card.active-orange::before { background: var(--brand-orange); }
         .module-card.active-orange .module-icon { color: var(--brand-orange); transform: scale(1.1); animation: pulse 2s infinite; }
         .module-card.active-orange .module-title { color: var(--brand-orange); }
         .module-card.active-orange .module-content { max-height: 500px; opacity: 1; margin-top: 15px; }
         .module-card.active-orange .toggle-icon { transform: rotate(180deg); }
 
-        /* Módulo 2: Gestión (Morado) */
-        .module-card.active-purple {
-            border-color: rgba(105, 32, 126, 0.3);
-            box-shadow: 0 10px 25px rgba(105, 32, 126, 0.15);
-            transform: translateY(-5px);
-        }
+        /* Morado */
+        .module-card.active-purple { border-color: rgba(105, 32, 126, 0.3); box-shadow: 0 10px 25px rgba(105, 32, 126, 0.15); transform: translateY(-5px); }
         .module-card.active-purple::before { background: var(--brand-purple); }
         .module-card.active-purple .module-icon { color: var(--brand-purple); transform: scale(1.1); }
         .module-card.active-purple .module-title { color: var(--brand-purple); }
         .module-card.active-purple .module-content { max-height: 500px; opacity: 1; margin-top: 15px; }
         .module-card.active-purple .toggle-icon { transform: rotate(180deg); }
 
-        /* Diagrama de flujo animado dentro del módulo morado */
-        .flow-diagram {
-            display: flex; align-items: center; gap: 10px; margin-bottom: 15px;
-            background: #f9f9f9; padding: 10px; border-radius: 8px; opacity: 0; transform: translateX(-20px); transition: 0.5s 0.2s;
-        }
+        /* Diagrama Morado */
+        .flow-diagram { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; background: #f9f9f9; padding: 10px; border-radius: 8px; opacity: 0; transform: translateX(-20px); transition: 0.5s 0.2s; }
         .module-card.active-purple .flow-diagram { opacity: 1; transform: translateX(0); }
         .flow-node { padding: 5px 10px; background: white; border: 1px solid #ddd; border-radius: 5px; font-size: 0.8rem; font-weight: bold; }
         .flow-arrow { flex: 1; height: 2px; background: #ddd; position: relative; }
         .flow-arrow::after { content: ''; position: absolute; top: -4px; right: 0; border: 5px solid transparent; border-left-color: #ddd; }
-        /* Animación de la flecha */
         .module-card.active-purple .flow-arrow { background: var(--brand-purple); transition: 1s; width: 100%; }
         .module-card.active-purple .flow-arrow::after { border-left-color: var(--brand-purple); transition: 1s; }
 
-        /* Módulo 3: Asesoría Universal (Verde) */
-        .module-card.active-green {
-            border-color: rgba(140, 198, 63, 0.3);
-            box-shadow: 0 10px 25px rgba(140, 198, 63, 0.15);
-            transform: translateY(-5px);
-        }
+        /* Verde */
+        .module-card.active-green { border-color: rgba(140, 198, 63, 0.3); box-shadow: 0 10px 25px rgba(140, 198, 63, 0.15); transform: translateY(-5px); }
         .module-card.active-green::before { background: var(--brand-green); }
         .module-card.active-green .module-icon { color: var(--brand-green); transform: scale(1.1); }
         .module-card.active-green .module-title { color: var(--brand-green); }
         .module-card.active-green .module-content { max-height: 500px; opacity: 1; margin-top: 15px; }
         .module-card.active-green .toggle-icon { transform: rotate(180deg); }
 
-        /* Animación de iconos de red */
+        /* Red Verde */
         .network-grid { display: flex; gap: 10px; margin-top: 10px; opacity: 0; }
         .module-card.active-green .network-grid { opacity: 1; transition: 1s; }
         .net-dot { width: 10px; height: 10px; background: var(--brand-green); border-radius: 50%; animation: blink 1.5s infinite; }
 
         /* --- ANIMACIONES --- */
         @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.8; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(255, 255, 255, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); } }
         @keyframes blink { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
 
         /* --- RESPONSIVE --- */
         @media (max-width: 768px) {
             .header h1 { font-size: 1.2rem; }
+            .start-card { flex-direction: column; text-align: center; }
+            .copy-feedback { top: 10px; right: 10px; transform: none; }
+            .copy-feedback.show { transform: translateY(5px); }
             .module-card { padding: 20px; }
             .flow-diagram { flex-direction: column; align-items: flex-start; }
             .flow-arrow { width: 2px; height: 20px; margin-left: 10px; }
@@ -205,7 +227,22 @@
 
         <div class="modules-grid">
 
-            <!-- MÓDULO 1: ACTIVACIÓN (TEXTO EXACTO PARTE 1) -->
+            <!-- NUEVA SECCIÓN: CANAL DE INICIO (DESTACADO) -->
+            <div class="start-card">
+                <div class="start-icon"><i class="fas fa-paper-plane"></i></div>
+                <div class="start-content">
+                    <div class="start-label">Punto de Partida</div>
+                    <div class="start-text">La ruta inicia formalmente con la denuncia recibida en el correo:</div>
+                    
+                    <!-- Botón Interactivo de Copiado -->
+                    <div class="email-btn" onclick="copyEmail(this)">
+                        teescuchamos@unp.gov.co <i class="far fa-copy"></i>
+                    </div>
+                </div>
+                <div class="copy-feedback">¡Correo copiado!</div>
+            </div>
+
+            <!-- MÓDULO 1: ACTIVACIÓN -->
             <div class="module-card" id="card-1" onclick="toggleCard('card-1', 'active-orange')">
                 <div class="module-icon"><i class="fas fa-bullhorn"></i></div>
                 <div class="module-title">
@@ -217,7 +254,7 @@
                 </div>
             </div>
 
-            <!-- MÓDULO 2: GESTIÓN (TEXTO EXACTO PARTE 2) -->
+            <!-- MÓDULO 2: GESTIÓN -->
             <div class="module-card" id="card-2" onclick="toggleCard('card-2', 'active-purple')">
                 <div class="module-icon"><i class="fas fa-sitemap"></i></div>
                 <div class="module-title">
@@ -225,7 +262,6 @@
                     <i class="fas fa-chevron-down toggle-icon"></i>
                 </div>
                 <div class="module-content">
-                    <!-- Elemento visual extra para dinamismo -->
                     <div class="flow-diagram">
                         <div class="flow-node">Dependencias / Regionales</div>
                         <div class="flow-arrow"></div>
@@ -235,7 +271,7 @@
                 </div>
             </div>
 
-            <!-- MÓDULO 3: ASESORÍA (TEXTO EXACTO PARTE 3) -->
+            <!-- MÓDULO 3: ASESORÍA -->
             <div class="module-card" id="card-3" onclick="toggleCard('card-3', 'active-green')">
                 <div class="module-icon"><i class="fas fa-hands-helping"></i></div>
                 <div class="module-title">
@@ -261,20 +297,39 @@
     <script>
         function toggleCard(id, activeClass) {
             const card = document.getElementById(id);
-            
-            // Si ya tiene la clase, se la quitamos (colapsar)
             if (card.classList.contains(activeClass)) {
                 card.classList.remove(activeClass);
             } else {
-                // Si no, cerramos otros y abrimos este (efecto acordeón opcional, aquí dejo que se abran todos)
-                // document.querySelectorAll('.module-card').forEach(c => {
-                //    c.className = 'module-card'; // Resetear otros si quisieras acordeón estricto
-                // });
                 card.classList.add(activeClass);
             }
         }
 
-        // Animación inicial para sugerir interacción
+        // Función para copiar el correo al portapapeles
+        function copyEmail(btnElement) {
+            const email = "teescuchamos@unp.gov.co";
+            
+            // Copiar al portapapeles
+            navigator.clipboard.writeText(email).then(() => {
+                // Feedback visual
+                const feedback = document.querySelector('.copy-feedback');
+                feedback.classList.add('show');
+                
+                // Cambiar icono temporalmente
+                const icon = btnElement.querySelector('i');
+                icon.className = 'fas fa-check';
+                
+                setTimeout(() => {
+                    feedback.classList.remove('show');
+                    icon.className = 'far fa-copy';
+                }, 2000);
+            }).catch(err => {
+                console.error('Error al copiar: ', err);
+                // Fallback para abrir mailto si falla el copiado
+                window.location.href = "mailto:" + email;
+            });
+        }
+
+        // Animación inicial
         setTimeout(() => {
             const icons = document.querySelectorAll('.module-icon');
             icons.forEach(icon => {
