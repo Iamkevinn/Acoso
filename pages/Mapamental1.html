@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA UNP: Protocolo de Acoso y Desconexión</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* --- VARIABLES DE PALETA UNP/25N --- */
+        :root {
+            --brand-purple: #69207E;
+            --brand-orange: #FF6600;
+            --brand-green: #8CC63F;
+            --brand-magenta: #C2167F;
+            --bg-body: #fdfbfd;
+            --text-dark: #333;
+            --white: #ffffff;
+            --shadow: 0 10px 30px rgba(105, 32, 126, 0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-dark);
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        /* --- CONTENEDOR PRINCIPAL --- */
+        .protocol-dashboard {
+            width: 100%;
+            max-width: 900px;
+            background: var(--white);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            position: relative;
+            border-top: 6px solid var(--brand-orange);
+        }
+
+        /* --- HEADER --- */
+        .header {
+            padding: 30px;
+            text-align: center;
+            background: linear-gradient(135deg, rgba(105,32,126,0.05) 0%, rgba(255,102,0,0.05) 100%);
+            border-bottom: 1px solid #eee;
+        }
+
+        .header h1 {
+            color: var(--brand-purple);
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .header h2 {
+            font-size: 1rem;
+            color: var(--brand-orange);
+            font-weight: 600;
+        }
+
+        /* --- GRID DE MÓDULOS --- */
+        .modules-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            padding: 30px;
+        }
+
+        /* --- TARJETAS INTERACTIVAS (MÓDULOS) --- */
+        .module-card {
+            background: var(--white);
+            border: 2px solid #eee;
+            border-radius: 15px;
+            padding: 25px;
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        /* Estado inactivo (Por defecto) */
+        .module-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 4px; height: 100%;
+            background: #ccc;
+            transition: 0.3s;
+        }
+
+        .module-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: #ccc;
+            transition: 0.3s;
+            display: inline-block;
+        }
+
+        .module-title {
+            font-weight: 800;
+            font-size: 1.1rem;
+            color: #777;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+
+        .toggle-icon {
+            font-size: 1.2rem;
+            transition: 0.3s;
+        }
+
+        .module-content {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #555;
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: all 0.5s ease;
+        }
+
+        /* --- ESTADOS ACTIVOS (COLORES ESPECÍFICOS) --- */
+        
+        /* Módulo 1: Activación (Naranja) */
+        .module-card.active-orange {
+            border-color: rgba(255, 102, 0, 0.3);
+            box-shadow: 0 10px 25px rgba(255, 102, 0, 0.15);
+            transform: translateY(-5px);
+        }
+        .module-card.active-orange::before { background: var(--brand-orange); }
+        .module-card.active-orange .module-icon { color: var(--brand-orange); transform: scale(1.1); animation: pulse 2s infinite; }
+        .module-card.active-orange .module-title { color: var(--brand-orange); }
+        .module-card.active-orange .module-content { max-height: 500px; opacity: 1; margin-top: 15px; }
+        .module-card.active-orange .toggle-icon { transform: rotate(180deg); }
+
+        /* Módulo 2: Gestión (Morado) */
+        .module-card.active-purple {
+            border-color: rgba(105, 32, 126, 0.3);
+            box-shadow: 0 10px 25px rgba(105, 32, 126, 0.15);
+            transform: translateY(-5px);
+        }
+        .module-card.active-purple::before { background: var(--brand-purple); }
+        .module-card.active-purple .module-icon { color: var(--brand-purple); transform: scale(1.1); }
+        .module-card.active-purple .module-title { color: var(--brand-purple); }
+        .module-card.active-purple .module-content { max-height: 500px; opacity: 1; margin-top: 15px; }
+        .module-card.active-purple .toggle-icon { transform: rotate(180deg); }
+
+        /* Diagrama de flujo animado dentro del módulo morado */
+        .flow-diagram {
+            display: flex; align-items: center; gap: 10px; margin-bottom: 15px;
+            background: #f9f9f9; padding: 10px; border-radius: 8px; opacity: 0; transform: translateX(-20px); transition: 0.5s 0.2s;
+        }
+        .module-card.active-purple .flow-diagram { opacity: 1; transform: translateX(0); }
+        .flow-node { padding: 5px 10px; background: white; border: 1px solid #ddd; border-radius: 5px; font-size: 0.8rem; font-weight: bold; }
+        .flow-arrow { flex: 1; height: 2px; background: #ddd; position: relative; }
+        .flow-arrow::after { content: ''; position: absolute; top: -4px; right: 0; border: 5px solid transparent; border-left-color: #ddd; }
+        /* Animación de la flecha */
+        .module-card.active-purple .flow-arrow { background: var(--brand-purple); transition: 1s; width: 100%; }
+        .module-card.active-purple .flow-arrow::after { border-left-color: var(--brand-purple); transition: 1s; }
+
+        /* Módulo 3: Asesoría Universal (Verde) */
+        .module-card.active-green {
+            border-color: rgba(140, 198, 63, 0.3);
+            box-shadow: 0 10px 25px rgba(140, 198, 63, 0.15);
+            transform: translateY(-5px);
+        }
+        .module-card.active-green::before { background: var(--brand-green); }
+        .module-card.active-green .module-icon { color: var(--brand-green); transform: scale(1.1); }
+        .module-card.active-green .module-title { color: var(--brand-green); }
+        .module-card.active-green .module-content { max-height: 500px; opacity: 1; margin-top: 15px; }
+        .module-card.active-green .toggle-icon { transform: rotate(180deg); }
+
+        /* Animación de iconos de red */
+        .network-grid { display: flex; gap: 10px; margin-top: 10px; opacity: 0; }
+        .module-card.active-green .network-grid { opacity: 1; transition: 1s; }
+        .net-dot { width: 10px; height: 10px; background: var(--brand-green); border-radius: 50%; animation: blink 1.5s infinite; }
+
+        /* --- ANIMACIONES --- */
+        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.8; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes blink { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 768px) {
+            .header h1 { font-size: 1.2rem; }
+            .module-card { padding: 20px; }
+            .flow-diagram { flex-direction: column; align-items: flex-start; }
+            .flow-arrow { width: 2px; height: 20px; margin-left: 10px; }
+            .flow-arrow::after { top: auto; bottom: -5px; right: -4px; border-left-color: transparent; border-top-color: var(--brand-purple); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="protocol-dashboard">
+        
+        <div class="header">
+            <h1>Protocolo de prevención, atención y garantía de derechos</h1>
+            <h2>En casos de acoso y desconexiones laborales en la UNP</h2>
+        </div>
+
+        <div class="modules-grid">
+
+            <!-- MÓDULO 1: ACTIVACIÓN (TEXTO EXACTO PARTE 1) -->
+            <div class="module-card" id="card-1" onclick="toggleCard('card-1', 'active-orange')">
+                <div class="module-icon"><i class="fas fa-bullhorn"></i></div>
+                <div class="module-title">
+                    1. Activación de la Ruta
+                    <i class="fas fa-chevron-down toggle-icon"></i>
+                </div>
+                <div class="module-content">
+                    <p>En el marco de este Protocolo, <strong>quien tenga conocimiento o sospeche</strong> de un hecho relacionado con violencia contra la mujer, de género o discriminación podrá activar la ruta de atención comprendida en este capítulo, cuyo propósito es ofrecer a la persona victimizada una atención.</p>
+                </div>
+            </div>
+
+            <!-- MÓDULO 2: GESTIÓN (TEXTO EXACTO PARTE 2) -->
+            <div class="module-card" id="card-2" onclick="toggleCard('card-2', 'active-purple')">
+                <div class="module-icon"><i class="fas fa-sitemap"></i></div>
+                <div class="module-title">
+                    2. Articulación Institucional
+                    <i class="fas fa-chevron-down toggle-icon"></i>
+                </div>
+                <div class="module-content">
+                    <!-- Elemento visual extra para dinamismo -->
+                    <div class="flow-diagram">
+                        <div class="flow-node">Dependencias / Regionales</div>
+                        <div class="flow-arrow"></div>
+                        <div class="flow-node" style="border-color: var(--brand-purple); color: var(--brand-purple);">Dirección Gestión Humana</div>
+                    </div>
+                    <p>Para la atención de todos los casos de violencias basadas en género y/o discriminación, las dependencias y oficinas regionales de la entidad, articularán con la Dirección de Gestión Humana para apertura de la ruta correspondiente y su respectivo seguimiento.</p>
+                </div>
+            </div>
+
+            <!-- MÓDULO 3: ASESORÍA (TEXTO EXACTO PARTE 3) -->
+            <div class="module-card" id="card-3" onclick="toggleCard('card-3', 'active-green')">
+                <div class="module-icon"><i class="fas fa-hands-helping"></i></div>
+                <div class="module-title">
+                    3. Capacidad de Asesoría
+                    <i class="fas fa-chevron-down toggle-icon"></i>
+                </div>
+                <div class="module-content">
+                    <p>No obstante, <strong>todas las dependencias</strong> tendrán la capacidad de asesorar sobre las diferentes rutas expuestas.</p>
+                    <div class="network-grid">
+                        <div class="net-dot" style="animation-delay: 0s;"></div>
+                        <div class="net-dot" style="animation-delay: 0.2s;"></div>
+                        <div class="net-dot" style="animation-delay: 0.4s;"></div>
+                        <div class="net-dot" style="animation-delay: 0.6s;"></div>
+                        <span style="font-size: 0.8rem; color: var(--brand-green); margin-left: 10px;">Red de apoyo activa</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        function toggleCard(id, activeClass) {
+            const card = document.getElementById(id);
+            
+            // Si ya tiene la clase, se la quitamos (colapsar)
+            if (card.classList.contains(activeClass)) {
+                card.classList.remove(activeClass);
+            } else {
+                // Si no, cerramos otros y abrimos este (efecto acordeón opcional, aquí dejo que se abran todos)
+                // document.querySelectorAll('.module-card').forEach(c => {
+                //    c.className = 'module-card'; // Resetear otros si quisieras acordeón estricto
+                // });
+                card.classList.add(activeClass);
+            }
+        }
+
+        // Animación inicial para sugerir interacción
+        setTimeout(() => {
+            const icons = document.querySelectorAll('.module-icon');
+            icons.forEach(icon => {
+                icon.style.transform = "scale(1.2)";
+                setTimeout(() => icon.style.transform = "scale(1)", 300);
+            });
+        }, 800);
+    </script>
+</body>
+</html>
