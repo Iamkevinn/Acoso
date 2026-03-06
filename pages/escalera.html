@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Pasos para el Abordaje</title>
+    <!-- FontAwesome para los íconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* =========================================
+           VARIABLES Y CONFIGURACIÓN BASE
+           ========================================= */
+        :root {
+            --bg-color: #fdfbfd;
+            --text-dark: #333333;
+            --text-muted: #777777;
+            
+            /* Colores extraídos de la imagen */
+            --c1: #4a90e2; /* Azul */
+            --c2: #00bcd4; /* Cian */
+            --c3: #4caf50; /* Verde */
+            --c4: #8bc34a; /* Lima */
+            --c5: #ffc107; /* Amarillo */
+            --c6: #ff9800; /* Naranja */
+            --c7: #f44336; /* Rojo */
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            overflow-x: hidden;
+        }
+
+        /* =========================================
+           CONTENEDOR PRINCIPAL
+           ========================================= */
+        .module-container {
+            width: 100%;
+            max-width: 1000px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            padding: 40px;
+            position: relative;
+        }
+
+        .header-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 20px;
+        }
+
+        .header-controls h2 { color: #2B3A67; font-size: 1.5rem; }
+
+        .btn-next {
+            background: linear-gradient(45deg, #6C63FF, #4a90e2);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(108, 99, 255, 0.3);
+            transition: 0.3s;
+            display: flex; gap: 10px; align-items: center;
+        }
+        .btn-next:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(108, 99, 255, 0.4); }
+        .btn-next:disabled { background: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        /* =========================================
+           ESCENA 3D (ESCALERA Y TEXTOS)
+           ========================================= */
+        .scene-wrapper {
+            position: relative;
+            width: 100%;
+            height: 700px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            /* Ocultar barra de scroll pero permitir deslizamiento en móviles */
+            scrollbar-width: none; 
+        }
+        .scene-wrapper::-webkit-scrollbar { display: none; }
+
+        .scene {
+            position: relative;
+            width: 900px; /* Ancho fijo para mantener la isometría */
+            height: 700px;
+            margin: 0 auto;
+        }
+
+        /* =========================================
+           EL PERSONAJE ANIMADO ("EL MUÑECO")
+           ========================================= */
+        .character {
+            position: absolute;
+            font-size: 3rem;
+            color: #2c3e50;
+            z-index: 100;
+            /* La transición usa un cubic-bezier para simular un pequeño "salto" */
+            transition: all 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform: translate(-50%, -100%);
+            filter: drop-shadow(0 15px 5px rgba(0,0,0,0.2));
+            pointer-events: none;
+        }
+        
+        .character .fa-walking {
+            /* Efecto de inclinación para que parezca que camina/sube */
+            transform: rotate(-10deg);
+        }
+
+        /* =========================================
+           FILAS DE CADA PELDAÑO (TEXTO + GRÁFICO)
+           ========================================= */
+        .step-row {
+            position: absolute;
+            left: 0; right: 0;
+            height: 160px;
+            /* Altura base menos la posición escalonada */
+            bottom: calc(var(--i) * 85px);
+            z-index: var(--i);
+            display: flex;
+            align-items: flex-end;
+            cursor: pointer;
+        }
+
+        /* -- Textos -- */
+        .step-text {
+            position: absolute;
+            left: calc(var(--i) * 35px); /* Desplazamiento diagonal suave */
+            bottom: 20px;
+            width: 280px;
+            display: flex;
+            gap: 15px;
+            opacity: 0.4; /* Opaco por defecto */
+            transition: all 0.4s ease;
+            transform: translateX(-20px);
+        }
+
+        .step-row.active .step-text {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .step-num {
+            font-size: 2.5rem;
+            font-weight: 300;
+            color: var(--color);
+            line-height: 1;
+        }
+
+        .step-info h3 {
+            font-size: 1.1rem;
+            color: var(--color);
+            margin-bottom: 5px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        
+        .step-info h3::before {
+            content: ''; display: inline-block; width: 3px; height: 15px; background: var(--color);
+        }
+
+        .step-info p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* -- Gráfico 3D (Escalón) -- */
+        .step-graphic {
+            position: absolute;
+            left: calc(35% + (var(--i) * 65px));
+            bottom: 0;
+            width: 120px;
+            height: 160px;
+            transition: all 0.3s ease;
+        }
+
+        .step-row:hover .step-graphic {
+            filter: brightness(0.95) drop-shadow(0 -5px 15px rgba(0,0,0,0.1));
+        }
+        .step-row.active .step-graphic {
+            filter: drop-shadow(0 0 15px var(--color));
+        }
+
+        /* Ícono isométrico encima del peldaño */
+        .iso-icon {
+            position: absolute;
+            top: 40px; /* Centro de la cara superior */
+            left: 60px;
+            transform: translate(-50%, -50%) rotateX(45deg);
+            font-size: 1.8rem;
+            color: var(--color);
+            z-index: 5;
+            opacity: 0.6;
+            transition: 0.3s;
+        }
+        .step-row.active .iso-icon { opacity: 1; transform: translate(-50%, -60%) rotateX(0deg) scale(1.2); }
+
+        /* Punto de anclaje invisible para que JS sepa a dónde mover al personaje */
+        .anchor { position: absolute; top: 30px; left: 60px; width: 1px; height: 1px; }
+
+        /* =========================================
+           FOOTER (FUENTE)
+           ========================================= */
+        .image-footer {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eaeaea;
+            width: 100%;
+        }
+        .image-footer h4 { font-size: 1rem; color: var(--text-dark); margin-bottom: 5px; }
+        .image-footer p { font-size: 0.85rem; color: var(--text-dark); font-weight: bold; }
+
+    </style>
+</head>
+<body>
+
+    <div class="module-container">
+        
+        <div class="header-controls">
+            <h2>Ruta de Abordaje Integral</h2>
+            <button class="btn-next" id="btnNext" onclick="advanceStep()">Siguiente Paso <i class="fas fa-arrow-right"></i></button>
+        </div>
+
+        <div class="scene-wrapper">
+            <div class="scene" id="scene">
+                
+                <!-- El Muñeco -->
+                <div class="character" id="character"><i class="fas fa-walking"></i></div>
+
+                <!-- Los Peldaños se generan aquí para mantener el HTML limpio y exacto -->
+                
+                <!-- PASO 1 -->
+                <div class="step-row" style="--i: 0; --color: var(--c1);" data-step="0" onclick="goToStep(0)">
+                    <div class="step-text">
+                        <div class="step-num">1</div>
+                        <div class="step-info">
+                            <h3>Canales de Denuncia</h3>
+                            <p>Establecer líneas directas confidenciales y buzones seguros para reportar incidentes.</p>
+                        </div>
+                    </div>
+                    <div class="step-graphic">
+                        <div class="anchor"></div>
+                        <i class="fas fa-headset iso-icon"></i>
+                        <svg width="120" height="160" viewBox="0 0 120 160">
+                            <!-- Cara Derecha -->
+                            <polygon points="60,70 120,40 120,120 60,150" fill="white" stroke="#dcdcdc" stroke-width="2"/>
+                            <!-- Cara Frontal -->
+                            <polygon points="0,40 60,70 60,150 0,120" fill="white" stroke="#dcdcdc" stroke-width="2"/>
+                            <!-- Cara Superior (Peldaño) -->
+                            <polygon points="60,10 120,40 60,70 0,40" fill="white" stroke="var(--c1)" stroke-width="3"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- PASO 2 -->
+                <div class="step-row" style="--i: 1; --color: var(--c2);" data-step="1" onclick="goToStep(1)">
+                    <div class="step-text">
+                        <div class="step-num">2</div>
+                        <div class="step-info">
+                            <h3>Recepción de Quejas</h3>
+                            <p>Recibir y registrar quejas con confidencialidad y respeto.</p>
+                        </div>
+                    </div>
+                    <div class="step-graphic">
+                        <div class="anchor"></div>
+                        <i class="fas fa-comments iso-icon"></i>
+                        <svg width="120" height="160" viewBox="0 0 120 160">
+                            <polygon points="60,70 120,40 120,120 60,150" fill="white" stroke="#dcdcdc" stroke-width="2"/>
+                            <polygon points="0,40 60,70 60,150 0,120" fill="white" stroke="#dcdcdc" stroke-width="2"/>
+                            <polygon points="60,10 120,40 60,70 0,40" fill="white" stroke="var(--c2)" stroke-width="3"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- PASO 3 -->
+                <div class="step-row" style="--i: 2; --color: var(--c3);" data-step="2" onclick="goToStep(2)">
+                    <div class="step-text">
+                        <div class="step-num">3</div>
+                        <div class="step-info">
+                            <h3>Evaluación de Riesgos</h3>
+                            <p>Evaluar el riesgo inmediato para la víctima y planificar medidas de protección.</p>
+                        </div>
+                    </div>
+                    <div class="step-graphic">
+                        <div class="anchor"></div>
+                        <i class="fas fa-user-shield iso-icon"></i>
+                        <svg width="120" height="160" viewBox="0 0 120 160">
+                            <polygon points="60,70 120,40 120,120 60,150" fill="white" stroke="#dcdcdc" stroke-width="2"/>
+                            <polygon points="0,40 60,70 60,150 0,120" fill="white" stroke="#dcdcdc" stroke-width="2"/>
+                            <polygon points="60,10 120,40 60,70 0,40" fill="white" stroke="var(--c3)" stroke-width="3"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- PASO 4 -->
+                <div class="step-row" style="--i: 3; --color: var(--c4);" data-step="3" onclick="goToStep(3)">
+                    <div class="step-text">
+                        <div class="step-num">4</div>
+                        <div class="step-info">
+                            <h3>Medidas de Protección</h3>
+                            <p>Implementar acciones como el retiro temporal del agresor y permisos remunerados.</p>
+                        </div>
+                    </div>
+                    <div class="step-graphic">
+                        <div class="anchor"></div>
+                        <i class="fas fa-shield-halved iso-icon"></i>
+                        <svg width="120" height="160" viewBox="0 0 120 160">
+                            <polygon points="60,70 120,40 120,120 60,150" fill="white" stroke="#dcdcdc" stroke-width="2"/>
+                            <polygon points="0,40 60,70 60,150 0,120" fill="white" stroke="#dcdcdc" stroke-width="2"/>
+                            <polygon points="60,10 120,40 60,70 0,40" fill="white" stroke="var(--c4)" stroke-width="3"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- PASO 5 -->
+                <div class="step-row" style="--i: 4; --color: var(--c5);" data-step="4" onclick="goToStep(4)">
+                    <div class="step-text">
+                        <div class="step-num">5</div>
+                        <div class="step-info">
+                            <h3>Ruta de Atención Interna</h3>
+                            <p>Guiar a las víctimas a través de un proceso estructurado de apoyo dentro de la organización.</p>
+                        </div>
+                    </div>
+                    <div class="step-graphic">
+                        <div class="anchor"></div>
+                        <i class="fas fa-route iso-icon"></i>
+                        <svg width="120" height="160" viewBox="0 0 120 160">
+                            <polygon points="60,70 120,40 120,120 60,150" fill="white" stroke="#dcdcdc" stroke-width="2"/>
+                            <polygon points="0,40 60,70 60,150 0,120" fill="white" stroke="#dcdcdc" stroke-width="2"/>
+                            <polygon points="60,10 120,40 60,70 0,40" fill="white" stroke="var(--c5)" stroke-width="3"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- PASO 6 -->
+                <div class="step-row" style="--i: 5; --color: var(--c6);" data-step="5" onclick="goToStep(5)">
+                    <div class="step-text">
+                        <div class="step-num">6</div>
+                        <div class="step-info">
+                            <h3>Apoyo Psicosocial</h3>
+                            <p>Ofrecer asesoramiento psicológico y apoyo emocional a las víctimas.</p>
+                        </div>
+                    </div>
+                    <div class="step-graphic">
+                        <div class="anchor"></div>
+                        <i class="fas fa-hands-holding-child iso-icon"></i>
+                        <svg width="120" height="160" viewBox="0 0 120 160">
+                            <polygon points="60,70 120,40 120,120 60,150" fill="white" stroke="#dcdcdc" stroke-width="2"/>
+                            <polygon points="0,40 60,70 60,150 0,120" fill="white" stroke="#dcdcdc" stroke-width="2"/>
+                            <polygon points="60,10 120,40 60,70 0,40" fill="white" stroke="var(--c6)" stroke-width="3"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- PASO 7 -->
+                <div class="step-row" style="--i: 6; --color: var(--c7);" data-step="6" onclick="goToStep(6)">
+                    <div class="step-text">
+                        <div class="step-num">7</div>
+                        <div class="step-info">
+                            <h3>Orientación Legal</h3>
+                            <p>Proporcionar asesoramiento legal y orientación sobre los derechos y opciones legales.</p>
+                        </div>
+                    </div>
+                    <div class="step-graphic">
+                        <div class="anchor"></div>
+                        <i class="fas fa-gavel iso-icon"></i>
+                        <svg width="120" height="160" viewBox="0 0 120 160">
+                            <polygon points="60,70 120,40 120,120 60,150" fill="white" stroke="#dcdcdc" stroke-width="2"/>
+                            <polygon points="0,40 60,70 60,150 0,120" fill="white" stroke="#dcdcdc" stroke-width="2"/>
+                            <polygon points="60,10 120,40 60,70 0,40" fill="white" stroke="var(--c7)" stroke-width="3"/>
+                        </svg>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="image-footer">
+            <h4>Ilustración 3: Pasos para el abordaje</h4>
+            <p>Fuente: Subcomisión de Transversalidad de Género GPIGI - OAPI</p>
+        </div>
+
+    </div>
+
+    <script>
+        let currentStep = -1;
+        const totalSteps = 7;
+        const character = document.getElementById('character');
+        const btnNext = document.getElementById('btnNext');
+        const scene = document.getElementById('scene');
+
+        function goToStep(stepIndex) {
+            currentStep = stepIndex;
+            
+            // 1. Gestionar clases visuales de los textos y escalones
+            document.querySelectorAll('.step-row').forEach(row => {
+                row.classList.remove('active');
+            });
+            const activeRow = document.querySelector(`.step-row[data-step="${stepIndex}"]`);
+            activeRow.classList.add('active');
+
+            // 2. Calcular coordenadas del ancla para saltar
+            // Obtenemos el punto central del escalón correspondiente
+            const anchor = activeRow.querySelector('.anchor');
+            
+            // Usamos getBoundingClientRect para evitar problemas con layouts relativos
+            const anchorRect = anchor.getBoundingClientRect();
+            const sceneRect = scene.getBoundingClientRect();
+
+            // Calculamos posición relativa a la escena
+            const targetLeft = anchorRect.left - sceneRect.left;
+            const targetTop = anchorRect.top - sceneRect.top;
+
+            // Movemos el muñeco a las coordenadas
+            character.style.left = `${targetLeft}px`;
+            character.style.top = `${targetTop}px`;
+
+            // 3. Autoscroll horizontal para pantallas pequeñas
+            const wrapper = document.querySelector('.scene-wrapper');
+            const scrollTarget = activeRow.querySelector('.step-graphic').offsetLeft - (wrapper.offsetWidth / 2) + 60;
+            wrapper.scrollTo({ left: scrollTarget, behavior: 'smooth' });
+
+            // 4. Actualizar estado del botón
+            if(currentStep === totalSteps - 1) {
+                btnNext.innerHTML = "Completado ✅";
+                btnNext.style.background = "var(--c3)"; // Verde éxito
+            } else {
+                btnNext.innerHTML = "Siguiente Paso <i class='fas fa-arrow-right'></i>";
+                btnNext.style.background = "linear-gradient(45deg, #6C63FF, #4a90e2)";
+            }
+        }
+
+        function advanceStep() {
+            if(currentStep < totalSteps - 1) {
+                goToStep(currentStep + 1);
+            } else {
+                // Reiniciar para volver a empezar
+                goToStep(0);
+            }
+        }
+
+        // Reposicionar el personaje si la ventana cambia de tamaño
+        window.addEventListener('resize', () => {
+            if(currentStep >= 0) {
+                // Pequeño timeout para dejar que el DOM recalcule flexbox
+                setTimeout(() => goToStep(currentStep), 100); 
+            }
+        });
+
+        // Inicializar en el paso 1 tras una ligera espera
+        setTimeout(() => {
+            goToStep(0);
+        }, 300);
+
+    </script>
+</body>
+</html>
