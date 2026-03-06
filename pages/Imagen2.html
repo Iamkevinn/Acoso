@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVA: Tipos de Discriminación</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* =========================================
+           VARIABLES Y COLORES (Basados en la imagen)
+           ========================================= */
+        :root {
+            --bg-color: #fdfbfd;
+            --text-dark: #333333;
+            --text-gray: #666666;
+            --center-gray: #f5f6fa;
+            --center-border: #dcdde1;
+            
+            /* Colores de los nodos extraídos de la imagen */
+            --c-socio: #3498db;   /* Azul */
+            --c-genero: #ff7675;  /* Salmón/Rojo claro */
+            --c-racial: #e17055;  /* Naranja */
+            --c-discap: #f1c40f;  /* Amarillo */
+            --c-religion: #2ecc71;/* Verde */
+            --c-politica: #fd79a8;/* Rosa/Magenta */
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            overflow-x: hidden;
+        }
+
+        /* =========================================
+           CABECERA Y PROGRESO
+           ========================================= */
+        .module-header { text-align: center; margin-bottom: 20px; z-index: 10;}
+        .instruction-tag {
+            display: inline-block;
+            background: rgba(97, 27, 136, 0.08);
+            color: #611b88;
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            animation: pulseBadge 2s infinite;
+        }
+        @keyframes pulseBadge { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+
+        /* Barra de progreso */
+        .progress-wrap { width: 100%; max-width: 300px; margin: 15px auto; }
+        .progress-track { height: 8px; background: #eee; border-radius: 10px; overflow: hidden; }
+        .progress-fill { height: 100%; width: 0%; background: #611b88; transition: 0.5s ease-out; }
+        .progress-text { font-size: 0.8rem; color: var(--text-gray); margin-top: 5px; font-weight: bold; }
+
+        /* =========================================
+           RADAR INTERACTIVO (DIAGRAMA)
+           ========================================= */
+        .radar-container {
+            position: relative;
+            width: 100%;
+            max-width: 750px;
+            height: 600px;
+            margin: 20px auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Flechas SVG animadas */
+        .radar-lines {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+        .radar-lines line {
+            stroke-width: 3;
+            stroke-dasharray: 10 10;
+            opacity: 0.3;
+            transition: all 0.4s ease;
+        }
+        .radar-lines polygon {
+            transition: all 0.4s ease;
+            opacity: 0.3;
+        }
+
+        /* Centro: La Balanza */
+        .hub-center {
+            position: absolute;
+            width: 250px;
+            height: 250px;
+            background: var(--center-gray);
+            border: 4px solid var(--center-border);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            transition: all 0.4s ease;
+            text-align: center;
+            padding: 15px;
+        }
+        .hub-center i.scale-icon {
+            font-size: 3.5rem;
+            color: #95a5a6;
+            transition: 0.4s ease;
+        }
+        .hub-text {
+            font-size: 0.75rem;
+            color: var(--text-gray);
+            font-weight: bold;
+            margin-top: 10px;
+            opacity: 0;
+            position: absolute;
+            transform: translateY(20px);
+            transition: 0.4s ease;
+        }
+
+        /* Nodos Orbitantes */
+        .radar-node {
+            position: absolute;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 5;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            /* Animación de flotación suave */
+            animation: floatNode 4s infinite ease-in-out;
+        }
+        /* Desfase de la animación para que no floten a la vez */
+        .radar-node:nth-child(even) { animation-delay: -2s; }
+        @keyframes floatNode {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        /* Posicionamiento Radial (Desktop) */
+        .node-socio { top: 12%; left: 10%; flex-direction: row-reverse; } /* 11 o'clock */
+        .node-genero { top: 12%; right: 10%; } /* 1 o'clock */
+        .node-racial { top: 45%; right: 0%; } /* 3 o'clock */
+        .node-discap { bottom: 12%; right: 5%; } /* 5 o'clock */
+        .node-religion { bottom: 12%; left: 5%; flex-direction: row-reverse; } /* 7 o'clock */
+        .node-politica { top: 45%; left: 0%; flex-direction: row-reverse; } /* 9 o'clock */
+
+        .node-icon-wrapper {
+            width: 70px;
+            height: 70px;
+            background: white;
+            border: 3px solid var(--n-color);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.8rem;
+            color: var(--n-color);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .node-icon-wrapper::after {
+            content: ''; position: absolute; top: -5px; left: -5px; right: -5px; bottom: -5px;
+            border-radius: 50%; border: 2px dashed var(--n-color);
+            opacity: 0; transition: 0.4s; transform: rotate(0deg);
+        }
+
+        .node-label {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-gray);
+            max-width: 140px;
+            line-height: 1.2;
+            transition: 0.3s;
+        }
+        .node-socio .node-label, .node-religion .node-label, .node-politica .node-label { text-align: right; }
+
+        /* =========================================
+           HOVER & INTERACCIONES (EL FOCO MENTAL)
+           ========================================= */
+        /* Efecto Spotlight: Oscurecer los demás */
+        .radar-container:hover .radar-node:not(:hover) { opacity: 0.3; filter: grayscale(0.8); }
+        
+        /* Efectos sobre el nodo activo */
+        .radar-node:hover { transform: scale(1.1) translateY(0); animation: none; z-index: 20; }
+        .radar-node:hover .node-icon-wrapper { background: var(--n-color); color: white; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .radar-node:hover .node-icon-wrapper::after { opacity: 1; animation: spinDashed 10s linear infinite; }
+        .radar-node:hover .node-label { color: var(--text-dark); }
+        @keyframes spinDashed { 100% { transform: rotate(360deg); } }
+
+        /* Efectos sobre el Centro cuando se hace Hover en un Nodo */
+        .radar-container.is-hovering .hub-center { border-color: var(--active-color); box-shadow: 0 0 30px var(--active-color-light); }
+        .radar-container.is-hovering .hub-center i.scale-icon {
+            transform: scale(0.5) translateY(-50px);
+            opacity: 0.2;
+        }
+        .radar-container.is-hovering .hub-text { opacity: 1; transform: translateY(-10px); color: var(--active-color); }
+
+        /* =========================================
+           FOOTER (FUENTE DE LA IMAGEN)
+           ========================================= */
+        .image-footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eaeaea;
+            width: 100%;
+            max-width: 600px;
+        }
+        .image-footer p { font-size: 0.85rem; color: var(--text-dark); margin-bottom: 5px; font-weight: 600; }
+        .image-footer span { font-size: 0.75rem; color: var(--text-gray); }
+
+        /* =========================================
+           RESPONSIVE DESIGN (MÓVIL)
+           ========================================= */
+        @media (max-width: 768px) {
+            .radar-container {
+                height: auto;
+                flex-direction: column;
+                gap: 15px;
+            }
+            .radar-lines { display: none; } /* Ocultar flechas en móvil */
+            
+            .hub-center {
+                position: relative;
+                width: 100%; height: auto; border-radius: 12px;
+                padding: 20px; margin-bottom: 20px; flex-direction: row; gap: 15px;
+            }
+            .hub-center i.scale-icon { font-size: 2.5rem; transform: none !important; opacity: 1 !important;}
+            .hub-text { position: relative; opacity: 1; transform: none; text-align: left; }
+
+            .radar-node {
+                position: relative;
+                top: auto !important; left: auto !important; right: auto !important; bottom: auto !important;
+                width: 100%;
+                background: white;
+                padding: 15px 20px;
+                border-radius: 12px;
+                flex-direction: row !important;
+                box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+                animation: none;
+                border-left: 5px solid var(--n-color);
+            }
+            .radar-container:hover .radar-node:not(:hover) { opacity: 1; filter: none; } /* Quitar spotlight en móvil */
+            .node-label { text-align: left !important; max-width: 100%; }
+            .node-icon-wrapper { width: 50px; height: 50px; font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="module-header">
+        <div class="instruction-tag"><i class="fas fa-search"></i> Explora el mapa de discriminación</div>
+        <div class="progress-wrap">
+            <div class="progress-track"><div class="progress-fill" id="p-fill"></div></div>
+            <div class="progress-text" id="p-text">0 de 6 diagnosticados</div>
+        </div>
+    </div>
+
+    <div class="radar-container" id="radar">
+        
+        <!-- Flechas SVG Dinámicas (Solo Desktop) -->
+        <svg class="radar-lines" id="radar-lines" preserveAspectRatio="none">
+            <defs>
+                <marker id="arrow-socio" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><polygon points="0,0 10,5 0,10" fill="var(--c-socio)"/></marker>
+                <marker id="arrow-genero" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><polygon points="0,0 10,5 0,10" fill="var(--c-genero)"/></marker>
+                <marker id="arrow-racial" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><polygon points="0,0 10,5 0,10" fill="var(--c-racial)"/></marker>
+                <marker id="arrow-discap" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><polygon points="0,0 10,5 0,10" fill="var(--c-discap)"/></marker>
+                <marker id="arrow-religion" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><polygon points="0,0 10,5 0,10" fill="var(--c-religion)"/></marker>
+                <marker id="arrow-politica" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><polygon points="0,0 10,5 0,10" fill="var(--c-politica)"/></marker>
+            </defs>
+            <!-- Líneas (las coordenadas X2/Y2 se ajustan por JS) -->
+            <line id="l-socio" x1="50%" y1="50%" x2="25%" y2="20%" stroke="var(--c-socio)" marker-end="url(#arrow-socio)"/>
+            <line id="l-genero" x1="50%" y1="50%" x2="75%" y2="20%" stroke="var(--c-genero)" marker-end="url(#arrow-genero)"/>
+            <line id="l-racial" x1="50%" y1="50%" x2="85%" y2="50%" stroke="var(--c-racial)" marker-end="url(#arrow-racial)"/>
+            <line id="l-discap" x1="50%" y1="50%" x2="75%" y2="80%" stroke="var(--c-discap)" marker-end="url(#arrow-discap)"/>
+            <line id="l-religion" x1="50%" y1="50%" x2="25%" y2="80%" stroke="var(--c-religion)" marker-end="url(#arrow-religion)"/>
+            <line id="l-politica" x1="50%" y1="50%" x2="15%" y2="50%" stroke="var(--c-politica)" marker-end="url(#arrow-politica)"/>
+        </svg>
+
+        <!-- Hub Central -->
+        <div class="hub-center" id="hub">
+            <i class="fas fa-balance-scale scale-icon"></i>
+            <div class="hub-text" id="hub-desc">
+                Pasa el cursor sobre cada nodo para descubrir cómo afecta el equilibrio.
+            </div>
+        </div>
+
+        <!-- NODOS ORBITANTES -->
+        
+        <!-- 1. Socioeconómica -->
+        <div class="radar-node node-socio" style="--n-color: var(--c-socio);" data-id="socio" data-color="var(--c-socio)" data-desc="Trato desigual por el nivel de ingresos, estrato o condición económica.">
+            <div class="node-icon-wrapper"><i class="fas fa-chart-line-down" style="transform: scaleY(-1);"></i></div>
+            <div class="node-label">Discriminación Socioeconómica</div>
+        </div>
+
+        <!-- 2. Género -->
+        <div class="radar-node node-genero" style="--n-color: var(--c-genero);" data-id="genero" data-color="var(--c-genero)" data-desc="Vulneración de derechos o exclusión basada en el sexo o la identidad de género.">
+            <div class="node-icon-wrapper"><i class="fas fa-venus-mars"></i></div>
+            <div class="node-label">Discriminación de Género</div>
+        </div>
+
+        <!-- 3. Racial -->
+        <div class="radar-node node-racial" style="--n-color: var(--c-racial);" data-id="racial" data-color="var(--c-racial)" data-desc="Prejuicios y segregación dirigidos hacia personas por su origen étnico, color de piel o raza.">
+            <div class="node-icon-wrapper"><i class="fas fa-user-tag"></i></div>
+            <div class="node-label">Discriminación Racial</div>
+        </div>
+
+        <!-- 4. Discapacidad -->
+        <div class="radar-node node-discap" style="--n-color: var(--c-discap);" data-id="discap" data-color="var(--c-discap)" data-desc="Barreras físicas o actitudinales impuestas a personas con capacidades diferentes.">
+            <div class="node-icon-wrapper"><i class="fas fa-wheelchair"></i></div>
+            <div class="node-label">Discriminación por Discapacidad</div>
+        </div>
+
+        <!-- 5. Religiosa -->
+        <div class="radar-node node-religion" style="--n-color: var(--c-religion);" data-id="religion" data-color="var(--c-religion)" data-desc="Rechazo o limitación de oportunidades por las creencias espirituales o religiosas de la persona.">
+            <div class="node-icon-wrapper"><i class="fas fa-shield-halved"></i></div>
+            <div class="node-label">Discriminación Religiosa</div>
+        </div>
+
+        <!-- 6. Política -->
+        <div class="radar-node node-politica" style="--n-color: var(--c-politica);" data-id="politica" data-color="var(--c-politica)" data-desc="Exclusión, burla o persecución motivada por la ideología política y afiliación partidista.">
+            <div class="node-icon-wrapper"><i class="fas fa-check-to-slot"></i></div>
+            <div class="node-label">Discriminación Política</div>
+        </div>
+
+    </div>
+
+    <!-- CITACIÓN EXACTA DE LA IMAGEN -->
+    <div class="image-footer">
+        <p>Ilustración 2: Tipos de discriminación en Colombia</p>
+        <span>Fuente: Subcomisión de Transversalidad de Genero GPIGI – OAPI</span>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const radar = document.getElementById('radar');
+            const nodes = document.querySelectorAll('.radar-node');
+            const hubText = document.getElementById('hub-desc');
+            const fill = document.getElementById('p-fill');
+            const textProgress = document.getElementById('p-text');
+            
+            // Gamificación
+            let discovered = new Set();
+            const isMobile = window.innerWidth <= 768;
+
+            if (isMobile) {
+                // En móviles todo está en lista, llenamos la barra
+                fill.style.width = '100%';
+                textProgress.innerText = "6 de 6 diagnosticados";
+                hubText.innerText = "Tipos de Discriminación";
+                hubText.style.opacity = 1;
+                hubText.style.transform = "none";
+            }
+
+            // Interactividad Hover
+            nodes.forEach(node => {
+                node.addEventListener('mouseenter', () => {
+                    if (isMobile) return;
+
+                    const id = node.getAttribute('data-id');
+                    const color = node.getAttribute('data-color');
+                    const desc = node.getAttribute('data-desc');
+
+                    // Variables CSS dinámicas para el centro
+                    radar.style.setProperty('--active-color', color);
+                    radar.style.setProperty('--active-color-light', color + '40'); // Opacidad
+                    
+                    // Activar clases
+                    radar.classList.add('is-hovering');
+                    hubText.innerText = desc;
+
+                    // Animar la línea SVG específica
+                    const line = document.getElementById('l-' + id);
+                    line.style.opacity = 1;
+                    line.style.strokeWidth = 5;
+                    line.style.strokeDasharray = "none"; // Hace la línea sólida
+
+                    // Lógica de progreso
+                    if (!discovered.has(id)) {
+                        discovered.add(id);
+                        updateProgress();
+                    }
+                });
+
+                node.addEventListener('mouseleave', () => {
+                    if (isMobile) return;
+                    
+                    const id = node.getAttribute('data-id');
+                    radar.classList.remove('is-hovering');
+                    
+                    // Restaurar línea SVG
+                    const line = document.getElementById('l-' + id);
+                    line.style.opacity = 0.3;
+                    line.style.strokeWidth = 3;
+                    line.style.strokeDasharray = "10 10";
+                });
+            });
+
+            function updateProgress() {
+                const perc = (discovered.size / 6) * 100;
+                fill.style.width = perc + '%';
+                
+                if (discovered.size === 6) {
+                    textProgress.innerText = "¡Mapa diagnóstico completado! ✅";
+                    textProgress.style.color = "#2ecc71";
+                    // Cambiar el ícono central permanentemente
+                    document.querySelector('.scale-icon').style.color = "#2ecc71";
+                } else {
+                    textProgress.innerText = `${discovered.size} de 6 diagnosticados`;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

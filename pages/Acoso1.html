@@ -33,6 +33,7 @@
 
         h1, h2, h3 { color: var(--primary); letter-spacing: -0.5px; }
         p { line-height: 1.7; color: var(--text-light); }
+        button { font-family: inherit; }
 
         /* --- UTILIDADES DE ANIMACIÓN --- */
         .reveal {
@@ -45,7 +46,7 @@
             transform: translateY(0);
         }
 
-        /* --- HERO SECTION CON PARALLAX SIMPLE --- */
+        /* --- HERO SECTION --- */
         .hero {
             height: 90vh;
             display: flex;
@@ -86,9 +87,12 @@
             animation: bounce 2s infinite;
             color: var(--accent);
             cursor: pointer;
+            border: none;
+            background: none;
+            font-weight: bold;
         }
 
-        /* --- SECCIÓN 1: ESTRUCTURAS DE PODER (INTERACTIVO 3D) --- */
+        /* --- SECCIÓN 1: ESTRUCTURAS DE PODER --- */
         .section-wrapper {
             max-width: 1100px;
             margin: 0 auto;
@@ -120,12 +124,13 @@
             color: var(--primary);
             box-shadow: 5px 5px 15px #d1d1d1, -5px -5px 15px #ffffff;
             cursor: pointer;
+            border: none;
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             position: relative;
             border-left: 5px solid transparent;
+            font-size: 1rem;
         }
 
-        /* Forma de pirámide visual */
         .p-top { width: 60%; margin: 0 auto; z-index: 3; }
         .p-mid { width: 80%; margin: 0 auto; z-index: 2; }
         .p-base { width: 100%; margin: 0 auto; z-index: 1; }
@@ -135,16 +140,8 @@
             border-left-color: var(--accent);
             background: white;
             box-shadow: var(--shadow-hover);
+            color: var(--accent);
         }
-
-        .p-block::after {
-            content: '👆';
-            position: absolute;
-            right: 15px;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        .p-block:hover::after { opacity: 1; }
 
         .info-panel {
             flex: 1;
@@ -155,7 +152,8 @@
             box-shadow: var(--shadow-soft);
             position: relative;
             overflow: hidden;
-            min-height: 250px;
+            min-height: 280px;
+            border-top: 4px solid var(--accent);
         }
 
         .info-card {
@@ -172,24 +170,24 @@
             height: 100%;
             color: #ccc;
             text-align: center;
+            min-height: 200px;
         }
         .placeholder-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; animation: float 3s ease-in-out infinite;}
 
-        /* --- SECCIÓN 2: FLIP CARDS (División del Trabajo) --- */
+        /* --- SECCIÓN 2: FLIP CARDS --- */
         .flip-container {
             display: flex;
             justify-content: center;
-            gap: 2rem;
+            gap: 3rem;
             flex-wrap: wrap;
             margin-top: 3rem;
         }
 
         .flip-card {
             background-color: transparent;
-            width: 320px;
+            width: 340px;
             height: 420px;
-            perspective: 1000px; /* Efecto 3D */
-            cursor: pointer;
+            perspective: 1000px;
         }
 
         .flip-card-inner {
@@ -214,7 +212,7 @@
             -webkit-backface-visibility: hidden;
             backface-visibility: hidden;
             border-radius: var(--radius);
-            padding: 2rem;
+            padding: 2.5rem 2rem;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -233,94 +231,101 @@
         }
 
         .flip-icon { font-size: 4rem; margin-bottom: 1.5rem; }
-        .hint { font-size: 0.8rem; color: #999; margin-top: 1rem; display: block;}
-        .flip-back ul { text-align: left; list-style: none; }
-        .flip-back li { margin-bottom: 10px; position: relative; padding-left: 20px; }
-        .flip-back li::before { content: '•'; color: var(--accent); position: absolute; left: 0; font-weight: bold;}
+        .hint { font-size: 0.85rem; color: var(--accent); margin-top: 1.5rem; font-weight: bold; }
+        .flip-back ul { text-align: left; list-style: none; margin-top: 1rem; }
+        .flip-back li { margin-bottom: 15px; position: relative; padding-left: 20px; font-size: 0.95rem; line-height: 1.5; }
+        .flip-back li::before { content: '•'; color: var(--accent); position: absolute; left: 0; font-weight: bold; font-size: 1.2rem;}
 
-        /* --- SECCIÓN 3: HOTSPOTS (Cuerpo) --- */
-        .body-container {
-            position: relative;
-            max-width: 600px;
-            margin: 3rem auto;
-            text-align: center;
+        /* --- SECCIÓN 3: HOTSPOTS (UX MEJORADA SIN SUPERPOSICIÓN) --- */
+        .body-explorer-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4rem;
+            align-items: center;
+            justify-content: center;
+            margin-top: 3rem;
         }
 
-        .silhouette {
-            height: 400px;
-            width: 200px;
-            background: #e0e0e0;
-            margin: 0 auto;
-            border-radius: 100px;
+        .silhouette-wrapper {
             position: relative;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.1);
+            width: 260px;
+            height: 480px;
+            background: linear-gradient(to bottom, #e0e6ed, #ced6e0);
+            border-radius: 130px 130px 20px 20px;
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.1), 0 15px 35px rgba(0,0,0,0.05);
+        }
+
+        /* Detalles sutiles para que parezca una silueta abstracta */
+        .silhouette-wrapper::before {
+            content: '';
+            position: absolute;
+            top: 140px; left: 10%; right: 10%;
+            height: 2px; background: rgba(255,255,255,0.5);
+            border-radius: 50%;
         }
 
         .hotspot {
             position: absolute;
-            width: 30px;
-            height: 30px;
+            width: 36px;
+            height: 36px;
             background: var(--accent);
             border-radius: 50%;
             cursor: pointer;
+            border: 3px solid white;
             box-shadow: 0 0 0 rgba(108, 99, 255, 0.4);
             animation: pulse-dot 2s infinite;
-            transition: transform 0.3s;
+            transition: all 0.3s;
             display: flex;
             justify-content: center;
             align-items: center;
             color: white;
             font-weight: bold;
-            font-size: 14px;
+            font-size: 16px;
+            z-index: 5;
         }
 
-        .hotspot:hover { transform: scale(1.2); animation: none; }
+        .hotspot:hover, .hotspot.active { 
+            transform: scale(1.2); 
+            animation: none; 
+            background: var(--primary);
+            box-shadow: 0 5px 15px rgba(43, 58, 103, 0.4);
+        }
         
-        /* Posiciones de los puntos */
-        .hs-head { top: 10%; left: 50%; transform: translateX(-50%); }
-        .hs-mouth { top: 20%; left: 60%; }
-        .hs-body { top: 50%; left: 40%; }
+        .hs-head { top: 12%; left: 50%; transform: translateX(-50%); }
+        .hs-head:hover, .hs-head.active { transform: translateX(-50%) scale(1.2); }
+        .hs-mouth { top: 25%; left: 65%; }
+        .hs-body { top: 55%; left: 35%; }
 
-        .tooltip-box {
-            position: absolute;
+        /* Panel Lateral para la información de los Hotspots */
+        .hotspot-details-panel {
+            flex: 1;
+            min-width: 300px;
+            max-width: 450px;
             background: white;
-            padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            width: 280px;
-            z-index: 10;
-            opacity: 0;
-            pointer-events: none;
-            transition: all 0.3s;
-            text-align: left;
-            left: 50%;
-            transform: translateX(-50%) translateY(20px);
+            padding: 2.5rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-soft);
+            min-height: 250px;
+            border-left: 4px solid var(--accent);
         }
 
-        .tooltip-box.active {
-            opacity: 1;
-            pointer-events: all;
-            transform: translateX(-50%) translateY(10px);
+        .hs-card {
+            display: none;
+            animation: fadeInUp 0.5s ease;
         }
-        
-        .tooltip-box::before {
-            content: '';
-            position: absolute;
-            top: -10px;
-            left: 50%;
-            margin-left: -10px;
-            border-width: 10px;
-            border-style: solid;
-            border-color: transparent transparent white transparent;
-        }
+        .hs-card.visible { display: block; }
+        .hs-card h3 { color: var(--accent); margin-bottom: 1rem; display: flex; align-items: center; gap: 10px; }
+        .hs-card-icon { font-size: 2rem; background: var(--bg); padding: 10px; border-radius: 12px; }
 
-        /* --- SECCIÓN 4: STEPPER INTERACTIVO (Ciclo) --- */
+        /* --- SECCIÓN 4: STEPPER --- */
         .stepper-container {
             background: white;
             border-radius: var(--radius);
             box-shadow: var(--shadow-soft);
-            padding: 3rem;
+            padding: 4rem 3rem;
             text-align: center;
+            max-width: 900px;
+            margin: 0 auto;
         }
 
         .progress-bar {
@@ -334,11 +339,11 @@
             position: absolute;
             top: 50%;
             left: 0;
-            width: 0%; /* JS cambiará esto */
+            width: 0%;
             height: 4px;
             background: var(--accent);
             z-index: 0;
-            transition: width 0.5s ease;
+            transition: width 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
 
         .progress-bg-line {
@@ -352,8 +357,8 @@
         }
 
         .step-circle {
-            width: 40px;
-            height: 40px;
+            width: 45px;
+            height: 45px;
             background: #eee;
             border-radius: 50%;
             display: flex;
@@ -362,11 +367,12 @@
             font-weight: bold;
             color: #999;
             z-index: 1;
-            transition: all 0.3s;
+            transition: all 0.4s;
             position: relative;
+            font-size: 1.1rem;
         }
 
-        .step-circle.active { background: var(--accent); color: white; transform: scale(1.2); box-shadow: 0 0 15px var(--accent); }
+        .step-circle.active { background: var(--accent); color: white; transform: scale(1.2); box-shadow: 0 0 15px rgba(108,99,255,0.4); }
         .step-circle.completed { background: var(--primary); color: white; }
 
         .step-content { display: none; animation: fadeInUp 0.5s; }
@@ -376,29 +382,33 @@
             background: var(--accent);
             color: white;
             border: none;
-            padding: 12px 30px;
+            padding: 14px 35px;
             border-radius: 30px;
             font-size: 1rem;
+            font-weight: bold;
             cursor: pointer;
             margin-top: 2rem;
-            transition: var(--transition);
-            box-shadow: 0 4px 15px rgba(108, 99, 255, 0.4);
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(108, 99, 255, 0.3);
         }
-        .btn-next:hover { background: var(--accent-hover); transform: translateY(-2px); }
+        .btn-next:hover { background: var(--accent-hover); transform: translateY(-3px); box-shadow: 0 8px 20px rgba(108, 99, 255, 0.4); }
 
-        /* --- ANIMACIONES KEYFRAMES --- */
+        /* --- ANIMACIONES --- */
         @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-15px); } 100% { transform: translateY(0px); } }
         @keyframes pulse-bg { 0% { transform: scale(0.95); opacity: 0.5; } 50% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(0.95); opacity: 0.5; } }
-        @keyframes pulse-dot { 0% { box-shadow: 0 0 0 0 rgba(108, 99, 255, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(108, 99, 255, 0); } 100% { box-shadow: 0 0 0 0 rgba(108, 99, 255, 0); } }
+        @keyframes pulse-dot { 0% { box-shadow: 0 0 0 0 rgba(108, 99, 255, 0.7); } 70% { box-shadow: 0 0 0 12px rgba(108, 99, 255, 0); } 100% { box-shadow: 0 0 0 0 rgba(108, 99, 255, 0); } }
         @keyframes bounce { 0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 40% {transform: translateY(-10px);} 60% {transform: translateY(-5px);} }
         @keyframes fadeInRight { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Mobile Adjustments */
+        /* MOBILE ADJUSTMENTS */
         @media (max-width: 768px) {
-            .pyramid-stage { flex-direction: column; }
+            .pyramid-stage { flex-direction: column; gap: 2rem; }
             .info-panel { width: 100%; min-height: auto; }
             .flip-container { flex-direction: column; align-items: center; }
+            .body-explorer-wrapper { flex-direction: column; gap: 2rem; }
+            .hotspot-details-panel { width: 100%; max-width: 100%; }
+            .stepper-container { padding: 2rem 1.5rem; }
         }
     </style>
 </head>
@@ -410,10 +420,10 @@
             <h1 class="animate__animated animate__fadeInDown">Patriarcado Laboral y Acoso</h1>
             <p class="animate__animated animate__fadeInUp" style="font-size: 1.25rem;">Una experiencia interactiva para entender cómo las estructuras invisibles de poder afectan nuestro trabajo.</p>
         </div>
-        <div class="scroll-indicator" onclick="scrollToNext()">
-            <p style="font-size: 0.8rem; margin-bottom: 5px; color: var(--accent);">Comenzar experiencia</p>
+        <button class="scroll-indicator" onclick="scrollToNext()">
+            <p style="font-size: 0.85rem; margin-bottom: 5px; color: var(--accent);">Comenzar experiencia</p>
             ▼
-        </div>
+        </button>
     </header>
 
     <!-- SECCIÓN 1: ESTRUCTURAS DE PODER -->
@@ -423,12 +433,12 @@
         
         <div class="pyramid-stage">
             <div class="pyramid-visual">
-                <div class="p-block p-top" onclick="activatePyramid('top', this)">Alta Dirección</div>
-                <div class="p-block p-mid" onclick="activatePyramid('mid', this)">Mandos Medios</div>
-                <div class="p-block p-base" onclick="activatePyramid('base', this)">Base Operativa</div>
+                <button class="p-block p-top" onclick="activatePyramid('top', this)">Alta Dirección</button>
+                <button class="p-block p-mid" onclick="activatePyramid('mid', this)">Mandos Medios</button>
+                <button class="p-block p-base" onclick="activatePyramid('base', this)">Base Operativa</button>
             </div>
 
-            <div class="info-panel">
+            <div class="info-panel" aria-live="polite">
                 <div id="placeholder" class="placeholder-text visible">
                     <div class="placeholder-icon">👆</div>
                     <p>Selecciona un nivel jerárquico para revelar su dinámica de poder.</p>
@@ -451,23 +461,22 @@
     </section>
 
     <!-- SECCIÓN 2: ROLES DE GÉNERO -->
-    <section class="section-wrapper reveal" style="background: white; border-radius: var(--radius);">
-
-        <p style="font-weight: 700;text-align: center;font-size:25px;  margin-bottom: 3rem;">2. Persistencia de los estereotipos de genero <br>enfocados a lo <span style="color: var(--accent);">Femenino y Masculino</span> </p>
+    <section class="section-wrapper reveal" style="background: white; border-radius: var(--radius); padding: 4rem 2rem;">
+        <h2 style="text-align: center; font-size: 1.8rem; margin-bottom: 1rem;">2. Persistencia de los estereotipos de género</h2>
+        <p style="text-align: center; font-size: 1.2rem; margin-bottom: 3rem;">Enfocados a lo <strong style="color: var(--accent);">Femenino</strong> y <strong style="color: var(--primary);">Masculino</strong></p>
 
         <div class="flip-container">
             <!-- Tarjeta 1 -->
-            <div class="flip-card">
+            <div class="flip-card" tabindex="0">
                 <div class="flip-card-inner">
                     <div class="flip-front">
                         <div class="flip-icon">🛠️</div>
                         <h3>Trabajo "Masculinizado"</h3>
-                        <p>Técnico, Directivo, Fuerza</p>
-                        <span class="hint">↻ Gira para ver el impacto</span>
+                        <p style="margin-top: 10px;">Técnico, Directivo, Fuerza</p>
+                        <span class="hint">↻ Toca para ver el impacto</span>
                     </div>
                     <div class="flip-back">
-                        <h3 style="color:white">Consecuencias</h3>
-                        <br>
+                        <h3 style="color:white; margin-bottom: 1rem;">Consecuencias</h3>
                         <ul>
                             <li>Cultura de "camaradería" que normaliza chistes sexistas.</li>
                             <li>La autoridad se asocia a la masculinidad.</li>
@@ -478,17 +487,16 @@
             </div>
 
             <!-- Tarjeta 2 -->
-            <div class="flip-card">
+            <div class="flip-card" tabindex="0">
                 <div class="flip-card-inner">
                     <div class="flip-front">
                         <div class="flip-icon">🤝</div>
                         <h3>Trabajo "Feminizado"</h3>
-                        <p>Cuidado, Asistencia, Servicio</p>
-                        <span class="hint">↻ Gira para ver el impacto</span>
+                        <p style="margin-top: 10px;">Cuidado, Asistencia, Servicio</p>
+                        <span class="hint">↻ Toca para ver el impacto</span>
                     </div>
                     <div class="flip-back">
-                        <h3 style="color:white">Consecuencias</h3>
-                        <br>
+                        <h3 style="color:white; margin-bottom: 1rem;">Consecuencias</h3>
                         <ul>
                             <li>Se espera "disponibilidad total" y sonrisas constantes.</li>
                             <li>Se confunde servicio profesional con servidumbre personal.</li>
@@ -500,35 +508,41 @@
         </div>
     </section>
 
-    <!-- SECCIÓN 3: EL CUERPO COMO TERRITORIO -->
+    <!-- SECCIÓN 3: EL CUERPO COMO TERRITORIO (MEJORADA) -->
     <section class="section-wrapper reveal">
         <h2 style="text-align: center;">3. El Control de los Cuerpos</h2>
-        <p style="text-align: center;">Identifica los <strong>puntos calientes</strong> donde se ejerce control simbólico.</p>
+        <p style="text-align: center;">Selecciona los <strong>puntos calientes</strong> en la silueta para descubrir cómo se ejerce el control simbólico.</p>
         
-        <div class="body-container">
-            <div class="silhouette">
-                <!-- Hotspot 1 -->
-                <div class="hotspot hs-head" onmouseenter="showTooltip('tt-1')" onmouseleave="hideTooltip('tt-1')">1</div>
-                <div id="tt-1" class="tooltip-box">
-                    <strong>Vigilancia Estética</strong><br>
-                    Críticas sobre el maquillaje, peinado o "falta de feminidad/masculinidad". El cuerpo se vuelve objeto de debate público.
+        <div class="body-explorer-wrapper">
+            <!-- Interfaz Visual -->
+            <div class="silhouette-wrapper">
+                <button class="hotspot hs-head" onclick="activateHotspot('head', this)" aria-label="Ver información sobre la cabeza">1</button>
+                <button class="hotspot hs-mouth" onclick="activateHotspot('mouth', this)" aria-label="Ver información sobre la boca">2</button>
+                <button class="hotspot hs-body" onclick="activateHotspot('body', this)" aria-label="Ver información sobre el cuerpo">3</button>
+            </div>
+
+            <!-- Panel de Detalles Lateral -->
+            <div class="hotspot-details-panel" aria-live="polite">
+                <div id="hs-placeholder" class="placeholder-text visible">
+                    <div class="placeholder-icon">🖱️</div>
+                    <p>Haz clic en un punto de la silueta para leer la información detallada sin interrupciones.</p>
                 </div>
 
-                <!-- Hotspot 2 -->
-                <div class="hotspot hs-mouth" onmouseenter="showTooltip('tt-2')" onmouseleave="hideTooltip('tt-2')">2</div>
-                <div id="tt-2" class="tooltip-box">
-                    <strong>Silenciamiento</strong><br>
-                    Cuando una persona se queja, se le etiqueta de "loca", "histérica" o "conflictiva" para invalidar su voz.
+                <div id="hs-head" class="hs-card">
+                    <h3><span class="hs-card-icon">👁️</span> Vigilancia Estética</h3>
+                    <p>Se manifiesta a través de críticas sobre el maquillaje, el peinado, la vestimenta o la "falta de feminidad/masculinidad". El cuerpo de la persona deja de ser privado y se vuelve objeto de debate y escrutinio público en la oficina.</p>
                 </div>
 
-                <!-- Hotspot 3 -->
-                <div class="hotspot hs-body" onmouseenter="showTooltip('tt-3')" onmouseleave="hideTooltip('tt-3')">3</div>
-                <div id="tt-3" class="tooltip-box">
-                    <strong>Invasión del Espacio</strong><br>
-                    Acercamientos innecesarios, toques en el hombro o espalda, invadiendo el espacio personal para intimidar.
+                <div id="hs-mouth" class="hs-card">
+                    <h3><span class="hs-card-icon">🤐</span> Silenciamiento</h3>
+                    <p>Ocurre cuando una persona intenta quejarse o establecer límites. Inmediatamente se le etiqueta de "loca", "histérica", "exagerada" o "conflictiva", con el único fin de invalidar su voz y proteger al agresor.</p>
+                </div>
+
+                <div id="hs-body" class="hs-card">
+                    <h3><span class="hs-card-icon">🛑</span> Invasión del Espacio</h3>
+                    <p>Consiste en acercamientos físicos innecesarios, toques "amistosos" en el hombro, la espalda o la cintura, y el acorralamiento físico. Es una táctica de intimidación que viola el espacio personal seguro de la víctima.</p>
                 </div>
             </div>
-            <p style="margin-top: 2rem; font-size: 0.9rem;">Interactúa con los puntos pulsantes</p>
         </div>
     </section>
 
@@ -549,35 +563,35 @@
 
             <!-- Contenido de los Pasos -->
             <div id="step-1" class="step-content active">
-                <h3>1. Desigualdad Estructural</h3>
-                <p>Todo comienza con un entorno donde hay roles rígidos y poco diversos.</p>
-                <div style="font-size: 3rem; margin: 1rem;">⚖️</div>
+                <h3 style="color: var(--primary);">1. Desigualdad Estructural</h3>
+                <p style="margin-top: 10px;">Todo comienza con un entorno donde hay roles rígidos y poco diversos.</p>
+                <div style="font-size: 4rem; margin: 1.5rem;">⚖️</div>
                 <p><em>"Aquí las cosas siempre han sido así, no aguantas una broma."</em></p>
                 <button class="btn-next" onclick="nextStep(2)">Ver consecuencia</button>
             </div>
 
             <div id="step-2" class="step-content">
-                <h3>2. Normalización</h3>
-                <p>El acoso se disfraza de cultura organizacional. Nadie interviene.</p>
-                <div style="font-size: 3rem; margin: 1rem;">🙈</div>
+                <h3 style="color: var(--primary);">2. Normalización</h3>
+                <p style="margin-top: 10px;">El acoso se disfraza de cultura organizacional. Nadie interviene.</p>
+                <div style="font-size: 4rem; margin: 1.5rem;">🙈</div>
                 <p>Se minimizan las agresiones llamándolas "roces" o "malentendidos".</p>
                 <button class="btn-next" onclick="nextStep(3)">Avanzar ciclo</button>
             </div>
 
             <div id="step-3" class="step-content">
-                <h3>3. Silenciamiento</h3>
-                <p>La víctima siente culpa o miedo a represalias. Se aísla.</p>
-                <div style="font-size: 3rem; margin: 1rem;">😶</div>
+                <h3 style="color: var(--primary);">3. Silenciamiento</h3>
+                <p style="margin-top: 10px;">La víctima siente culpa o miedo a represalias. Se aísla.</p>
+                <div style="font-size: 4rem; margin: 1.5rem;">😶</div>
                 <p>El entorno la juzga a ella en lugar de al agresor.</p>
                 <button class="btn-next" onclick="nextStep(4)">Resultado final</button>
             </div>
 
             <div id="step-4" class="step-content">
-                <h3>4. Reproducción</h3>
-                <p>Sin intervención, el agresor se siente impune y repite la conducta.</p>
-                <div style="font-size: 3rem; margin: 1rem;">🔄</div>
-                <p style="color: var(--accent); font-weight: bold;">Romper el ciclo requiere reconocer estas fases.</p>
-                <button class="btn-next" onclick="resetSteps()" style="background: var(--text-main);">Reiniciar experiencia</button>
+                <h3 style="color: var(--primary);">4. Reproducción</h3>
+                <p style="margin-top: 10px;">Sin intervención, el agresor se siente impune y repite la conducta.</p>
+                <div style="font-size: 4rem; margin: 1.5rem;">🔄</div>
+                <p style="color: var(--accent); font-weight: bold; font-size: 1.1rem;">Romper el ciclo requiere reconocer estas fases.</p>
+                <button class="btn-next" onclick="resetSteps()" style="background: var(--text-main); box-shadow: none;">Reiniciar experiencia</button>
             </div>
         </div>
     </section>
@@ -586,7 +600,7 @@
         <p>© Curso Institucional de Prevención del Acoso</p>
     </footer>
 
-    <!-- LOGICA JAVASCRIPT -->
+    <!-- LÓGICA JAVASCRIPT -->
     <script>
         // 1. SCROLL REVEAL ANIMATION
         function reveal() {
@@ -607,59 +621,66 @@
             document.getElementById('structures').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // 3. LOGICA PIRÁMIDE
+        // 3. LÓGICA PIRÁMIDE (Sección 1)
         function activatePyramid(level, element) {
-            // Reset visual blocks
             document.querySelectorAll('.p-block').forEach(el => el.classList.remove('active'));
             element.classList.add('active');
 
-            // Hide placeholder
             document.getElementById('placeholder').classList.remove('visible');
             document.getElementById('placeholder').style.display = 'none';
 
-            // Hide all cards
             document.querySelectorAll('.info-card').forEach(card => {
                 card.classList.remove('visible');
                 card.style.display = 'none';
             });
 
-            // Show selected card
             const selected = document.getElementById('info-' + level);
             selected.style.display = 'block';
             setTimeout(() => selected.classList.add('visible'), 10);
         }
 
-        // 4. LOGICA TOOLTIPS (HOTSPOTS)
-        function showTooltip(id) {
-            // Check if mobile
-            if(window.innerWidth > 768) {
-                document.getElementById(id).classList.add('active');
-            }
+        // 4. LÓGICA EXPLORADOR DE CUERPO (Sección 3 - UX Mejorada)
+        function activateHotspot(id, element) {
+            // Quitar clase activa de todos los hotspots
+            document.querySelectorAll('.hotspot').forEach(el => el.classList.remove('active'));
+            // Agregar activo al seleccionado
+            element.classList.add('active');
+
+            // Ocultar placeholder
+            document.getElementById('hs-placeholder').classList.remove('visible');
+            document.getElementById('hs-placeholder').style.display = 'none';
+
+            // Ocultar todas las tarjetas de info
+            document.querySelectorAll('.hs-card').forEach(card => {
+                card.classList.remove('visible');
+                card.style.display = 'none';
+            });
+
+            // Mostrar la tarjeta correspondiente
+            const selectedInfo = document.getElementById('hs-' + id);
+            selectedInfo.style.display = 'block';
+            setTimeout(() => selectedInfo.classList.add('visible'), 10);
         }
-        function hideTooltip(id) {
-            if(window.innerWidth > 768) {
-                document.getElementById(id).classList.remove('active');
-            }
-        }
-        // Mobile touch logic for hotspots
-        document.querySelectorAll('.hotspot').forEach(item => {
-            item.addEventListener('click', event => {
-                const id = item.getAttribute('onmouseenter').match(/'([^']+)'/)[1];
-                const tooltip = document.getElementById(id);
-                // Close others
-                document.querySelectorAll('.tooltip-box').forEach(t => t.classList.remove('active'));
-                // Toggle current
-                tooltip.classList.toggle('active');
-            })
+
+        // Permitir voltear las flip cards con el teclado (Accesibilidad)
+        document.querySelectorAll('.flip-card').forEach(card => {
+            card.addEventListener('keypress', function(e) {
+                if(e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    this.classList.toggle('flipped');
+                }
+            });
+            // Soporte para móviles al tocar
+            card.addEventListener('click', function() {
+                this.classList.toggle('flipped');
+            });
         });
 
-        // 5. LOGICA STEPPER (CICLO)
+        // 5. LÓGICA STEPPER (Sección 4)
         function nextStep(stepNumber) {
-            // Update Line
             const percentage = ((stepNumber - 1) / 3) * 100;
             document.getElementById('prog-line').style.width = percentage + '%';
 
-            // Update Circles
             for(let i=1; i<=4; i++) {
                 const node = document.getElementById('step-node-' + i);
                 if(i < stepNumber) {
@@ -668,14 +689,14 @@
                     node.innerHTML = '✓';
                 } else if (i === stepNumber) {
                     node.classList.add('active');
+                    node.classList.remove('completed');
                     node.innerHTML = i;
                 } else {
-                    
                     node.classList.remove('active', 'completed');
+                    node.innerHTML = i;
                 }
             }
 
-            // Show Content
             document.querySelectorAll('.step-content').forEach(c => c.classList.remove('active'));
             document.getElementById('step-' + stepNumber).classList.add('active');
         }
@@ -684,7 +705,7 @@
             nextStep(1);
         }
 
-        // Trigger reveal on load
+        // Iniciar animaciones de entrada
         reveal();
     </script>
 </body>
