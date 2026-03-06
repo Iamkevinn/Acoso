@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enfoques Transversales - OVA Interactivo</title>
+    <!-- FontAwesome para los íconos idénticos a la imagen -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* =========================================
+           VARIABLES Y PALETA DE COLORES
+           ========================================= */
+        :root {
+            --bg-body: #ffffff;
+            --text-main: #333333;
+            --text-muted: #777777;
+            
+            /* Colores extraídos de la imagen */
+            --c1-yellow: #f1c40f;   /* Acción sin daño */
+            --c2-orange: #e67e22;   /* Discapacidad */
+            --c3-coral: #e74c3c;    /* Territorial */
+            --c4-pink: #fd79a8;     /* Curso de Vida */
+            --c5-purple: #a29bfe;   /* Étnico */
+            --c6-indigo: #6c5ce7;   /* Interseccional */
+            --c7-blue: #3498db;     /* Género */
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 40px 20px;
+            overflow-x: hidden;
+        }
+
+        /* =========================================
+           HEADER Y GAMIFICACIÓN (PROGRESO)
+           ========================================= */
+        .module-header {
+            text-align: center;
+            margin-bottom: 80px;
+            max-width: 800px;
+        }
+
+        .module-header h2 {
+            font-size: 2rem;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .instruction-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(108, 92, 231, 0.1);
+            color: var(--c6-indigo);
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            animation: bounce 2s infinite;
+        }
+
+        .progress-container {
+            width: 100%;
+            max-width: 400px;
+            height: 8px;
+            background: #eee;
+            border-radius: 10px;
+            margin: 20px auto 10px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--c1-yellow), var(--c4-pink), var(--c7-blue));
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .progress-text {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: bold;
+        }
+
+        /* =========================================
+           CONTENEDOR PRINCIPAL (LA FLECHA)
+           ========================================= */
+        .infographic-wrapper {
+            width: 100%;
+            max-width: 1200px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 100px 0;
+        }
+
+        /* Efecto Spotlight: Oscurece lo que no se está viendo */
+        .infographic-wrapper:hover .focus-item:not(:hover) {
+            opacity: 0.25;
+            filter: grayscale(0.6);
+        }
+
+        /* Flechas de los extremos (Conciencia y Transformación) */
+        .arrow-end {
+            display: flex;
+            align-items: center;
+            position: relative;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .arrow-end span { position: absolute; white-space: nowrap; }
+        .arrow-left span { top: -30px; left: 0; }
+        .arrow-right span { top: -30px; right: 0; }
+
+        /* Contenedor de las cajas cuadradas */
+        .boxes-track {
+            display: flex;
+            align-items: center;
+            z-index: 2;
+        }
+
+        /* =========================================
+           LOS NODOS (CAJAS Y TEXTOS)
+           ========================================= */
+        .focus-item {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.4s ease;
+            cursor: pointer;
+            /* Animación de entrada en cascada */
+            opacity: 0;
+            transform: scale(0.5);
+            animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* Staggered animation delays */
+        .focus-item:nth-child(1) { animation-delay: 0.1s; }
+        .focus-item:nth-child(2) { animation-delay: 0.2s; }
+        .focus-item:nth-child(3) { animation-delay: 0.3s; }
+        .focus-item:nth-child(4) { animation-delay: 0.4s; }
+        .focus-item:nth-child(5) { animation-delay: 0.5s; }
+        .focus-item:nth-child(6) { animation-delay: 0.6s; }
+        .focus-item:nth-child(7) { animation-delay: 0.7s; }
+
+        .box-node {
+            width: 75px;
+            height: 75px;
+            background: white;
+            border: 2px solid var(--c);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 32px;
+            color: var(--c);
+            margin: 0 -1px; /* Hace que los bordes se toquen creando la flecha continua */
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            z-index: 5;
+        }
+
+        /* Microinteracción al pasar el mouse */
+        .focus-item:hover .box-node {
+            transform: scale(1.15);
+            background: var(--c);
+            color: white;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            z-index: 10;
+            border-radius: 8px; /* Cambia a borde redondeado suave */
+        }
+
+        /* La línea de conexión que sale del cuadro hacia el texto */
+        .box-node::before {
+            content: '';
+            position: absolute;
+            width: 2px;
+            height: 0;
+            background: var(--c);
+            transition: 0.3s ease;
+            z-index: -1;
+            opacity: 0;
+        }
+        .item-top .box-node::before { bottom: 100%; }
+        .item-bottom .box-node::before { top: 100%; }
+        
+        .focus-item:hover.item-top .box-node::before { height: 40px; opacity: 1; }
+        .focus-item:hover.item-bottom .box-node::before { height: 40px; opacity: 1; }
+
+        /* El panel de Texto oculto */
+        .text-node {
+            position: absolute;
+            width: 240px;
+            text-align: center;
+            background: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 20;
+        }
+
+        /* Borde superior/inferior colorido según posición */
+        .item-top .text-node {
+            bottom: calc(100% + 50px);
+            border-bottom: 4px solid var(--c);
+            transform: translateY(20px) scale(0.9);
+        }
+        .item-bottom .text-node {
+            top: calc(100% + 50px);
+            border-top: 4px solid var(--c);
+            transform: translateY(-20px) scale(0.9);
+        }
+
+        /* Animación de aparición del texto */
+        .focus-item:hover .text-node {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+
+        .text-node h3 {
+            font-size: 1.05rem;
+            color: var(--c);
+            margin-bottom: 8px;
+            line-height: 1.2;
+        }
+        
+        .text-node p {
+            font-size: 0.85rem;
+            color: #555;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        /* Estilos en Hover (Icono interno) */
+        .focus-item:hover i { animation: shake 0.5s; }
+
+        /* =========================================
+           ANIMACIONES
+           ========================================= */
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.5); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        @keyframes shake {
+            0%, 100% { transform: rotate(0); }
+            25% { transform: rotate(-10deg); }
+            75% { transform: rotate(10deg); }
+        }
+
+        /* =========================================
+           RESPONSIVE DESIGN (MÓVILES Y TABLETS)
+           ========================================= */
+        @media (max-width: 950px) {
+            .infographic-wrapper {
+                flex-direction: column;
+                padding: 40px 0;
+            }
+            .boxes-track {
+                flex-direction: column;
+            }
+            
+            /* Rotar flechas hacia abajo */
+            .arrow-left svg { transform: rotate(90deg); margin-bottom: 15px;}
+            .arrow-right svg { transform: rotate(90deg); margin-top: 15px;}
+            .arrow-end span { position: static; display: block; text-align: center; margin: 10px 0;}
+            .arrow-left { flex-direction: column; }
+            .arrow-right { flex-direction: column-reverse; }
+
+            .focus-item {
+                width: 100%;
+                margin: 10px 0;
+            }
+
+            .box-node {
+                border-radius: 50%; /* Se ven mejor como círculos en vertical */
+                margin: 0;
+            }
+
+            /* Desactivar spotlight en móviles porque no hay hover real */
+            .infographic-wrapper:hover .focus-item:not(:hover) {
+                opacity: 1; filter: none;
+            }
+
+            /* Mostrar textos siempre a la derecha en móviles para lectura de scroll */
+            .text-node {
+                position: static;
+                opacity: 1;
+                visibility: visible;
+                transform: none !important;
+                width: 250px;
+                margin-left: 20px;
+                border: none !important;
+                border-left: 4px solid var(--c) !important;
+                text-align: left;
+                pointer-events: auto;
+            }
+            
+            .box-node::before { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- UI Gamificada: Header e Instrucciones -->
+    <div class="module-header">
+        <h2>Mapa de Enfoques Transversales</h2>
+        <div class="instruction-badge">
+            <i class="fas fa-hand-pointer"></i> Pasa el cursor sobre cada ícono para descubrirlos
+        </div>
+        
+        <!-- Barra de Progreso de Descubrimiento -->
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="progress-text" id="progressText">0 de 7 enfoques descubiertos</div>
+    </div>
+
+    <!-- Contenedor Principal de la Infografía -->
+    <div class="infographic-wrapper">
+        
+        <!-- Extremo Izquierdo: Conciencia -->
+        <div class="arrow-end arrow-left">
+            <span>Conciencia</span>
+            <svg width="40" height="74" viewBox="0 0 40 74" fill="none" stroke="var(--c1-yellow)" stroke-width="3">
+                <path d="M40 0 L0 37 L40 74" stroke-linejoin="round"/>
+            </svg>
+        </div>
+
+        <!-- Eje central de cajas -->
+        <div class="boxes-track">
+            
+            <!-- Item 1: Acción sin Daño (Abajo) -->
+            <div class="focus-item item-bottom" style="--c: var(--c1-yellow);">
+                <div class="box-node"><i class="fas fa-shield-halved"></i></div>
+                <div class="text-node">
+                    <h3>Enfoque de Acción sin Daño</h3>
+                    <p>Minimiza los impactos negativos de las intervenciones</p>
+                </div>
+            </div>
+
+            <!-- Item 2: Discapacidad (Arriba) -->
+            <div class="focus-item item-top" style="--c: var(--c2-orange);">
+                <div class="box-node"><i class="fas fa-wheelchair"></i></div>
+                <div class="text-node">
+                    <h3>Enfoque de Discapacidad</h3>
+                    <p>Visibiliza a las personas con discapacidad y promueve la inclusión</p>
+                </div>
+            </div>
+
+            <!-- Item 3: Territorial (Abajo) -->
+            <div class="focus-item item-bottom" style="--c: var(--c3-coral);">
+                <div class="box-node"><i class="fas fa-map-marker-alt"></i></div>
+                <div class="text-node">
+                    <h3>Enfoque Territorial</h3>
+                    <p>Considera las características sociohistóricas y culturales de los territorios</p>
+                </div>
+            </div>
+
+            <!-- Item 4: Curso de Vida (Arriba) -->
+            <div class="focus-item item-top" style="--c: var(--c4-pink);">
+                <div class="box-node">
+                    <i class="fas fa-child"></i><i class="fas fa-person-cane" style="font-size:0.6em; margin-left: 2px;"></i>
+                </div>
+                <div class="text-node">
+                    <h3>Enfoque de Curso de Vida</h3>
+                    <p>Reconoce las trayectorias de vida y las intervenciones tempranas</p>
+                </div>
+            </div>
+
+            <!-- Item 5: Étnico (Abajo) -->
+            <div class="focus-item item-bottom" style="--c: var(--c5-purple);">
+                <div class="box-node"><i class="far fa-user-circle"></i></div>
+                <div class="text-node">
+                    <h3>Enfoque Étnico con Perspectiva Antirracial</h3>
+                    <p>Protege los derechos de los pueblos étnicos y aborda la discriminación racial</p>
+                </div>
+            </div>
+
+            <!-- Item 6: Interseccional (Arriba) -->
+            <div class="focus-item item-top" style="--c: var(--c6-indigo);">
+                <div class="box-node"><i class="far fa-object-group"></i></div>
+                <div class="text-node">
+                    <h3>Enfoque Interseccional</h3>
+                    <p>Aborda la opresión entrelazada y la discriminación</p>
+                </div>
+            </div>
+
+            <!-- Item 7: Género (Abajo) -->
+            <div class="focus-item item-bottom" style="--c: var(--c7-blue);">
+                <div class="box-node"><i class="fas fa-balance-scale"></i></div>
+                <div class="text-node">
+                    <h3>Enfoque de Género</h3>
+                    <p>Modifica patrones culturales y relaciones de poder</p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Extremo Derecho: Transformación -->
+        <div class="arrow-end arrow-right">
+            <span>Transformación</span>
+            <svg width="40" height="74" viewBox="0 0 40 74" fill="none" stroke="var(--c7-blue)" stroke-width="3">
+                <path d="M0 0 L40 37 L0 74" stroke-linejoin="round"/>
+            </svg>
+        </div>
+
+    </div>
+
+    <!-- Script de Gamificación (Lógica de Progreso) -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const items = document.querySelectorAll('.focus-item');
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            let discovered = new Set();
+
+            // Deshabilitar la gamificación en móviles (ya que todo está visible por defecto)
+            const isMobile = window.innerWidth <= 950;
+
+            if (isMobile) {
+                progressBar.style.width = '100%';
+                progressText.innerHTML = "Desliza hacia abajo para leer todos los enfoques";
+            } else {
+                items.forEach((item, index) => {
+                    item.addEventListener('mouseenter', () => {
+                        if(!discovered.has(index)) {
+                            discovered.add(index);
+                            updateProgress();
+                        }
+                    });
+                });
+            }
+
+            function updateProgress() {
+                const percentage = (discovered.size / items.length) * 100;
+                progressBar.style.width = percentage + '%';
+                
+                if(discovered.size === items.length) {
+                    progressText.innerHTML = "¡Excelente! Has explorado todos los enfoques 🎉";
+                    progressText.style.color = "#27ae60"; // Verde éxito
+                    document.querySelector('.instruction-badge').style.display = 'none'; // Ocultar instrucción
+                } else {
+                    progressText.innerHTML = `${discovered.size} de 7 enfoques descubiertos`;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

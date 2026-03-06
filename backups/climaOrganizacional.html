@@ -1,0 +1,425 @@
+<style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&amp;family=Lora:ital,wght@1,500&amp;display=swap');
+
+    .clima-workshop-container {
+        --cw-primary: #008080; /* Teal / Verde azulado profesional */
+        --cw-dark: #2c3e50;
+        --cw-accent: #f39c12; /* Naranja para resaltar */
+        --cw-light: #f4f6f7;
+        --cw-white: #ffffff;
+        
+        font-family: 'Roboto', sans-serif;
+        color: var(--cw-dark);
+        background: white;
+        max-width: 900px;
+        margin: 0 auto;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 0 20px rgba(0,0,0,0.05);
+    }
+
+    .clima-workshop-container * { box-sizing: border-box; }
+
+    /* --- HERO --- */
+    .workshop-hero {
+        background: linear-gradient(135deg, var(--cw-primary), #006666);
+        color: white;
+        padding: 60px 20px;
+        text-align: center;
+        position: relative;
+    }
+
+    .tag-pill {
+        background: rgba(255,255,255,0.2);
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+    }
+
+    .workshop-hero h1 {
+        font-family: 'Lora', serif;
+        font-size: 2.5rem;
+        margin: 20px 0 40px 0;
+    }
+
+    .dream-grid {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-bottom: 30px;
+    }
+
+    .dream-card {
+        background: rgba(255,255,255,0.15);
+        backdrop-filter: blur(5px);
+        padding: 20px;
+        border-radius: 15px;
+        width: 200px;
+        border: 1px solid rgba(255,255,255,0.3);
+        transition: transform 0.3s ease;
+    }
+
+    .dream-card:hover {
+        transform: translateY(-10px);
+        background: rgba(255,255,255,0.25);
+    }
+
+    .dream-card i { font-size: 2rem; margin-bottom: 10px; color: var(--cw-accent); }
+    .dream-card p { font-size: 0.9rem; margin: 0; line-height: 1.4; }
+
+    /* Animación de entrada suave */
+    .d1 { animation: floatUp 3s ease-in-out infinite; }
+    .d2 { animation: floatUp 3s ease-in-out infinite 0.5s; }
+    .d3 { animation: floatUp 3s ease-in-out infinite 1s; }
+
+    @keyframes floatUp {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+
+    /* --- BLOQUES DE CONTENIDO --- */
+    .content-block {
+        padding: 50px 30px;
+    }
+    
+    .bg-light { background-color: var(--cw-light); }
+
+    .block-header { text-align: center; margin-bottom: 40px; }
+    .block-header h2 { font-size: 2rem; color: var(--cw-primary); margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .block-header p { font-size: 1.1rem; color: #7f8c8d; max-width: 600px; margin: 0 auto; }
+
+    /* --- BENEFICIOS (Cards) --- */
+    .benefits-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 30px;
+    }
+
+    .benefit-card {
+        text-align: center;
+        padding: 30px;
+        border: 1px solid #eee;
+        border-radius: 10px;
+        transition: all 0.3s;
+    }
+
+    .benefit-card:hover {
+        border-color: var(--cw-primary);
+        box-shadow: 0 10px 30px rgba(0,128,128,0.1);
+    }
+
+    .icon-circle {
+        width: 70px; height: 70px;
+        background: var(--cw-light);
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 20px;
+        font-size: 1.8rem;
+        color: var(--cw-primary);
+        transition: 0.3s;
+    }
+
+    .benefit-card:hover .icon-circle { background: var(--cw-primary); color: white; transform: rotate(360deg); }
+
+    .quote-box {
+        margin-top: 40px;
+        border-left: 4px solid var(--cw-accent);
+        padding: 15px 20px;
+        background: #fff8e1;
+        font-style: italic;
+        text-align: center;
+        color: #555;
+    }
+
+    /* --- TIMELINE (Step by Step) --- */
+    .step-timeline {
+        max-width: 700px;
+        margin: 0 auto;
+        position: relative;
+    }
+
+    .step-timeline::before {
+        content: '';
+        position: absolute;
+        left: 24px; /* Alineado con el número */
+        top: 0; bottom: 0;
+        width: 2px;
+        background: #ddd;
+        z-index: 0;
+    }
+
+    .step-item {
+        background: white;
+        margin-bottom: 20px;
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+        position: relative;
+        z-index: 1;
+        overflow: hidden;
+    }
+
+    summary {
+        padding: 15px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        list-style: none;
+        transition: background 0.2s;
+    }
+    summary::-webkit-details-marker { display: none; }
+    summary:hover { background: #f9f9f9; }
+
+    .step-number {
+        background: var(--cw-dark);
+        color: white;
+        width: 35px; height: 35px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: bold;
+        margin-right: 15px;
+        flex-shrink: 0;
+    }
+
+    .step-title { font-weight: 700; font-size: 1.1rem; flex-grow: 1; }
+    .step-icon { color: #ccc; transition: transform 0.3s; }
+    
+    details[open] .step-icon { transform: rotate(180deg); }
+    details[open] .step-number { background: var(--cw-primary); }
+
+    .step-content {
+        padding: 0 20px 20px 70px; /* Indentado para alinear con el texto del título */
+        color: #555;
+        line-height: 1.6;
+        animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* --- JUSTICIA --- */
+    .justice-container {
+        display: flex;
+        align-items: center;
+        gap: 40px;
+        background: white;
+        border-radius: 15px;
+    }
+
+    .justice-visual {
+        font-size: 5rem;
+        color: var(--cw-primary);
+        flex: 1;
+        text-align: center;
+    }
+
+    .justice-text { flex: 2; }
+
+    .highlight-sticker {
+        display: inline-block;
+        background: var(--cw-accent);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 4px; /* Estilo post-it moderno */
+        font-weight: bold;
+        margin-top: 15px;
+        transform: rotate(-1deg);
+        box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+    }
+
+    /* --- FOOTER --- */
+    .workshop-footer {
+        background: var(--cw-dark);
+        color: white;
+        padding: 50px 20px;
+        text-align: center;
+    }
+
+    .final-message {
+        background: rgba(255,255,255,0.1);
+        padding: 20px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        gap: 15px;
+        margin: 20px 0;
+        font-size: 1.2rem;
+        border: 1px dashed rgba(255,255,255,0.3);
+    }
+
+    .final-message i { color: var(--cw-accent); }
+    
+    .academic-ref { color: #95a5a6; font-style: italic; margin-top: 20px; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .hero-content h1 { font-size: 2rem; }
+        .justice-container { flex-direction: column; text-align: center; }
+        .step-timeline::before { left: 17px; }
+        .step-content { padding-left: 20px; }
+    }
+</style>
+<!-- Contenedor Principal: Estilo Workshop Corporativo -->
+<div class="clima-workshop-container">
+
+    <!-- INTRODUCCIÓN: VISUALIZACIÓN (Storytelling) -->
+    <section class="workshop-hero">
+        <div class="hero-content">
+            <span class="tag-pill">EJERCICIO DE IMAGINACIÓN</span>
+            <h1 style="color:white;font-weight:800">Imagina un lugar donde...</h1>
+            
+            <!-- Tarjetas de visualización flotantes -->
+            <div class="dream-grid">
+                <div class="dream-card d1">
+                    <i class="fas fa-lightbulb"></i>
+                    <p>Tus ideas son escuchadas sin miedo</p>
+                </div>
+                <div class="dream-card d2">
+                    <i class="fas fa-users"></i>
+                    <p>Te sientes realmente parte del equipo</p>
+                </div>
+                <div class="dream-card d3">
+                    <i class="fas fa-balance-scale"></i>
+                    <p>Las decisiones son justas y claras</p>
+                </div>
+            </div>
+            
+            <p class="hero-conclusion">
+                Eso no es una utopía. <br><strong>Eso es un buen Clima Organizacional.</strong>
+                <br><small>Un espacio seguro, valorado y motivador.</small>
+            </p>
+        </div>
+    </section>
+
+    <!-- SECCIÓN 2: EL MOTOR (Tarjetas Interactivas) -->
+    <section class="content-block">
+        <div class="block-header">
+            <h2><i class="fas fa-cogs"></i> ¿Qué logra un buen clima?</h2>
+            <p>Según estudios de <em>Gómez &amp; Pérez (2020)</em>, el ambiente sano es gasolina para el motor.</p>
+        </div>
+
+        <div class="benefits-grid">
+            <!-- Tarjeta 1 -->
+            <div class="benefit-card">
+                <div class="icon-circle"><i class="fas fa-hiking"></i></i></div>
+                <h3>Compromiso</h3>
+                <p>Las personas se "ponen la camiseta" genuinamente.</p>
+            </div>
+            <!-- Tarjeta 2 -->
+            <div class="benefit-card">
+                <div class="icon-circle"><i class="fas fa-chart-line"></i></div>
+                <h3>Rendimiento</h3>
+                <p>La productividad aumenta de forma natural.</p>
+            </div>
+            <!-- Tarjeta 3 -->
+            <div class="benefit-card">
+                <div class="icon-circle"><i class="fas fa-user-check"></i></div>
+                <h3>Retención</h3>
+                <p>La rotación de talento disminuye drásticamente.</p>
+            </div>
+        </div>
+        
+        <div class="quote-box">
+            "Las empresas que invierten en comunicación y liderazgo tienen mayor estabilidad."
+        </div>
+    </section>
+
+    <!-- SECCIÓN 3: PASO A PASO (Timeline Vertical) -->
+    <section class="content-block bg-light">
+        <div class="block-header">
+            <h2><i class="fas fa-clipboard-list"></i> Cómo construirlo (Paso a Paso)</h2>
+            <p>No es complicado. Se basa en acciones humanas reales.</p>
+        </div>
+
+        <div class="step-timeline">
+            
+            <!-- Paso 1 -->
+            <details class="step-item" open>
+                <summary>
+                    <div class="step-number">1</div>
+                    <span class="step-title">Liderazgo que acompaña</span>
+                    <i class="fas fa-chevron-down step-icon"></i>
+                </summary>
+                <div class="step-content">
+                    <p>Olvida el "jefe que impone". Un liderazgo participativo hace que todos se sientan dueños del proceso y del resultado.</p>
+                </div>
+            </details>
+
+            <!-- Paso 2 -->
+            <details class="step-item">
+                <summary>
+                    <div class="step-number">2</div>
+                    <span class="step-title">Comunicación fluida</span>
+                    <i class="fas fa-chevron-down step-icon"></i>
+                </summary>
+                <div class="step-content">
+                    <p>Transparencia total. Cuando la información es clara, los rumores (radio pasillo) desaparecen y la confianza florece.</p>
+                </div>
+            </details>
+
+            <!-- Paso 3 -->
+            <details class="step-item">
+                <summary>
+                    <div class="step-number">3</div>
+                    <span class="step-title">Espacios de diálogo</span>
+                    <i class="fas fa-chevron-down step-icon"></i>
+                </summary>
+                <div class="step-content">
+                    <p>No es solo hacer reuniones. Es crear momentos seguros para preguntar, proponer y debatir sin represalias.</p>
+                </div>
+            </details>
+
+            <!-- Paso 4 -->
+            <details class="step-item">
+                <summary>
+                    <div class="step-number">4</div>
+                    <span class="step-title">Relaciones Humanas Sanas</span>
+                    <i class="fas fa-chevron-down step-icon"></i>
+                </summary>
+                <div class="step-content">
+                    <p>Empatía y respeto. Recuerda: <strong>Pequeñas acciones generan grandes cambios.</strong></p>
+                </div>
+            </details>
+
+        </div>
+    </section>
+
+    <!-- SECCIÓN 4: JUSTICIA Y CONFIANZA (Concepto Clave) -->
+    <section class="content-block">
+        <div class="justice-container">
+            <div class="justice-visual">
+                <i class="fas fa-balance-scale-right"></i>
+            </div>
+            <div class="justice-text">
+                <h3>El Factor Justicia</h3>
+                <p>Cuando los procesos son claros y la retroalimentación es honesta, nace la <strong>CONFIANZA</strong>.</p>
+                <div class="highlight-sticker">
+                    <i class="fas fa-thumbtack"></i>
+                    La confianza es el pegamento emocional del equipo.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONCLUSIÓN: LA INVERSIÓN -->
+    <footer class="workshop-footer">
+        <div class="footer-content">
+            <h2 style="color:white;font-weight:700">¿Gasto o Inversión?</h2>
+            <p>Mejorar el clima reduce costos, atrae talento e impulsa la innovación.</p>
+            
+            <div class="final-message">
+                <i class="fas fa-seedling"></i>
+                <span>Mejorar el clima es sembrar hoy para cosechar mañana.</span>
+            </div>
+            
+            <div class="academic-ref">
+                <small>Ref: Gómez &amp; Pérez (2020) - Clima Organizacional y Competitividad en Colombia.</small>
+            </div>
+        </div>
+    </footer>
+
+</div>

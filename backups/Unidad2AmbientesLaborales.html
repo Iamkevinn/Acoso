@@ -1,0 +1,325 @@
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&amp;family=Roboto:wght@300;400;500&amp;display=swap');
+
+    /* Contenedor Principal */
+    .wp-bento-container {
+        --wp-bg: #f8f9fa;
+        --wp-dark: #2d3436;
+        --c-intim: #6c5ce7;  /* Morado */
+        --c-load: #e17055;   /* Naranja */
+        --c-bad: #d63031;    /* Rojo */
+        --c-excl: #636e72;   /* Gris */
+        
+        font-family: 'Roboto', sans-serif;
+        background-color: var(--wp-bg);
+        color: var(--wp-dark);
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 40px 20px;
+        border-radius: 20px;
+        box-sizing: border-box;
+    }
+
+    .wp-bento-container * { box-sizing: border-box; }
+    .wp-bento-container h1, 
+    .wp-bento-container h2, 
+    .wp-bento-container h3 { font-family: 'Montserrat', sans-serif; font-weight: 800; }
+
+    /* HEADER */
+    .wp-bento-header { text-align: center; margin-bottom: 40px; }
+    .wp-badge { 
+        background: #dfe6e9; color: #636e72; padding: 5px 15px; 
+        border-radius: 50px; font-size: 0.75rem; letter-spacing: 1px; font-weight: 700; text-transform: uppercase;
+    }
+    .wp-bento-header h1 { font-size: 2.2rem; margin: 15px 0; color: var(--wp-dark); line-height: 1.1; }
+    .wp-bento-header p { color: #636e72; max-width: 700px; margin: 0 auto; font-size: 1.1rem; }
+
+    /* VIDEO SECTION */
+    .wp-video-wrapper {
+        background: #000;
+        border-radius: 20px;
+        overflow: hidden;
+        margin-bottom: 50px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .video-label { color: white; padding: 15px 20px; font-weight: bold; background: rgba(255,255,255,0.1); display: flex; gap: 10px; align-items: center; }
+    .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; }
+    .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+    .video-caption { color: #aaa; text-align: center; padding: 10px; font-size: 0.8rem; background: #111; }
+
+    /* GRID LAYOUT */
+    .wp-grid-layout {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 25px;
+    }
+
+    /* TARJETAS */
+    .wp-card {
+        position: relative;
+        height: 380px;
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .wp-card:hover { transform: translateY(-10px); box-shadow: 0 20px 50px rgba(0,0,0,0.15); }
+
+    /* Estilos por tipo */
+    .card-intimidation { border-top: 6px solid var(--c-intim); }
+    .card-intimidation .wp-icon-box { color: var(--c-intim); background: rgba(108, 92, 231, 0.1); }
+    .card-intimidation h2 { color: var(--c-intim); }
+
+    .card-overload { border-top: 6px solid var(--c-load); }
+    .card-overload .wp-icon-box { color: var(--c-load); background: rgba(225, 112, 85, 0.1); }
+    .card-overload h2 { color: var(--c-load); }
+
+    .card-mistreatment { border-top: 6px solid var(--c-bad); }
+    .card-mistreatment .wp-icon-box { color: var(--c-bad); background: rgba(214, 48, 49, 0.1); }
+    .card-mistreatment h2 { color: var(--c-bad); }
+
+    .card-exclusion { border-top: 6px solid var(--c-excl); }
+    .card-exclusion .wp-icon-box { color: var(--c-excl); background: rgba(99, 110, 114, 0.1); }
+    .card-exclusion h2 { color: var(--c-excl); }
+
+    /* Icono de fondo decorativo */
+    .wp-card-bg-icon {
+        position: absolute; bottom: -20px; right: -20px;
+        font-size: 8rem; opacity: 0.05; pointer-events: none; transition: 0.5s;
+    }
+    .wp-card:hover .wp-card-bg-icon { transform: rotate(-15deg) scale(1.2); opacity: 0.1; }
+
+    /* Contenido Interno */
+    .wp-card-content { height: 100%; position: relative; }
+
+    /* Frente */
+    .wp-front {
+        height: 100%; padding: 30px;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        text-align: center; transition: 0.4s;
+    }
+    .wp-icon-box {
+        width: 70px; height: 70px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 2rem; margin-bottom: 20px; transition: 0.3s;
+    }
+    .wp-card:hover .wp-icon-box { transform: scale(0.8); margin-bottom: 10px; }
+    .wp-hint { margin-top: 15px; font-size: 0.8rem; color: #999; text-transform: uppercase; letter-spacing: 1px; }
+
+    /* Reverso (Reveal) */
+    .wp-back {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(255,255,255,0.98);
+        backdrop-filter: blur(10px);
+        padding: 25px;
+        display: flex; flex-direction: column;
+        opacity: 0; visibility: hidden;
+        transform: translateY(20px);
+        transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        text-align: center;
+    }
+
+    .wp-card:hover .wp-back { opacity: 1; visibility: visible; transform: translateY(0); }
+
+    .wp-back h3 { margin: 0 0 10px 0; font-size: 1.2rem; color: var(--wp-dark); }
+    .wp-back p { font-size: 0.9rem; line-height: 1.5; color: #636e72; margin-bottom: 20px; }
+    
+    .wp-action-box {
+        margin-top: auto;
+        background: #f1f2f6;
+        padding: 10px;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        color: #2d3436;
+        border-left: 4px solid #00b894; /* Verde UNP */
+    }
+
+    /* FOOTER */
+    .wp-footer-note {
+        margin-top: 40px; text-align: center;
+        background: #e0e6ed; padding: 15px; border-radius: 10px;
+        display: flex; gap: 10px; align-items: center; justify-content: center;
+        color: #636e72; font-size: 0.9rem;
+    }
+
+    /* --- NUEVOS ESTILOS PARA LA ALERTA --- */
+    .wp-alert-box {
+        background: white;
+        border-left: 6px solid #ffc107; /* Amarillo Warning */
+        border-radius: 10px;
+        padding: 25px;
+        margin-top: 40px;
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    }
+    .wp-alert-icon { font-size: 2rem; color: #ffc107; flex-shrink: 0; }
+    .wp-alert-content { font-size: 0.95rem; line-height: 1.6; color: #2d3436; width: 100%; }
+    
+    .wp-alert-list {
+        list-style: none;
+        padding: 0;
+        margin: 15px 0 0 0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .wp-alert-list li {
+        background: rgba(255, 193, 7, 0.12);
+        color: #d35400;
+        padding: 8px 15px;
+        border-radius: 5px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        border: 1px solid rgba(255, 193, 7, 0.2);
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+        .wp-grid-layout { grid-template-columns: 1fr; }
+        .wp-card { height: auto; min-height: 320px; }
+        /* En móvil mostramos el contenido siempre */
+        .wp-back { position: relative; opacity: 1; visibility: visible; transform: none; height: auto; background: transparent; padding-top: 0; }
+        .wp-front { height: auto; padding-bottom: 10px; }
+        .wp-icon-box { width: 50px; height: 50px; font-size: 1.5rem; margin-bottom: 10px; }
+        .wp-hint, .wp-card-bg-icon { display: none; }
+        
+        /* Ajuste Alerta Móvil */
+        .wp-alert-box { flex-direction: column; gap: 10px; }
+        .wp-alert-list { flex-direction: column; }
+    }
+
+</style>
+<!-- Contenedor Principal: Ambiente Laboral Bento Grid -->
+<div class="wp-bento-container">
+
+    <!-- HEADER -->
+    <header class="wp-bento-header">
+        <span class="wp-badge">UNIDAD 2 • RIESGOS PSICOSOCIALES</span>
+        <br><br>
+        <h1>Ambientes Laborales de Intimidación y Exclusión</h1>
+        <p>Identificar estas 4 conductas es vital para proteger la salud mental y cumplir con la Ley 1010 de 2006.</p>
+    </header>
+
+    <!-- SECCIÓN DE VIDEO (ESTILO CINE) -->
+    <div class="wp-video-wrapper">
+        <div class="video-label"><i class="fas fa-play-circle"></i> Introducción al Tema</div>
+        <div class="video-container">
+            <iframe width="100%" height="400" src="https://www.youtube.com/embed/K6FcojWO_iY" frameborder="0" allowfullscreen></iframe>
+        </div>
+        <div class="video-caption">Fuente: Youtube - Material de Apoyo</div>
+    </div>
+
+    <!-- GRID INTERACTIVO (BENTO) -->
+    <div class="wp-grid-layout">
+
+        <!-- TARJETA 1: INTIMIDACIÓN (MORADO - PSICOLÓGICO) -->
+        <div class="wp-card card-intimidation">
+            <div class="wp-card-bg-icon"><i class="fas fa-ghost"></i></div>
+            <div class="wp-card-content">
+                <div class="wp-front">
+                    <div class="wp-icon-box"><i class="fas fa-brain"></i></div>
+                    <h2>Intimidación Laboral</h2>
+                    <span class="wp-hint">Miedo y Presión</span>
+                </div>
+                <div class="wp-back">
+                    <h3>Presión Psicológica</h3>
+                    <p>Genera miedo y amenazas. Según la <strong>Ley 1010 de 2006</strong>, es acoso laboral. Impacta la dignidad y la productividad.</p>
+                    <div class="wp-action-box">
+                        <strong>UNP Actúa:</strong> Rutas claras de denuncia y apoyo psicológico.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TARJETA 2: CARGAS EXCESIVAS (NARANJA - PESO) -->
+        <div class="wp-card card-overload">
+            <div class="wp-card-bg-icon"><i class="fas fa-weight-hanging"></i></div>
+            <div class="wp-card-content">
+                <div class="wp-front">
+                    <div class="wp-icon-box"><i class="fas fa-tachometer-alt"></i></div>
+                    <h2>Cargas Excesivas</h2>
+                    <span class="wp-hint">Salud Física y Mental</span>
+                </div>
+                <div class="wp-back">
+                    <h3>Desproporción</h3>
+                    <p>Asignación de tareas que genera estrés y fatiga. El <strong>MinSalud (2018)</strong> advierte que causa ausentismo y enfermedades.</p>
+                    <div class="wp-action-box">
+                        <strong>UNP Actúa:</strong> Planificación estratégica para equilibrar tareas.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TARJETA 3: MALOS TRATOS (ROJO - ALERTA) -->
+        <div class="wp-card card-mistreatment">
+            <div class="wp-card-bg-icon"><i class="fas fa-heart-broken"></i></div>
+            <div class="wp-card-content">
+                <div class="wp-front">
+                    <div class="wp-icon-box"><i class="fas fa-angry"></i></div>
+                    <h2>Malos Tratos</h2>
+                    <span class="wp-hint">Dignidad Vulnerada</span>
+                </div>
+                <div class="wp-back">
+                    <h3>Actitudes Ofensivas</h3>
+                    <p>Humillaciones o tratos despectivos. Violan derechos fundamentales y destruyen el clima organizacional.</p>
+                    <div class="wp-action-box">
+                        <strong>UNP Actúa:</strong> Capacitación en convivencia y diversidad.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TARJETA 4: EXCLUSIÓN (GRIS/AZUL - AISLAMIENTO) -->
+        <div class="wp-card card-exclusion">
+            <div class="wp-card-bg-icon"><i class="fas fa-user-slash"></i></div>
+            <div class="wp-card-content">
+                <div class="wp-front">
+                    <div class="wp-icon-box"><i class="fas fa-door-closed"></i></div>
+                    <h2>Exclusión Laboral</h2>
+                    <span class="wp-hint">Aislamiento</span>
+                </div>
+                <div class="wp-back">
+                    <h3>Aislamiento Sistemático</h3>
+                    <p>Dejar al trabajador fuera de decisiones o información. Limita el desarrollo profesional y el sentido de pertenencia.</p>
+                    <div class="wp-action-box">
+                        <strong>UNP Actúa:</strong> Políticas de inclusión y participación activa.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- NUEVA SECCIÓN AGREGADA: NOTA DE ESPACIOS -->
+    <div class="wp-alert-box">
+        <div class="wp-alert-icon"><i class="fas fa-exclamation-triangle"></i></div>
+        <div class="wp-alert-content">
+            <h3 style="margin: 0 0 10px 0;color:#d63031;font-size:1.1rem">⚠️ RECUERDA: El acoso traspasa la oficina</h3>
+            <p style="margin:0 0 10px 0">La ley sanciona el acoso sexual y laboral incluso si ocurre fuera del espacio físico tradicional. Presta atención a estos entornos:</p>
+            <ul class="wp-alert-list">
+                <li>📱 <strong>Entornos Digitales:</strong> Mensajes de WhatsApp, correos o redes sociales.</li>
+                <li>🕒 <strong>Horario Extralaboral:</strong> Contacto indebido fuera de la jornada.</li>
+                <li>🚗 <strong>Trayectos:</strong> Desplazamientos en misiones de trabajo.</li>
+                <li>🥂 <strong>Espacios Sociales:</strong> Fiestas, integraciones o almuerzos.</li>
+            </ul>
+        </div>
+    </div>
+    <!-- FIN NUEVA SECCIÓN -->
+
+    <!-- FOOTER -->
+    <div class="wp-footer-note">
+        <i class="fas fa-info-circle"></i>
+        <p><strong>Nota:</strong> Estas acciones se alinean con la Directiva Presidencial 001 de 2023 para garantizar ambientes libres de violencia.</p>
+    </div>
+
+</div>
+
