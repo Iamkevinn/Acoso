@@ -1,10 +1,4 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Marco Legal y Brechas de Género - Colombia 2026</title>
-    <style>
+<style>
         /* --- 1. VARIABLES & RESET (Paleta Clara Soft UI) --- */
         :root {
             --bg-body: #F5F7FA;
@@ -183,81 +177,10 @@
         .modal-body li { margin-bottom: 8px; }
 
     </style>
-</head>
-<body>
-
-    <!-- HERO -->
-    <section class="hero">
-        <!-- Floating bubbles for aesthetic -->
-        <div style="position:absolute; top:10%; left:10%; width:100px; height:100px; background:var(--primary); opacity:0.1; border-radius:50%; filter:blur(40px);"></div>
-        <div style="position:absolute; bottom:20%; right:10%; width:150px; height:150px; background:var(--accent); opacity:0.1; border-radius:50%; filter:blur(40px);"></div>
-
-        <h1>Legislación y Brechas Sociales<br><span style="font-size: 1.2rem; color: #636E72;">Curso Acoso Sexual y Laboral (Colombia 2026)</span></h1>
-        
-        <p style="max-width: 600px; margin-top: 20px; color: var(--text-light);">
-            Bienvenido a este módulo interactivo. Hoy no solo leerás, sino que visualizarás el impacto de la ley y las brechas económicas reales.
-        </p>
-
-        <div class="scroll-indicator" onclick="scrollToSection('sec1')">
-            <span>Desliza para comenzar</span>
-            <div class="mouse"><div class="wheel"></div></div>
-        </div>
-    </section>
-
-    <div class="container">
-
-        <!-- SECCIÓN 1: LEYES (COMPARADOR) -->
-        <section id="sec1" class="card fade-in">
-            <h2>1. Duelo Normativo: Ley 2365 vs. Ley 1761</h2>
-            <p style="text-align: center; margin-bottom: 20px;">Usa el interruptor para comparar el objeto y alcance de cada norma.</p>
-
-            <div class="legal-switch-container">
-                <button class="switch-btn active" onclick="switchLaw('2365', this)">Ley 2365 (2024)</button>
-                <button class="switch-btn" onclick="switchLaw('1761', this)">Ley 1761 (Rosa Elvira Cely)</button>
-            </div>
-
-            <!-- CONTENIDO LEY 2365 -->
-            <div id="law-2365" class="law-content active">
-                <div class="comparison-grid">
-                    <div class="law-card">
-                        <h3>📋 Objeto</h3>
-                        <p>Prevenir, atender y sancionar el <strong>Acoso Sexual</strong> en contexto laboral. Garantiza igualdad y vida libre de violencias.</p>
-                    </div>
-                    <div class="law-card">
-                        <h3>🏢 En la UNP</h3>
-                        <p>Obliga a tener protocolos robustos, confidencialidad, no revictimización y medidas inmediatas ante represalias.</p>
-                    </div>
-                </div>
-                <div style="margin-top: 20px; background: #e3f2fd; padding: 15px; border-radius: 10px;">
-                    <strong>Dato Clave:</strong> Se configura con un solo acto no consentido. Aplica a pasantes y contratistas.
-                </div>
-            </div>
-
-            <!-- CONTENIDO LEY 1761 -->
-            <div id="law-1761" class="law-content">
-                <div class="comparison-grid">
-                    <div class="law-card" style="border-left-color: var(--risk-high);">
-                        <h3>⚖️ Objeto</h3>
-                        <p>Tipifica el <strong>Feminicidio</strong> como delito autónomo (asesinato por razones de género). Es la forma más extrema de violencia.</p>
-                    </div>
-                    <div class="law-card" style="border-left-color: var(--risk-high);">
-                        <h3>🏢 En la UNP</h3>
-                        <p>No regula directamente el acoso laboral, pero tiene aplicación penal si la violencia escala a riesgo de muerte.</p>
-                    </div>
-                </div>
-                <div style="margin-top: 20px; background: #ffebee; padding: 15px; border-radius: 10px;">
-                    <strong>Diferencia:</strong> Es de naturaleza penal extrema, mientras que la 2365 es preventiva y sancionatoria en lo laboral.
-                </div>
-            </div>
-
-            <div style="text-align: center;">
-                <button class="btn-read-more" onclick="openModal('modal-leyes')">📖 Leer Texto Legal Completo</button>
-            </div>
-        </section>
-
-        <!-- SECCIÓN 2: SIMULADOR BRECHA SALARIAL -->
+    
+<!-- SECCIÓN 2: SIMULADOR BRECHA SALARIAL -->
         <section class="card fade-in">
-            <h2>2. Simulador: El Costo de la Maternidad</h2>
+            <h2>Simulador: El Costo de la Maternidad</h2>
             <p>Según el DANE, tener hijos aumenta la brecha salarial. Mueve el control para ver cómo afecta el número de hijos al ingreso de una mujer comparado con un hombre.</p>
             
             <div class="salary-simulator">
@@ -290,97 +213,7 @@
             </div>
         </section>
 
-        <!-- SECCIÓN 3: VIOLENTÓMETRO -->
-        <section class="card fade-in">
-            <h2>3. El Violentómetro: ¿En qué nivel estás?</h2>
-            <p>La violencia escala. Desliza el medidor para identificar las señales de alerta.</p>
-
-            <div class="violentometer-wrapper">
-                <div class="level-display" id="levelDisplay">
-                    <span style="font-size: 3rem;">😊</span>
-                    <div class="level-title" style="color: var(--risk-low);">Relación Sana</div>
-                    <p id="levelText">Desliza el control abajo para ver cómo escala la violencia.</p>
-                </div>
-
-                <div class="slider-container" style="width: 100%;">
-                    <input type="range" min="0" max="3" step="1" value="0" id="vioRange" oninput="updateViolentometer(this.value)" style="background: linear-gradient(90deg, #00b894, #fdcb6e, #d63031);">
-                </div>
-            </div>
-
-            <div style="text-align: center;">
-                <button class="btn-read-more" onclick="openModal('modal-vio')">⚠️ Ver Definición Completa</button>
-            </div>
-        </section>
-
-        <!-- SECCIÓN 4: RUTAS Y SIVIGE -->
-        <section class="card fade-in">
-            <h2>4. Rutas de Atención y Monitoreo (SIVIGE)</h2>
-            <p>¿Qué hacer ante un caso? Conoce la ruta institucional y cómo el Estado monitorea los datos.</p>
-            
-            <div class="timeline">
-                <div class="timeline-item">
-                    <div class="timeline-dot"></div>
-                    <div class="timeline-content">
-                        <h4>👮‍♀️ 1. Policía Nacional</h4>
-                        <p>Recepción inmediata (Línea 195 o estación). Protección urgente (retirar agresor).</p>
-                    </div>
-                </div>
-                <div class="timeline-item">
-                    <div class="timeline-dot"></div>
-                    <div class="timeline-content">
-                        <h4>⚖️ 2. Fiscalía General</h4>
-                        <p>Apertura de noticia criminal. Investigación por delitos (acoso, lesiones, feminicidio).</p>
-                    </div>
-                </div>
-                <div class="timeline-item">
-                    <div class="timeline-dot"></div>
-                    <div class="timeline-content">
-                        <h4>🛡️ 3. UNP (Institucional)</h4>
-                        <p>No reemplaza a la Fiscalía, pero activa ruta interna, garantiza no represalias y articula protección.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div style="background: #F0F4F8; padding: 20px; border-radius: 15px; margin-top: 20px;">
-                <h3>📊 Sobre el SIVIGE</h3>
-                <p>Es el Sistema Integrado que centraliza datos de Fiscalía, Medicina Legal y Salud para monitorear la violencia. Permite ver tendencias y factores de riesgo.</p>
-            </div>
-
-            <div style="text-align: center;">
-                <button class="btn-read-more" onclick="openModal('modal-rutas')">🚨 Ver Procedimientos Completos</button>
-            </div>
-        </section>
-
-    </div>
-
-    <!-- ================= MODALES (TEXTO COMPLETO) ================= -->
-
-    <!-- Modal Leyes -->
-    <div id="modal-leyes" class="modal-overlay">
-        <div class="modal-box">
-            <button class="close-modal" onclick="closeModal('modal-leyes')">&times;</button>
-            <div class="modal-body">
-                <h2>Marco Legal: Ley 2365 vs 1761</h2>
-                <h3>1. Ley 2365 de 2024</h3>
-                <p>Establece medidas para prevenir, atender y sancionar el acoso sexual laboral. Enfoque: Derecho a la igualdad.</p>
-                <ul>
-                    <li>Puede configurarse con un solo acto sexual no consentido.</li>
-                    <li>Aplica a servidores, contratistas y pasantes.</li>
-                    <li><strong>En la UNP:</strong> Implica protocolos robustos, confidencialidad y protección ante represalias.</li>
-                </ul>
-                <h3>2. Ley 1761 de 2015 (Ley Rosa Elvira Cely)</h3>
-                <p>Tipifica el feminicidio como delito autónomo (asesinato por razones de género).</p>
-                <ul>
-                    <li>Sanciona la forma más extrema de violencia.</li>
-                    <li>No regula directamente el acoso laboral, pero es el marco penal para violencia extrema.</li>
-                </ul>
-                <h3>Convenio 190 OIT</h3>
-                <p>Marco internacional que reconoce el derecho a un trabajo libre de violencia y acoso. Aplica incluso en trayectos y comunicaciones TIC.</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Brecha -->
+            <!-- Modal Brecha -->
     <div id="modal-brecha" class="modal-overlay">
         <div class="modal-box">
             <button class="close-modal" onclick="closeModal('modal-brecha')">&times;</button>
@@ -402,49 +235,7 @@
         </div>
     </div>
 
-    <!-- Modal Violentómetro -->
-    <div id="modal-vio" class="modal-overlay">
-        <div class="modal-box">
-            <button class="close-modal" onclick="closeModal('modal-vio')">&times;</button>
-            <div class="modal-body">
-                <h2>¿Qué es el Violentómetro?</h2>
-                <p>Herramienta pedagógica que clasifica conductas de violencia para alertar sobre su escalada. No es norma jurídica.</p>
-                <h3>🟢 Nivel 1: Violencia Psicológica Inicial</h3>
-                <p>Bromas hirientes, celos excesivos, control, descalificaciones.</p>
-                <h3>🟡 Nivel 2: Violencia Manifiesta</h3>
-                <p>Amenazas, humillaciones públicas, aislamiento, empujones.</p>
-                <h3>🔴 Nivel 3: Violencia Grave</h3>
-                <p>Golpes, agresión sexual, amenazas de muerte, intento de feminicidio.</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Rutas -->
-    <div id="modal-rutas" class="modal-overlay">
-        <div class="modal-box">
-            <button class="close-modal" onclick="closeModal('modal-rutas')">&times;</button>
-            <div class="modal-body">
-                <h2>Procedimiento Policía y Fiscalía</h2>
-                <h3>1. Policía Nacional</h3>
-                <ul>
-                    <li>Recepción denuncia (Línea 155, Estación, Flagrancia).</li>
-                    <li>Protección inmediata (Retirar agresor, traslado a lugar seguro).</li>
-                    <li>Informe a Fiscalía.</li>
-                </ul>
-                <h3>2. Fiscalía</h3>
-                <ul>
-                    <li>Abre noticia criminal (Violencia intrafamiliar, Acceso carnal, etc.).</li>
-                    <li>Solicita medidas ante juez (Alejamiento, desalojo del agresor).</li>
-                </ul>
-                <h3>3. Aplicación en UNP</h3>
-                <p>Activar ruta interna, orientar a denuncia penal, garantizar no represalias laborales y articular con autoridades. La UNP no reemplaza a la justicia penal.</p>
-                <h3>SIVIGE</h3>
-                <p>Sistema que integra datos de Fiscalía, Medicina Legal, Salud y DANE para monitorear tendencias y factores de riesgo.</p>
-            </div>
-        </div>
-    </div>
-
-    <script>
+ <script>
         // --- 1. SCROLL NAV ---
         function scrollToSection(id) {
             document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
@@ -554,5 +345,3 @@
         document.querySelectorAll('.card').forEach(el => observer.observe(el));
 
     </script>
-</body>
-</html>
