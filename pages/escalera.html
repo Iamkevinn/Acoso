@@ -50,12 +50,11 @@
             padding: 40px;
             position: relative;
         }
-
         .header-controls {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px; /* Reducido un poco para dar espacio al hint */
             border-bottom: 2px solid #eee;
             padding-bottom: 20px;
         }
@@ -78,6 +77,25 @@
         .btn-next:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(108, 99, 255, 0.4); }
         .btn-next:disabled { background: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
 
+        /* NUEVO: Mensaje de instrucción de scroll */
+        .scroll-hint {
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--c1);
+            background: #f0f8ff;
+            padding: 8px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px dashed var(--c1);
+            animation: pulseHint 2s infinite;
+        }
+        .scroll-hint i { margin-right: 8px; }
+
+        @keyframes pulseHint {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
         /* =========================================
            ESCENA 3D (ESCALERA Y TEXTOS)
            ========================================= */
@@ -88,7 +106,13 @@
             overflow-x: auto;
             overflow-y: hidden;
             /* Ocultar barra de scroll pero permitir deslizamiento en móviles */
-            scrollbar-width: none; 
+            scrollbar-width: none;
+            
+            /* NUEVO: Estilo de enfoque para la sección completa */
+            border: 2px solid #e0e0e0; /* Borde suave */
+            border-radius: 12px;
+            background: radial-gradient(circle at center, #ffffff, #fcfcfc); /* Fondo sutil */
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.05); /* Sombra interna para dar profundidad */
         }
         .scene-wrapper::-webkit-scrollbar { display: none; }
 
@@ -132,6 +156,20 @@
             display: flex;
             align-items: flex-end;
             cursor: pointer;
+            
+            /* NUEVO: Estado inactivo por defecto (Opacidad y Gris) */
+            transition: all 0.5s ease;
+            filter: grayscale(100%);
+            opacity: 0.3;
+            transform: scale(0.95);
+        }
+
+        /* NUEVO: Estado Activo (Resaltado) */
+        .step-row.active {
+            filter: grayscale(0%); /* Color completo */
+            opacity: 1; /* Totalmente visible */
+            transform: scale(1.05); /* Ligero aumento de tamaño para enfoque */
+            z-index: 100; /* Traer al frente */
         }
 
         /* -- Textos -- */
@@ -142,13 +180,12 @@
             width: 280px;
             display: flex;
             gap: 15px;
-            opacity: 0.4; /* Opaco por defecto */
-            transition: all 0.4s ease;
+            /* La opacidad se maneja ahora desde el padre .step-row */
+            transition: transform 0.4s ease;
             transform: translateX(-20px);
         }
 
         .step-row.active .step-text {
-            opacity: 1;
             transform: translateX(0);
         }
 
@@ -186,9 +223,12 @@
             transition: all 0.3s ease;
         }
 
-        .step-row:hover .step-graphic {
-            filter: brightness(0.95) drop-shadow(0 -5px 15px rgba(0,0,0,0.1));
+        /* Efecto hover suave solo si no está activo */
+        .step-row:not(.active):hover {
+            opacity: 0.7;
+            transform: scale(1);
         }
+
         .step-row.active .step-graphic {
             filter: drop-shadow(0 0 15px var(--color));
         }
@@ -217,9 +257,15 @@
             text-align: center;
             margin-top: 20px;
             padding-top: 20px;
+            padding-bottom: 20px;
             border-top: 1px solid #eaeaea;
             width: 100%;
+            text-decoration: none;
         }
+        .linkpp{
+            text-decoration: none;
+        }
+        .image-footer:hover { color: var(--c1); background-color: #e2f3f5ac;}
         .image-footer h4 { font-size: 1rem; color: var(--text-dark); margin-bottom: 5px; }
         .image-footer p { font-size: 0.85rem; color: var(--text-dark); font-weight: bold; }
 
@@ -232,6 +278,11 @@
         <div class="header-controls">
             <h2>Ruta de Abordaje Integral</h2>
             <button class="btn-next" id="btnNext" onclick="advanceStep()">Siguiente Paso <i class="fas fa-arrow-right"></i></button>
+        </div>
+
+        <!-- NUEVO: Mensaje de instrucción -->
+        <div class="scroll-hint">
+            <i class="fas fa-hand-pointer"></i> Arrastra o desliza el área de la escalera para ver el contenido completo si se corta.
         </div>
 
         <div class="scene-wrapper">
@@ -387,12 +438,14 @@
 
             </div>
         </div>
-
+        
+        <a class="linkpp" target="_blank" href="https://docs.google.com/presentation/d/e/2PACX-1vS5t6YVrrIh3R764Qk7UoJgDatgw0ZL3Jg-UPE5YfeUAN4raTQcXaen86Rgsai6ku-3AxMvgdnoDenM/pub?start=false&loop=false&delayms=3000">
         <div class="image-footer">
+            <i class="fas fa-external-link-alt"></i>
             <h4>Ilustración 3: Pasos para el abordaje</h4>
             <p>Fuente: Subcomisión de Transversalidad de Género GPIGI - OAPI</p>
         </div>
-
+</a>
     </div>
 
     <script>
